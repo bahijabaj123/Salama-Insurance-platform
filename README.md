@@ -24,12 +24,12 @@ Salama Insurance is an intelligent digital insurance platform that revolutionize
 
 | Name | Role | GitHub |
 |------|------|--------|
-| **Bahija Ben Abdeljalil** |              | [@bahijabaj123](https://github.com/bahijabaj123) |
-| **Rami Ben Atig** |                | - |
-| **Sarra Laabidi** |               | - |
-| **Hassen Jridi** |             | - |
-| **Linda Ismail** |          | - |
-| **Aziz Sfar** |             | - |
+| **Bahija Ben Abdeljalil** |Claim Management| [@bahijabaj123](https://github.com/bahijabaj123)|
+| **Rami Ben Atig** |Client (Policyholder) Management| - |
+| **Sarra Laabidi** |Payment & Compensation Management|@sarra3005](https://github.com/sarra3005)|
+| **Hassen Jridi** |Expert Management| - |
+| **Linda Ismail** |Insurer Management|@lindaismail2](https://github.com/lindaismail2)|
+| **Aziz Sfar** |User Management| - |
 
 
 ## 🚀 Getting Started
