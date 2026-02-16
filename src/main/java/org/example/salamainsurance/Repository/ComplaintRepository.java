@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Repository;
+/*package org.example.salamainsurance.Repository;
 
 import org.example.salamainsurance.Entity.ComplaintSarra;
 import org.example.salamainsurance.Entity.ComplaintStatus;
@@ -18,3 +18,4 @@ public interface ComplaintRepository extends JpaRepository<ComplaintSarra,Long> 
 
     List<ComplaintSarra> findByStatus(ComplaintStatus status);
 }
+*/

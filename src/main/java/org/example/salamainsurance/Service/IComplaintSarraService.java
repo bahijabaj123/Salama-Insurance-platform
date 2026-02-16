@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Service;
+/*package org.example.salamainsurance.Service;
 
 import org.example.salamainsurance.Entity.ComplaintSarra;
 
@@ -10,3 +10,4 @@ public interface IComplaintSarraService {
     ComplaintSarra getComplaintById(Long id);
     void deleteComplaint(Long id);
 }
+*/

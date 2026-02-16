@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Service;
+/*package org.example.salamainsurance.Service;
 
 import org.example.salamainsurance.Entity.ComplaintSarra;
 import org.example.salamainsurance.Entity.IndemnitySarra;
@@ -41,3 +41,4 @@ public class ComplaintSarraService implements IComplaintSarraService {
         complaintRepository.deleteById(id);
     }
 }
+*/
