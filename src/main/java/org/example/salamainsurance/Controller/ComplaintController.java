@@ -29,6 +29,14 @@ public class ComplaintController {
         ComplaintSarra savedComplaint = complaintSarraService.createAndLinkToIndemnity(complaint, indemnityId);
         return ResponseEntity.ok(savedComplaint);
     }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ComplaintSarra> update(@PathVariable Long id, @RequestBody ComplaintSarra complaintDetails) {
+        ComplaintSarra updated = complaintSarraService.updateComplaint(id, complaintDetails);
+        if (updated != null) {
+            return ResponseEntity.ok(updated);
+        }
+        return ResponseEntity.notFound().build();
+    }
     @GetMapping("/all")
     public List<ComplaintSarra> getAll() {
         return complaintSarraService.getAllComplaints();

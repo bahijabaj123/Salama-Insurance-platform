@@ -35,7 +35,15 @@ public class ComplaintSarraService implements IComplaintSarraService {
     public ComplaintSarra getComplaintById(Long id) {
         return complaintRepository.findById(id).orElse(null);
     }
-
+    public ComplaintSarra updateComplaint(Long id, ComplaintSarra details) {
+        return complaintRepository.findById(id).map(existing -> {
+            existing.setTitle(details.getTitle());
+            existing.setDescription(details.getDescription());
+            existing.setStatus(details.getStatus());
+            // On sauvegarde l'objet mis à jour
+            return complaintRepository.save(existing);
+        }).orElse(null);
+    }
     @Override
     public void deleteComplaint(Long id) {
         complaintRepository.deleteById(id);

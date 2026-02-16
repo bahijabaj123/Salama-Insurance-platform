@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ComplaintRepository extends JpaRepository<ComplaintSarra,Long> {
 
-    List<ComplaintSarra> findByIndemnityId(Long indemnityId);
+    List<ComplaintSarra> findByIndemnity_IdIndemnity(Long id);
 
     List<ComplaintSarra> findByDetectedSentiment(String sentiment);
 
