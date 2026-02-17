@@ -17,6 +17,7 @@ public class IndemnitySarraController {
     @Autowired
     private IndemnityRepository indemnityRepository;
 
+
     @Autowired
     private IndemnitySarraService indemnitySarraService;
 
