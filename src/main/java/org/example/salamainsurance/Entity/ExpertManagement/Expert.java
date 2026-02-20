@@ -1,6 +1,8 @@
-package org.example.salamainsurance.Entity.ClaimManagement;
+package org.example.salamainsurance.Entity.ExpertManagement;
 
 import jakarta.persistence.*;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+
 import java.time.LocalDateTime;
 import java.util.List;
 

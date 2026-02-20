@@ -1,8 +1,8 @@
 package org.example.salamainsurance.Service.ClaimManagement;
 
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
-import org.example.salamainsurance.Entity.ClaimManagement.Expert;
-import org.example.salamainsurance.Repository.ClaimManagement.ExpertRepository;
+import org.example.salamainsurance.Entity.ExpertManagement.Expert;
+import org.example.salamainsurance.Repository.ExpertRepo.ExpertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

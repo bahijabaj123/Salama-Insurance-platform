@@ -1,6 +1,6 @@
-package org.example.salamainsurance.Repository.ClaimManagement;
+package org.example.salamainsurance.Repository.ExpertRepo;
 
-import org.example.salamainsurance.Entity.ClaimManagement.Expert;
+import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -2,12 +2,12 @@ package org.example.salamainsurance.Service.ClaimManagement;
 
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
-import org.example.salamainsurance.Entity.ClaimManagement.Expert;
+import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.example.salamainsurance.Entity.ClaimManagement.Insurer;
 import org.example.salamainsurance.Entity.Report.Accident;
 import org.example.salamainsurance.Exception.ResourceNotFoundException;
 import org.example.salamainsurance.Repository.ClaimManagement.ClaimRepository;
-import org.example.salamainsurance.Repository.ClaimManagement.ExpertRepository;
+import org.example.salamainsurance.Repository.ExpertRepo.ExpertRepository;
 import org.example.salamainsurance.Repository.ClaimManagement.InsurerRepository;
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
 import org.springframework.beans.factory.annotation.Autowired;

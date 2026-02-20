@@ -1,6 +1,6 @@
 package org.example.salamainsurance.Service.ClaimManagement;
 
-import org.example.salamainsurance.Entity.ClaimManagement.Expert;
+import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.example.salamainsurance.Entity.ClaimManagement.Insurer;
 import org.springframework.stereotype.Service;
 

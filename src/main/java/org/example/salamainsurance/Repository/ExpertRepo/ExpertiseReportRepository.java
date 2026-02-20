@@ -1,7 +1,7 @@
-package org.example.salamainsurance.Repository.ClaimManagement;
+package org.example.salamainsurance.Repository.ExpertRepo;
 
-import org.example.salamainsurance.Entity.ClaimManagement.ExpertiseReport;
-import org.example.salamainsurance.Entity.ClaimManagement.ExpertiseStatus;
+import org.example.salamainsurance.Entity.ExpertManagement.ExpertiseReport;
+import org.example.salamainsurance.Entity.ExpertManagement.ExpertiseStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Entity.ClaimManagement;
+package org.example.salamainsurance.Entity.ExpertManagement;
 
 public enum ExpertiseStatus {
   DRAFT,              // Brouillon

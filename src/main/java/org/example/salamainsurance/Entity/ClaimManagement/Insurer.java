@@ -10,7 +10,7 @@ public class Insurer {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;  // ✅ Clé primaire obligatoire pour JpaRepository
+  private Long id;
 
   @Column(unique = true, nullable = false)
   private String email;
