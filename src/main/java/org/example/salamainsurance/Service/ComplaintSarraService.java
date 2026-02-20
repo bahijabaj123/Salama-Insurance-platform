@@ -40,5 +40,7 @@ public class ComplaintSarraService implements IComplaintSarraService {
     public void deleteComplaint(Long id) {
         complaintRepository.deleteById(id);
     }
+
+
 }
 */

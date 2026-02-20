@@ -2,6 +2,8 @@ package org.example.salamainsurance.Service.Report;
 
 import lombok.RequiredArgsConstructor;
 import org.example.salamainsurance.Entity.Report.Accident;
+import org.example.salamainsurance.Entity.Report.Driver;
+import org.example.salamainsurance.Entity.Report.Photo;
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,16 +17,20 @@ public class AccidentServiceImpl implements AccidentService {
   private final AccidentRepository accidentRepository;
 
   @Override
-  @Transactional // Très important pour gérer les relations cascade
+  @Transactional
   public Accident saveAccident(Accident accident) {
-    // ÉTAPE CRUCIALE : On lie manuellement chaque Driver à l'Accident
+    // ✅ CORRECTION: La méthode getDrivers() doit retourner une List<Driver>
     if (accident.getDrivers() != null) {
-      accident.getDrivers().forEach(driver -> driver.setAccident(accident));
+      for (Driver driver : accident.getDrivers()) {  // Maintenant ça fonctionne
+        driver.setAccident(accident);
+      }
     }
 
-    // ÉTAPE CRUCIALE : On lie manuellement chaque Photo à l'Accident
+    // Pour les photos
     if (accident.getPhotos() != null) {
-      accident.getPhotos().forEach(photo -> photo.setAccident(accident));
+      for (Photo photo : accident.getPhotos()) {
+        photo.setAccident(accident);
+      }
     }
 
     return accidentRepository.save(accident);
@@ -47,7 +53,6 @@ public class AccidentServiceImpl implements AccidentService {
 
   @Override
   public Accident updateAccident(Long id, Accident accidentDetails) {
-    // Optionnel : Logique pour mettre à jour un accident existant
     if (accidentRepository.existsById(id)) {
       accidentDetails.setId(id);
       return saveAccident(accidentDetails);

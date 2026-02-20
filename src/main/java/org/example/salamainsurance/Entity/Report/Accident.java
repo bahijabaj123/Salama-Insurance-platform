@@ -1,8 +1,11 @@
 package org.example.salamainsurance.Entity.Report;
 
+import ch.qos.logback.core.net.server.Client;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -68,9 +71,20 @@ public class Accident {
   public String getSketch() { return sketch; }
   public void setSketch(String sketch) { this.sketch = sketch; }
 
-  public List<Driver> getDrivers() { return drivers; }
+  // Dans Accident.java, assurez-vous que getDrivers() retourne une List
+  public List<Driver> getDrivers() {
+    return drivers;  // drivers doit être de type List<Driver>
+  }
+
   public void setDrivers(List<Driver> drivers) { this.drivers = drivers; }
 
   public List<Photo> getPhotos() { return photos; }
   public void setPhotos(List<Photo> photos) { this.photos = photos; }
+
+  //bahija
+  @OneToOne(mappedBy = "accident", cascade = CascadeType.ALL)
+  private Claim claim;// Relation vers Claim (optionnelle)
+
+  public void setClaim(Claim savedClaim) {
+  }
 }
