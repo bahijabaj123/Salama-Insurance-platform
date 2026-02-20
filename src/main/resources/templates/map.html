@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Carte Assurance - Garages Proches</title>
+
+    <!-- Leaflet CSS (la map) -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <style>
+        body { font-family: Arial; }
+        #map {
+            height: 85vh;
+            width: 100%;
+            border-radius: 10px;
+        }
+        h2 { text-align: center; }
+    </style>
+</head>
+<body>
+
+<h2>📍 Choisissez votre position (Client)</h2>
+<p style="text-align:center">
+    Clique sur la carte → Position client en vert | Garages proches en rouge
+</p>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Centre sur la Tunisie (modifiable)
+    const map = L.map('map').setView([36.8065, 10.1815], 11);
+
+    // Fond de carte gratuit (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let clientMarker = null;
+    let garageMarkers = [];
+
+    function clearGarages() {
+        garageMarkers.forEach(m => map.removeLayer(m));
+        garageMarkers = [];
+    }
+
+    map.on('click', async function (e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        // 🟢 Marker client (vert)
+        if (clientMarker) {
+            map.removeLayer(clientMarker);
+        }
+
+        clientMarker = L.circleMarker([lat, lng], {
+            radius: 10,
+            color: "green",
+            fillColor: "green",
+            fillOpacity: 1
+        }).addTo(map).bindPopup("Position du Client").openPopup();
+
+        // Appel à TON API Spring Boot
+        const url = `/api/garages/nearest?lat=${lat}&lng=${lng}&limit=3`;
+        console.log("API call:", url);
+
+        try {
+            const response = await fetch(url);
+            const garages = await response.json();
+
+            clearGarages();
+
+            // 🔴 Afficher garages proches
+            garages.forEach(g => {
+                const marker = L.circleMarker([g.latitude, g.longitude], {
+                    radius: 8,
+                    color: "red",
+                    fillColor: "red",
+                    fillOpacity: 1
+                }).addTo(map)
+                    .bindPopup("Garage: " + g.name);
+
+                garageMarkers.push(marker);
+            });
+
+        } catch (error) {
+            console.error("Erreur API:", error);
+        }
+    });
+</script>
+
+</body>
+</html>
