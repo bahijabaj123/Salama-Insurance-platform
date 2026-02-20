@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/indemnities")
 public class IndemnitySarraController {
-
+/*
     @Autowired
     private IndemnityRepository indemnityRepository;
 
@@ -55,5 +55,5 @@ public class IndemnitySarraController {
     public ResponseEntity<Void> deleteIndemnity(@PathVariable Long id) {
         indemnitySarraService.delete(id);
         return ResponseEntity.noContent().build();
-    }
+    }*/
 }

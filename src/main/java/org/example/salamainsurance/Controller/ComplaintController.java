@@ -1,6 +1,6 @@
 package org.example.salamainsurance.Controller;
 
-import org.example.salamainsurance.Entity.ComplaintSarra;
+/*import org.example.salamainsurance.Entity.ComplaintSarra;
 import org.example.salamainsurance.Service.ComplaintSarraService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,3 +52,5 @@ public class ComplaintController {
         return ResponseEntity.noContent().build();
     }
 }
+
+ */

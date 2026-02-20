@@ -1,6 +1,6 @@
 package org.example.salamainsurance.Entity;
 
-import jakarta.persistence.*;
+/*import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -29,3 +29,4 @@ public class ComplaintSarra {
         this.status = ComplaintStatus.PENDING;
     }
 }
+*/

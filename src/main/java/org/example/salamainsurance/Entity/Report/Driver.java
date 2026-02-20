@@ -2,6 +2,7 @@ package org.example.salamainsurance.Entity.Report;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 
 @Entity
 @Table(name = "drivers")
@@ -135,5 +136,10 @@ public class Driver {
 
   public void setAccident(Accident accident) {
     this.accident = accident;
+  }
+
+  //ajout bahija
+  public String getRegion() {
+    return "";
   }
 }
