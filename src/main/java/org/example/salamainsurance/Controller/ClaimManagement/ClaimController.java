@@ -1,8 +1,12 @@
 package org.example.salamainsurance.Controller.ClaimManagement;
 
+import org.example.salamainsurance.DTO.ClaimResponseDTO;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
+import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimService;
+import org.example.salamainsurance.Service.ClaimManagement.ClaimServiceImpl;
+import org.example.salamainsurance.Service.ClaimManagement.IntelligentExpertAssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +29,12 @@ public class ClaimController {
 
   @Autowired
   private ClaimService claimService;
+
+  @Autowired
+  private ClaimServiceImpl claimServices;
+
+  @Autowired
+  private IntelligentExpertAssignmentService intelligentAssignmentService;
 
   // ========== CREATE ==========
 
@@ -48,16 +59,6 @@ public class ClaimController {
       return new ResponseEntity<>(claims, HttpStatus.CREATED);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @PostMapping("/process-new-accidents")
-  public ResponseEntity<?> processNewAccidents() {
-    try {
-      List<Claim> newClaims = claimService.processNewValidAccidents();
-      return new ResponseEntity<>(newClaims, HttpStatus.CREATED);
-    } catch (Exception e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -153,7 +154,26 @@ public class ClaimController {
     @PathVariable Long expertId) {
     try {
       Claim claim = claimService.assignExpertToClaim(claimId, expertId);
-      return ResponseEntity.ok(claim);
+
+      // Convertir en DTO
+      ClaimResponseDTO response = new ClaimResponseDTO();
+      response.setId(claim.getId());
+      response.setReference(claim.getReference());
+      response.setStatus(claim.getStatus().toString());
+      response.setRegion(claim.getRegion());
+      response.setOpeningDate(claim.getOpeningDate());
+      response.setAssignedDate(claim.getAssignedDate());
+      response.setNotes(claim.getNotes());
+
+      if (claim.getExpert() != null) {
+        ClaimResponseDTO.ExpertSummaryDTO expertDTO = new ClaimResponseDTO.ExpertSummaryDTO();
+        expertDTO.setId(claim.getExpert().getId());
+        expertDTO.setName(claim.getExpert().getFirstName() + " " + claim.getExpert().getLastName());
+        expertDTO.setSpeciality(claim.getExpert().getSpeciality());
+        response.setExpert(expertDTO);
+      }
+
+      return ResponseEntity.ok(response);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -176,6 +196,36 @@ public class ClaimController {
       return ResponseEntity.ok(claim);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @GetMapping("/{claimId}/assignment-details")
+  public ResponseEntity<?> getAssignmentDetails(@PathVariable Long claimId) {
+    try {
+      Claim claim = claimService.getClaimById(claimId);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("claimId", claimId);
+      response.put("claimReference", claim.getReference());
+      response.put("status", claim.getStatus());
+
+      if (claim.getExpert() != null) {
+        Map<String, Object> expertMap = new HashMap<>();
+        expertMap.put("id", claim.getExpert().getId());
+        expertMap.put("name", claim.getExpert().getFirstName() + " " + claim.getExpert().getLastName());
+        expertMap.put("speciality", claim.getExpert().getSpeciality());
+        expertMap.put("performanceScore", claim.getExpert().getPerformanceScore());
+        response.put("assignedExpert", expertMap);
+        response.put("assignedDate", claim.getAssignedDate());
+      } else {
+        response.put("message", "Aucun expert assigné");
+        response.put("suggestion", "Utilisez POST /api/claims/" + claimId + "/auto-assign-expert");
+      }
+
+      return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
   }
 
@@ -275,11 +325,6 @@ public class ClaimController {
   @GetMapping("/statistics/by-region")
   public ResponseEntity<Map<String, Object>> getClaimsByRegion() {
     return ResponseEntity.ok(claimService.getClaimsByRegion());
-  }
-
-  @GetMapping("/high-urgency")
-  public ResponseEntity<List<Claim>> getHighUrgencyClaims() {
-    return ResponseEntity.ok(claimService.getHighUrgencyClaims());
   }
 
   @GetMapping("/count")

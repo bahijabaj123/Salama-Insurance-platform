@@ -1,5 +1,6 @@
 package org.example.salamainsurance.Entity.ClaimManagement;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.example.salamainsurance.Entity.ExpertManagement.ExpertiseReport;
 import org.example.salamainsurance.Entity.Report.Accident;
@@ -20,11 +21,15 @@ public class Claim {
   private String reference;
 
   @Enumerated(EnumType.STRING)
-  private ClaimStatus status = ClaimStatus.OPENED ;
+  private ClaimStatus status = ClaimStatus.OPENED;
 
   private LocalDateTime openingDate;
   private LocalDateTime closingDate;
   private LocalDateTime lastModifiedDate;
+
+  // NOUVEAU CHAMP AJOUTÉ
+  @Column(name = "assigned_date")
+  private LocalDateTime assignedDate;
 
   // Scoring
   private Integer urgencyScore;
@@ -32,11 +37,12 @@ public class Claim {
 
   @OneToOne
   @JoinColumn(name = "accident_id", unique = true)
-  private Accident accident;  // Le champ doit s'appeler "accident"
+  private Accident accident;
 
   // Expert assigned
   @ManyToOne
   @JoinColumn(name = "expert_id")
+  @JsonIgnoreProperties({"claims", "expertiseReports"})  // ← IGNORE CES CHAMPS
   private Expert expert;
 
   // Insurer who created/manages
@@ -56,7 +62,7 @@ public class Claim {
 
   // Action history
   @ElementCollection
-  @CollectionTable(name = "claim_actions", joinColumns = @JoinColumn(name = "claim_id"))  // Changez le nom
+  @CollectionTable(name = "claim_actions", joinColumns = @JoinColumn(name = "claim_id"))
   private List<String> actionHistory = new ArrayList<>();
 
   @PrePersist
@@ -89,22 +95,18 @@ public class Claim {
     if (accident != null) {
       int score = 0;
 
-      // Check if injuries (more urgent)
       if (accident.getInjuries() != null && accident.getInjuries()) {
         score += 30;
       }
 
-      // Check property damage
       if (accident.getPropertyDamage() != null && accident.getPropertyDamage()) {
         score += 20;
       }
 
-      // Photos count
       if (accident.getPhotos() != null) {
         score += accident.getPhotos().size() * 2;
       }
 
-      // Recent accident
       if (accident.getAccidentDate() != null) {
         long daysSinceAccident = java.time.Duration.between(
           accident.getAccidentDate().atStartOfDay(),
@@ -112,17 +114,16 @@ public class Claim {
         ).toDays();
 
         if (daysSinceAccident < 1) {
-          score += 25; // Today
+          score += 25;
         } else if (daysSinceAccident < 3) {
-          score += 15; // Within 3 days
+          score += 15;
         } else if (daysSinceAccident < 7) {
-          score += 5;  // Within a week
+          score += 5;
         }
       }
 
       this.urgencyScore = Math.min(score, 100);
 
-      // Determine severity level
       if (urgencyScore < 30) {
         this.severityLevel = "LOW";
       } else if (urgencyScore < 50) {
@@ -142,16 +143,8 @@ public class Claim {
     actionHistory.add(LocalDateTime.now() + " - " + action);
   }
 
-  /* Helper method to get driver's region from accident
-  public String getDriverRegion() {
-    if (accident != null && accident.getDrivers() != null) {
-      // Assuming first driver's region is used
-      return accident.getDrivers().getRegion();
-    }
-    return null;
-  }*/
+  // ========== GETTERS & SETTERS ==========
 
-  // Getters and Setters
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 
@@ -173,6 +166,13 @@ public class Claim {
   public LocalDateTime getLastModifiedDate() { return lastModifiedDate; }
   public void setLastModifiedDate(LocalDateTime lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
 
+  // ✅ NOUVEAU GETTER/SETTER
+  public LocalDateTime getAssignedDate() { return assignedDate; }
+  public void setAssignedDate(LocalDateTime assignedDate) {
+    this.assignedDate = assignedDate;
+    addAction("Expert assigned on: " + assignedDate);
+  }
+
   public Integer getUrgencyScore() { return urgencyScore; }
   public void setUrgencyScore(Integer urgencyScore) { this.urgencyScore = urgencyScore; }
 
@@ -188,7 +188,12 @@ public class Claim {
   }
 
   public Expert getExpert() { return expert; }
-  public void setExpert(Expert expert) { this.expert = expert; }
+  public void setExpert(Expert expert) {
+    this.expert = expert;
+    if (expert != null) {
+      this.assignedDate = LocalDateTime.now();
+    }
+  }
 
   public Insurer getInsurer() { return insurer; }
   public void setInsurer(Insurer insurer) { this.insurer = insurer; }
@@ -207,7 +212,6 @@ public class Claim {
   public List<String> getActionHistory() { return actionHistory; }
   public void setActionHistory(List<String> actionHistory) { this.actionHistory = actionHistory; }
 
-  // Helper method to get latest expertise report
   public ExpertiseReport getLatestExpertiseReport() {
     if (expertiseReports == null || expertiseReports.isEmpty()) {
       return null;

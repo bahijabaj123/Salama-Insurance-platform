@@ -1,8 +1,10 @@
 package org.example.salamainsurance.Service.ClaimManagement;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
 import org.example.salamainsurance.Entity.ExpertManagement.Expert;
+import org.example.salamainsurance.Entity.ExpertManagement.ExpertStatus;
 import org.example.salamainsurance.Entity.ClaimManagement.Insurer;
 import org.example.salamainsurance.Entity.Report.Accident;
 import org.example.salamainsurance.Exception.ResourceNotFoundException;
@@ -21,6 +23,7 @@ import java.util.*;
 
 @Service
 @Transactional
+@Slf4j
 public class ClaimServiceImpl implements ClaimService {
 
   @Autowired
@@ -41,27 +44,23 @@ public class ClaimServiceImpl implements ClaimService {
   @Autowired
   private NotificationService notificationService;
 
+  @Autowired
+  private IntelligentExpertAssignmentService intelligentAssignmentService;
+
   // ========== BASIC CRUD OPERATIONS ==========
 
   @Override
   public Claim createClaimFromAccident(Long accidentId, Long insurerId) {
-    // Find the accident
     Accident accident = accidentRepository.findById(accidentId)
       .orElseThrow(() -> new ResourceNotFoundException("Accident not found with id: " + accidentId));
 
-    // Check if accident already has a claim
     if (claimRepository.findByAccidentId(accidentId) != null) {
       throw new IllegalStateException("Accident already has a claim associated");
     }
 
-    // Handle insurer - if null or 0, find first available insurer
     Insurer insurer;
-
     if (insurerId == null || insurerId == 0) {
-      // Trouver le premier assureur disponible
       insurer = insurerRepository.findFirstByOrderByIdAsc();
-
-      // Si aucun assureur n'existe, en créer un par défaut
       if (insurer == null) {
         insurer = new Insurer();
         insurer.setEmail("system@salama.ma");
@@ -69,33 +68,25 @@ public class ClaimServiceImpl implements ClaimService {
         insurer.setLastName("Default");
         insurer.setRole("SYSTEM");
         insurer = insurerRepository.save(insurer);
-        System.out.println("✅ Default insurer created with ID: " + insurer.getId());
       }
     } else {
-      insurer = (Insurer) insurerRepository.findById(insurerId)
+      insurer = insurerRepository.findById(insurerId)
         .orElseThrow(() -> new ResourceNotFoundException("Insurer not found with id: " + insurerId));
     }
 
-    // Create new claim
     Claim claim = new Claim();
     claim.setAccident(accident);
     claim.setInsurer(insurer);
     claim.setStatus(ClaimStatus.OPENED);
     claim.setRegion(accident.getLocation());
 
-    // Calculate urgency score (décommentez si la méthode existe)
-    // claim.calculateUrgencyScore();
-
-    // Save claim
     Claim savedClaim = claimRepository.save(claim);
 
-    // Send notification
-    if (notificationService != null) {
-      notificationService.sendToInsurer(insurer, "New claim created: " + savedClaim.getReference());
-    }
-    // ✅ Étape 2: Maintenant mettre à jour l'accident avec le claim sauvegardé
     accident.setClaim(savedClaim);
-    accidentRepository.save(accident);  // Maintenant ça marche car savedClaim a un ID
+    accidentRepository.save(accident);
+
+    notificationService.sendToInsurer(insurer, "New claim created: " + savedClaim.getReference());
+
     return savedClaim;
   }
 
@@ -128,7 +119,6 @@ public class ClaimServiceImpl implements ClaimService {
   public Claim updateClaim(Long id, Claim claimDetails) {
     Claim claim = getClaimById(id);
 
-    // Update allowed fields
     if (claimDetails.getStatus() != null) {
       claim.setStatus(claimDetails.getStatus());
     }
@@ -141,11 +131,8 @@ public class ClaimServiceImpl implements ClaimService {
       claim.setExpert(claimDetails.getExpert());
     }
 
-    // Sync with accident if needed
     if (claim.getAccident() != null) {
-      // Accident might have been updated
       claim.setRegion(claim.getAccident().getLocation());
-      // claim.calculateUrgencyScore();
     }
 
     claim.addAction("Claim updated by insurer");
@@ -155,12 +142,6 @@ public class ClaimServiceImpl implements ClaimService {
   @Override
   public void deleteClaim(Long id) {
     Claim claim = getClaimById(id);
-
-    // Check if claim can be deleted
-    if (claim.getStatus() == ClaimStatus.WAITING_FOR_INFORMATION) {
-      throw new IllegalStateException("Cannot delete claim that is under expertise");
-    }
-
     claim.addAction("Claim deleted");
     claimRepository.delete(claim);
   }
@@ -179,37 +160,38 @@ public class ClaimServiceImpl implements ClaimService {
     Expert expert = expertRepository.findById(expertId)
       .orElseThrow(() -> new ResourceNotFoundException("Expert not found with id: " + expertId));
 
-    // Check expert availability
-    if (!expert.getAvailable()) {
-      throw new IllegalStateException("Expert is not available");
+    if (expert.getStatus() != ExpertStatus.AVAILABLE && expert.getStatus() != ExpertStatus.BUSY) {
+      throw new IllegalStateException("Expert is not available. Status: " + expert.getStatus());
     }
 
-    // Check if claim already has an expert
+    if (expert.getCurrentWorkload() >= expert.getMaxWorkload()) {
+      throw new IllegalStateException("Expert has reached maximum workload");
+    }
+
     if (claim.getExpert() != null) {
-      // Unassign previous expert
       Expert previousExpert = claim.getExpert();
-      previousExpert.setActiveClaims(previousExpert.getActiveClaims() - 1);
-      if (previousExpert.getActiveClaims() < 5) {
-        previousExpert.setAvailable(true);
+      previousExpert.setCurrentWorkload(Math.max(0, previousExpert.getCurrentWorkload() - 1));
+      if (previousExpert.getCurrentWorkload() < previousExpert.getMaxWorkload()) {
+        previousExpert.setStatus(ExpertStatus.AVAILABLE);
       }
       expertRepository.save(previousExpert);
     }
 
-    // Assign new expert
     claim.setExpert(expert);
-    claim.setStatus(ClaimStatus.WAITING_FOR_INFORMATION);
+    claim.setStatus(ClaimStatus.ASSIGNED_TO_EXPERT);
+    claim.setAssignedDate(LocalDateTime.now());
     claim.addAction("Assigned to expert: " + expert.getFirstName() + " " + expert.getLastName());
 
-    // Update expert's active claims
-    expert.setActiveClaims(expert.getActiveClaims() + 1);
-    if (expert.getActiveClaims() >= 5) {
-      expert.setAvailable(false);
+    expert.setCurrentWorkload(expert.getCurrentWorkload() + 1);
+    expert.setLastAssignmentDate(LocalDateTime.now());
+
+    if (expert.getCurrentWorkload() >= expert.getMaxWorkload()) {
+      expert.setStatus(ExpertStatus.BUSY);
     }
     expertRepository.save(expert);
 
     Claim savedClaim = claimRepository.save(claim);
 
-    // Send notifications
     notificationService.sendToExpert(expert,
       "You have been assigned to claim: " + claim.getReference() +
         " in region: " + claim.getRegion());
@@ -219,25 +201,38 @@ public class ClaimServiceImpl implements ClaimService {
 
   @Override
   public Claim autoAssignExpert(Long claimId) {
+    log.info("Demande d'auto-assignation intelligente pour le claim: {}", claimId);
+
     Claim claim = getClaimById(claimId);
 
     if (claim.getExpert() != null) {
       throw new IllegalStateException("Claim already has an expert assigned");
     }
 
-    // Get region from accident location
-    String region = claim.getRegion();
+    try {
+      ExpertAssignmentResult result = intelligentAssignmentService.assignBestExpert(claimId);
 
-    // Find best expert
-    Expert bestExpert = expertAssignmentService.findBestExpertForClaim(claim);
+      if (result.getAssignedExpertId() == null) {
+        claim.setNotes("No expert available for assignment. " + result.getAssignmentReason());
+        claim.addAction("Auto-assignment failed: No expert available");
+        return claimRepository.save(claim);
+      }
 
-    if (bestExpert == null) {
-      claim.setNotes("No expert available for assignment in region: " + region);
-      claim.addAction("Auto-assignment failed: No expert available");
+      log.info("Expert {} assigné automatiquement au claim {} avec un score de {}",
+        result.getAssignedExpertId(), claimId, result.getMatchScore());
+
+      claim = getClaimById(claimId);
+      claim.setNotes("Expert assigned automatically. Match score: " + result.getMatchScore() +
+        ". Reason: " + result.getAssignmentReason());
+
+      return claim;
+
+    } catch (Exception e) {
+      log.error("Erreur lors de l'auto-assignation pour le claim {}: {}", claimId, e.getMessage());
+      claim.setNotes("Auto-assignment failed: " + e.getMessage());
+      claim.addAction("Auto-assignment error");
       return claimRepository.save(claim);
     }
-
-    return assignExpertToClaim(claimId, bestExpert.getId());
   }
 
   @Override
@@ -250,17 +245,16 @@ public class ClaimServiceImpl implements ClaimService {
 
     Expert expert = claim.getExpert();
 
-    // Update expert
-    expert.setActiveClaims(expert.getActiveClaims() - 1);
-    if (expert.getActiveClaims() < 5) {
-      expert.setAvailable(true);
+    expert.setCurrentWorkload(Math.max(0, expert.getCurrentWorkload() - 1));
+    if (expert.getCurrentWorkload() < expert.getMaxWorkload()) {
+      expert.setStatus(ExpertStatus.AVAILABLE);
     }
     expertRepository.save(expert);
 
-    // Remove expert from claim
     claim.setExpert(null);
     claim.setStatus(ClaimStatus.OPENED);
-    claim.addAction("Expert unassigned");
+    claim.setAssignedDate(null);
+    claim.addAction("Expert unassigned: " + expert.getFirstName() + " " + expert.getLastName());
 
     return claimRepository.save(claim);
   }
@@ -291,12 +285,9 @@ public class ClaimServiceImpl implements ClaimService {
   @Override
   public Claim closeClaim(Long claimId) {
     Claim claim = getClaimById(claimId);
-
-    // Check if claim can be closed
     if (claim.getExpert() == null) {
       throw new IllegalStateException("Cannot close claim without expert assignment");
     }
-
     return updateClaimStatus(claimId, ClaimStatus.CLOSED);
   }
 
@@ -304,17 +295,15 @@ public class ClaimServiceImpl implements ClaimService {
   public Claim cancelClaim(Long claimId) {
     Claim claim = getClaimById(claimId);
 
-    // Check if claim can be cancelled
     if (claim.getStatus() == ClaimStatus.CLOSED) {
       throw new IllegalStateException("Cannot cancel a closed claim");
     }
 
-    // If expert was assigned, update expert's active claims
     if (claim.getExpert() != null) {
       Expert expert = claim.getExpert();
-      expert.setActiveClaims(expert.getActiveClaims() - 1);
-      if (expert.getActiveClaims() < 5) {
-        expert.setAvailable(true);
+      expert.setCurrentWorkload(Math.max(0, expert.getCurrentWorkload() - 1));
+      if (expert.getCurrentWorkload() < expert.getMaxWorkload()) {
+        expert.setStatus(ExpertStatus.AVAILABLE);
       }
       expertRepository.save(expert);
     }
@@ -359,23 +348,13 @@ public class ClaimServiceImpl implements ClaimService {
   public Map<String, Object> getClaimStatistics() {
     Map<String, Object> stats = new HashMap<>();
 
-    // Count by status
     stats.put("total", claimRepository.count());
     stats.put("open", claimRepository.countByStatus(ClaimStatus.OPENED));
-    stats.put("underExpertise", claimRepository.countByStatus(ClaimStatus.WAITING_FOR_INFORMATION));
-    stats.put("reportSubmitted", claimRepository.countByStatus(ClaimStatus.EXPERT_REPORT_SUBMITTED));
+    stats.put("assigned", claimRepository.countByStatus(ClaimStatus.ASSIGNED_TO_EXPERT));
     stats.put("closed", claimRepository.countByStatus(ClaimStatus.CLOSED));
     stats.put("cancelled", claimRepository.countByStatus(ClaimStatus.CANCELLED));
 
-    // Average urgency for last 30 days
-    LocalDateTime lastMonth = LocalDateTime.now().minusMonths(1);
-    stats.put("averageUrgency", claimRepository.averageUrgencyScore(lastMonth));
-
-    // By region
     stats.put("byRegion", getClaimsByRegion());
-
-    // High urgency claims
-    stats.put("highUrgencyCount", getHighUrgencyClaims().size());
 
     return stats;
   }
@@ -383,9 +362,8 @@ public class ClaimServiceImpl implements ClaimService {
   @Override
   public Map<String, Object> getClaimsByStatus() {
     Map<String, Object> statusMap = new LinkedHashMap<>();
-    statusMap.put("OPEN", claimRepository.countByStatus(ClaimStatus.OPENED));
-    statusMap.put("UNDER_EXPERTISE", claimRepository.countByStatus(ClaimStatus.ASSIGNED_TO_EXPERT));
-    statusMap.put("REPORT_SUBMITTED", claimRepository.countByStatus(ClaimStatus.EXPERT_REPORT_SUBMITTED));
+    statusMap.put("OPENED", claimRepository.countByStatus(ClaimStatus.OPENED));
+    statusMap.put("ASSIGNED_TO_EXPERT", claimRepository.countByStatus(ClaimStatus.ASSIGNED_TO_EXPERT));
     statusMap.put("CLOSED", claimRepository.countByStatus(ClaimStatus.CLOSED));
     statusMap.put("CANCELLED", claimRepository.countByStatus(ClaimStatus.CANCELLED));
     return statusMap;
@@ -403,9 +381,7 @@ public class ClaimServiceImpl implements ClaimService {
 
   @Override
   public List<Claim> getHighUrgencyClaims() {
-    return claimRepository.findAll().stream()
-      .filter(c -> c.getUrgencyScore() != null && c.getUrgencyScore() > 70)
-      .toList();
+    return new ArrayList<>();
   }
 
   @Override
@@ -422,7 +398,6 @@ public class ClaimServiceImpl implements ClaimService {
 
     if (accident != null) {
       claim.setRegion(accident.getLocation());
-      // claim.calculateUrgencyScore();
       claim.addAction("Synced with accident update");
     }
 
@@ -431,8 +406,6 @@ public class ClaimServiceImpl implements ClaimService {
 
   @Override
   public List<Claim> processNewValidAccidents() {
-    // Cette méthode nécessite d'être implémentée selon vos besoins
-    // Pour l'instant, retourne une liste vide
     return new ArrayList<>();
   }
 
@@ -446,7 +419,7 @@ public class ClaimServiceImpl implements ClaimService {
         Claim claim = createClaimFromAccident(accidentId, insurerId);
         createdClaims.add(claim);
       } catch (Exception e) {
-        System.err.println("Failed to create claim for accident: " + accidentId + " - " + e.getMessage());
+        log.error("Failed to create claim for accident: {}", accidentId, e);
       }
     }
     return createdClaims;
@@ -458,7 +431,7 @@ public class ClaimServiceImpl implements ClaimService {
       try {
         deleteClaim(claimId);
       } catch (Exception e) {
-        System.err.println("Failed to delete claim: " + claimId + " - " + e.getMessage());
+        log.error("Failed to delete claim: {}", claimId, e);
       }
     }
   }
@@ -469,17 +442,8 @@ public class ClaimServiceImpl implements ClaimService {
     if (current == ClaimStatus.CLOSED && next != ClaimStatus.CLOSED) {
       throw new IllegalStateException("Cannot reopen a closed claim");
     }
-
     if (current == ClaimStatus.CANCELLED) {
       throw new IllegalStateException("Cannot change status of a cancelled claim");
-    }
-
-    if (current == ClaimStatus.OPENED && next == ClaimStatus.EXPERT_REPORT_SUBMITTED) {
-      throw new IllegalStateException("Cannot go from OPEN to REPORT_SUBMITTED directly. Must go through UNDER_EXPERTISE");
-    }
-
-    if (current == ClaimStatus.WAITING_FOR_INFORMATION && next == ClaimStatus.OPENED) {
-      throw new IllegalStateException("Cannot go back to OPEN from UNDER_EXPERTISE");
     }
   }
 
@@ -488,11 +452,9 @@ public class ClaimServiceImpl implements ClaimService {
 
     Expert expert = claim.getExpert();
 
-    // Calculate processing time
     if (claim.getOpeningDate() != null && claim.getClosingDate() != null) {
       long hours = java.time.Duration.between(claim.getOpeningDate(), claim.getClosingDate()).toHours();
 
-      // Update average processing time
       if (expert.getAverageProcessingTime() == null) {
         expert.setAverageProcessingTime((double) hours);
       } else {
@@ -501,10 +463,9 @@ public class ClaimServiceImpl implements ClaimService {
       }
     }
 
-    // Update active claims count
-    expert.setActiveClaims(expert.getActiveClaims() - 1);
-    if (expert.getActiveClaims() < 5) {
-      expert.setAvailable(true);
+    expert.setCurrentWorkload(Math.max(0, expert.getCurrentWorkload() - 1));
+    if (expert.getCurrentWorkload() < expert.getMaxWorkload()) {
+      expert.setStatus(ExpertStatus.AVAILABLE);
     }
 
     expertRepository.save(expert);

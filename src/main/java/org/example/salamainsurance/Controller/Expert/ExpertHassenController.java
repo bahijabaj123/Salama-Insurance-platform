@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Controller.Expert;
+/*package org.example.salamainsurance.Controller.Expert;
 
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
 import org.example.salamainsurance.Service.Expert.ExpertHassenService;
@@ -46,3 +46,4 @@ public class ExpertHassenController {
         return ResponseEntity.noContent().build();
     }
 }
+*/

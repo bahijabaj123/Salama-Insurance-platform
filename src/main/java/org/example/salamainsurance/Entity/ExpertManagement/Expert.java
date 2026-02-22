@@ -1,5 +1,6 @@
 package org.example.salamainsurance.Entity.ExpertManagement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 
@@ -21,6 +22,10 @@ public class Expert {
   private String lastName;
   private String phoneNumber;
   private String region; // Région de couverture
+  private String speciality; // Spécialité (carrosserie, mécanique, vitrage, etc.)
+  @ElementCollection
+  private List<String> languages; // Langues parlées
+  private Integer yearsOfExperience;
 
   private Boolean available = true;
   private Integer performanceScore = 100;
@@ -28,10 +33,73 @@ public class Expert {
   private Double averageProcessingTime; // in hours
   private Double validationRate; // percentage
 
+  @Enumerated(EnumType.STRING)
+  private ExpertStatus status; // AVAILABLE, BUSY, UNAVAILABLE
+  private Integer currentWorkload; // Nombre de sinistres en cours
+  private Integer maxWorkload; // Capacité maximale
+  private LocalDateTime lastAssignmentDate;
+
+  public String getSpeciality() {
+    return speciality;
+  }
+
+  public void setSpeciality(String speciality) {
+    this.speciality = speciality;
+  }
+
+  public LocalDateTime getLastAssignmentDate() {
+    return lastAssignmentDate;
+  }
+
+  public void setLastAssignmentDate(LocalDateTime lastAssignmentDate) {
+    this.lastAssignmentDate = lastAssignmentDate;
+  }
+
+  public Integer getMaxWorkload() {
+    return maxWorkload;
+  }
+
+  public void setMaxWorkload(Integer maxWorkload) {
+    this.maxWorkload = maxWorkload;
+  }
+
+  public Integer getCurrentWorkload() {
+    return currentWorkload;
+  }
+
+  public void setCurrentWorkload(Integer currentWorkload) {
+    this.currentWorkload = currentWorkload;
+  }
+
+  public ExpertStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(ExpertStatus status) {
+    this.status = status;
+  }
+
+  public Integer getYearsOfExperience() {
+    return yearsOfExperience;
+  }
+
+  public void setYearsOfExperience(Integer yearsOfExperience) {
+    this.yearsOfExperience = yearsOfExperience;
+  }
+
+  public List<String> getLanguages() {
+    return languages;
+  }
+
+  public void setLanguages(List<String> languages) {
+    this.languages = languages;
+  }
+
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
   @OneToMany(mappedBy = "expert")
+  @JsonIgnore
   private List<Claim> claims;
 
   @PrePersist
