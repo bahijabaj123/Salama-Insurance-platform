@@ -12,6 +12,7 @@ import org.example.salamainsurance.Repository.ClaimManagement.ClaimRepository;
 import org.example.salamainsurance.Repository.ExpertRepo.ExpertRepository;
 import org.example.salamainsurance.Repository.ClaimManagement.InsurerRepository;
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
+import org.example.salamainsurance.Service.Notification.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

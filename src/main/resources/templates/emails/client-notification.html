@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Mise à jour sinistre - Salama Insurance</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .content {
+      padding: 30px;
+    }
+    .status-box {
+      text-align: center;
+      padding: 20px;
+      margin: 20px 0;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+    .status {
+      font-size: 24px;
+      font-weight: bold;
+      color: #28a745;
+    }
+    .footer {
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Salama Insurance</h1>
+  </div>
+  <div class="content">
+    <h2 th:text="'Bonjour ' + ${clientName}">Bonjour Client</h2>
+    <div class="status-box">
+      <div class="status" th:text="${status}">EN COURS</div>
+      <p th:text="${message}">Votre dossier a été mis à jour</p>
+    </div>
+    <p><strong>Référence :</strong> <span th:text="${claimReference}">CLM-2024-001</span></p>
+  </div>
+  <div class="footer">
+    <p>Salama Insurance - Votre assureur de confiance</p>
+  </div>
+</div>
+</body>
+</html>

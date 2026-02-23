@@ -58,4 +58,15 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
   // Find claims with no expert assigned
   List<Claim> findByExpertIsNullAndStatus(ClaimStatus status);
+
+  //Partie notification plannification
+  // Pour les rappels
+  List<Claim> findByStatusAndAssignedDateBefore(ClaimStatus status, LocalDateTime date);
+
+  // Pour les sinistres urgents
+  List<Claim> findByUrgencyScoreGreaterThan(int score);
+
+  // Pour les statistiques hebdomadaires
+  long countByOpeningDateAfter(LocalDateTime date);
+  long countByClosingDateAfter(LocalDateTime date);
 }

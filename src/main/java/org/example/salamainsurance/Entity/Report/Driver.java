@@ -31,6 +31,7 @@ public class Driver {
   @JoinColumn(name = "accident_id")
   @JsonBackReference
   private Accident accident;
+  private String email;
 
   // --- Getters & Setters ---
 
@@ -141,5 +142,13 @@ public class Driver {
   //ajout bahija
   public String getRegion() {
     return "";
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
   }
 }

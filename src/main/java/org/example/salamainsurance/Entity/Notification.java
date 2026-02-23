@@ -1,4 +1,5 @@
-package org.example.salamainsurance.Entity;
+/*package org.example.salamainsurance.Entity;
 
 public class Notification {
 }
+*/

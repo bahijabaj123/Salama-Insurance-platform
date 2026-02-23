@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nouvelle assignation - Salama Insurance</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 300;
+    }
+    .header h1 span {
+      font-weight: 700;
+      display: block;
+      font-size: 32px;
+      margin-top: 10px;
+    }
+    .content {
+      padding: 30px;
+      background: white;
+    }
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #0056b3;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .info-box p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .info-box strong {
+      color: #0056b3;
+      min-width: 120px;
+      display: inline-block;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background: #0056b3;
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: 600;
+      margin: 20px 0;
+      transition: background 0.3s;
+    }
+    .button:hover {
+      background: #003d82;
+    }
+    .footer {
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+    .badge {
+      display: inline-block;
+      padding: 5px 15px;
+      background: #28a745;
+      color: white;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .urgency-high {
+      background: #dc3545;
+    }
+    .urgency-medium {
+      background: #ffc107;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Salama Insurance</h1>
+    <h1><span>Nouvelle Mission d'Expertise</span></h1>
+  </div>
+
+  <div class="content">
+    <h2>Bonjour <span th:text="${expertName}">Expert Dupont</span>,</h2>
+
+    <p>Un nouveau sinistre vous a été assigné. Veuillez trouver ci-dessous les détails de la mission :</p>
+
+    <div class="info-box">
+      <p><strong>Référence :</strong> <span th:text="${claimReference}">CLM-2024-001</span></p>
+      <p><strong>Région :</strong> <span th:text="${region}">Casablanca</span></p>
+      <p><strong>Type de dommage :</strong> <span th:text="${damageType}">Carrosserie</span></p>
+      <p><strong>Date d'assignation :</strong> <span th:text="${assignmentDate}">23/02/2026</span></p>
+      <p><strong>Urgence :</strong>
+        <span class="badge" th:classappend="${urgencyLevel == 'HIGH' ? 'urgency-high' : (urgencyLevel == 'MEDIUM' ? 'urgency-medium' : '')}"
+              th:text="${urgencyLevel}">NORMALE</span>
+      </p>
+    </div>
+
+    <h3>Détails du sinistre :</h3>
+    <div class="info-box">
+      <p><strong>Lieu :</strong> <span th:text="${accidentLocation}">Bd Mohammed V</span></p>
+      <p><strong>Date de l'accident :</strong> <span th:text="${accidentDate}">22/02/2026</span></p>
+      <p><strong>Description :</strong> <span th:text="${damageDescription}">Pare-chocs avant enfoncé</span></p>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="#" class="button" th:href="${dashboardLink}">Accéder au dossier</a>
+    </div>
+
+    <p style="margin-top: 30px; font-style: italic; color: #666;">
+      Veuillez prendre contact avec le client dans les plus brefs délais pour planifier l'expertise.
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>Cet email a été envoyé automatiquement par le système Salama Insurance.</p>
+    <p>Merci de ne pas répondre à cet email. Pour toute question, contactez votre gestionnaire.</p>
+    <p>&copy; 2026 Salama Insurance. Tous droits réservés.</p>
+  </div>
+</div>
+</body>
+</html>
