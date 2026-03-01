@@ -5,6 +5,8 @@ import org.example.salamainsurance.Entity.RepairShopLinda;
 import org.example.salamainsurance.Service.RepairShopLindaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -19,7 +21,7 @@ public class RepairShopLindaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RepairShopLinda create(@RequestBody RepairShopLindaRequest request) {
+    public RepairShopLinda create(@Valid @RequestBody RepairShopLindaRequest request) {
         return service.create(request);
     }
 
@@ -35,7 +37,7 @@ public class RepairShopLindaController {
 
     @PutMapping("/{id}")
     public RepairShopLinda update(@PathVariable Long id,
-                                  @RequestBody RepairShopLindaRequest request) {
+                                  @Valid @RequestBody RepairShopLindaRequest request) {
         return service.update(id, request);
     }
 
