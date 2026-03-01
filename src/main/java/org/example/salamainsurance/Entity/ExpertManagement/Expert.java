@@ -17,6 +17,7 @@ public class Expert {
 
   @Column(unique = true, nullable = false)
   private String email;
+  private Integer currentWorkload = 0;
 
   private String firstName;
   private String lastName;
@@ -35,7 +36,6 @@ public class Expert {
 
   @Enumerated(EnumType.STRING)
   private ExpertStatus status; // AVAILABLE, BUSY, UNAVAILABLE
-  private Integer currentWorkload; // Nombre de sinistres en cours
   private Integer maxWorkload; // Capacité maximale
   private LocalDateTime lastAssignmentDate;
 
