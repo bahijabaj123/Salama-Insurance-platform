@@ -69,4 +69,15 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
   // Pour les statistiques hebdomadaires
   long countByOpeningDateAfter(LocalDateTime date);
   long countByClosingDateAfter(LocalDateTime date);
+
+  long countByClientId(Long clientId);
+
+  // pour la detection des patterns
+  // Trouver les sinistres après une date
+  List<Claim> findByOpeningDateAfter(LocalDateTime date);
+
+  //  OU avec @Query (plus explicite)
+  @Query("SELECT c FROM Claim c WHERE c.openingDate > :date")
+  List<Claim> findClaimsAfterDate(@Param("date") LocalDateTime date);
+
 }

@@ -1,5 +1,6 @@
 package org.example.salamainsurance.Entity.ClaimManagement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.example.salamainsurance.Entity.ExpertManagement.ExpertiseReport;
@@ -42,16 +43,19 @@ public class Claim {
   // Expert assigned
   @ManyToOne
   @JoinColumn(name = "expert_id")
+  @JsonIgnore
   @JsonIgnoreProperties({"claims", "expertiseReports"})  // ← IGNORE CES CHAMPS
   private Expert expert;
 
   // Insurer who created/manages
   @ManyToOne
   @JoinColumn(name = "insurer_id")
+  @JsonIgnore  // ← AJOUTE CECI
   private Insurer insurer;
 
   // Expertise reports
   @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL)
+  @JsonIgnore
   private List<ExpertiseReport> expertiseReports = new ArrayList<>();
 
   // Region extracted from accident location
@@ -145,41 +149,85 @@ public class Claim {
 
   // ========== GETTERS & SETTERS ==========
 
-  public Long getId() { return id; }
-  public void setId(Long id) { this.id = id; }
+  public Long getId() {
+    return id;
+  }
 
-  public String getReference() { return reference; }
-  public void setReference(String reference) { this.reference = reference; }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-  public ClaimStatus getStatus() { return status; }
+  public String getReference() {
+    return reference;
+  }
+
+  public void setReference(String reference) {
+    this.reference = reference;
+  }
+
+  public ClaimStatus getStatus() {
+    return status;
+  }
+
   public void setStatus(ClaimStatus status) {
     this.status = status;
     addAction("Status changed to: " + status);
   }
 
-  public LocalDateTime getOpeningDate() { return openingDate; }
-  public void setOpeningDate(LocalDateTime openingDate) { this.openingDate = openingDate; }
+  public LocalDateTime getOpeningDate() {
+    return openingDate;
+  }
 
-  public LocalDateTime getClosingDate() { return closingDate; }
-  public void setClosingDate(LocalDateTime closingDate) { this.closingDate = closingDate; }
+  public void setOpeningDate(LocalDateTime openingDate) {
+    this.openingDate = openingDate;
+  }
 
-  public LocalDateTime getLastModifiedDate() { return lastModifiedDate; }
-  public void setLastModifiedDate(LocalDateTime lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
+  public LocalDateTime getClosingDate() {
+    return closingDate;
+  }
+
+  public void setClosingDate(LocalDateTime closingDate) {
+    this.closingDate = closingDate;
+  }
+
+  public LocalDateTime getLastModifiedDate() {
+    return lastModifiedDate;
+  }
+
+  public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+    this.lastModifiedDate = lastModifiedDate;
+  }
 
   // ✅ NOUVEAU GETTER/SETTER
-  public LocalDateTime getAssignedDate() { return assignedDate; }
+  public LocalDateTime getAssignedDate() {
+    return assignedDate;
+  }
+
   public void setAssignedDate(LocalDateTime assignedDate) {
     this.assignedDate = assignedDate;
     addAction("Expert assigned on: " + assignedDate);
   }
 
-  public Integer getUrgencyScore() { return urgencyScore; }
-  public void setUrgencyScore(Integer urgencyScore) { this.urgencyScore = urgencyScore; }
+  public Integer getUrgencyScore() {
+    return urgencyScore;
+  }
 
-  public String getSeverityLevel() { return severityLevel; }
-  public void setSeverityLevel(String severityLevel) { this.severityLevel = severityLevel; }
+  public void setUrgencyScore(Integer urgencyScore) {
+    this.urgencyScore = urgencyScore;
+  }
 
-  public Accident getAccident() { return accident; }
+  public String getSeverityLevel() {
+    return severityLevel;
+  }
+
+  public void setSeverityLevel(String severityLevel) {
+    this.severityLevel = severityLevel;
+  }
+
+  public Accident getAccident() {
+    return accident;
+  }
+
   public void setAccident(Accident accident) {
     this.accident = accident;
     if (accident != null) {
@@ -187,7 +235,10 @@ public class Claim {
     }
   }
 
-  public Expert getExpert() { return expert; }
+  public Expert getExpert() {
+    return expert;
+  }
+
   public void setExpert(Expert expert) {
     this.expert = expert;
     if (expert != null) {
@@ -195,27 +246,58 @@ public class Claim {
     }
   }
 
-  public Insurer getInsurer() { return insurer; }
-  public void setInsurer(Insurer insurer) { this.insurer = insurer; }
+  public Insurer getInsurer() {
+    return insurer;
+  }
 
-  public List<ExpertiseReport> getExpertiseReports() { return expertiseReports; }
+  public void setInsurer(Insurer insurer) {
+    this.insurer = insurer;
+  }
+
+  public List<ExpertiseReport> getExpertiseReports() {
+    return expertiseReports;
+  }
+
   public void setExpertiseReports(List<ExpertiseReport> expertiseReports) {
     this.expertiseReports = expertiseReports;
   }
 
-  public String getRegion() { return region; }
-  public void setRegion(String region) { this.region = region; }
+  public String getRegion() {
+    return region;
+  }
 
-  public String getNotes() { return notes; }
-  public void setNotes(String notes) { this.notes = notes; }
+  public void setRegion(String region) {
+    this.region = region;
+  }
 
-  public List<String> getActionHistory() { return actionHistory; }
-  public void setActionHistory(List<String> actionHistory) { this.actionHistory = actionHistory; }
+  public String getNotes() {
+    return notes;
+  }
+
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
+
+  public List<String> getActionHistory() {
+    return actionHistory;
+  }
+
+  public void setActionHistory(List<String> actionHistory) {
+    this.actionHistory = actionHistory;
+  }
 
   public ExpertiseReport getLatestExpertiseReport() {
     if (expertiseReports == null || expertiseReports.isEmpty()) {
       return null;
     }
     return expertiseReports.get(expertiseReports.size() - 1);
+  }
+
+  public int getEstimatedAmount() {
+    return 0;
+  }
+
+  public Claim getClient() {
+    return null;
   }
 }

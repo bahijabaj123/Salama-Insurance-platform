@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ExpertManagement.Expert;
+import org.example.salamainsurance.Entity.Fraud.FraudRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -103,4 +106,44 @@ public class EnhancedEmailService {
       log.error("❌ Erreur envoi email client: {}", e.getMessage());
     }
   }
+
+  public void sendFraudAlertEmail(String to, String riskLevel,
+                                  String claimRef, int score,
+                                  List<FraudRule> rules, String region) {
+    try {
+      MimeMessage message = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+      Context context = new Context();
+      context.setVariable("riskLevel", riskLevel);
+      context.setVariable("claimReference", claimRef);
+      context.setVariable("fraudScore", score);
+      context.setVariable("analysisDate",
+        LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+      context.setVariable("region", region);
+      context.setVariable("triggeredRules", rules);
+      context.setVariable("dashboardLink", "http://localhost:8082/fraud/" + claimRef);
+      context.setVariable("actionRequired",
+        "HIGH".equals(riskLevel) ? "BLOQUER" : "VÉRIFIER");
+
+      String template = "fraud-" + riskLevel.toLowerCase();
+      String htmlContent = templateEngine.process("emails/" + template, context);
+
+      String subject = riskLevel.equals("HIGH") ? "🔴 ALERTE FRAUDE CRITIQUE" :
+        riskLevel.equals("MEDIUM") ? "🟠 RISQUE MOYEN DE FRAUDE" :
+          "✅ Analyse de sinistre";
+
+      helper.setFrom(fromEmail);
+      helper.setTo(to);
+      helper.setSubject(subject + " - " + claimRef);
+      helper.setText(htmlContent, true);
+
+      mailSender.send(message);
+      log.info("✅ Email alerte fraude envoyé à {} pour sinistre {}", to, claimRef);
+
+    } catch (Exception e) {
+      log.error("❌ Erreur envoi email alerte: {}", e.getMessage());
+    }
+  }
+
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "drivers")
 public class Driver {
@@ -26,6 +28,9 @@ public class Driver {
   private String licensePlate; // Immatriculation
   private String carMake; // MarqueVoiture
   private String signature;
+
+  @Column(name = "date_of_birth")
+  private LocalDate dateOfBirth;
 
   @ManyToOne
   @JoinColumn(name = "accident_id")
@@ -150,5 +155,13 @@ public class Driver {
 
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  public LocalDate getDateOfBirth() {
+    return dateOfBirth;
+  }
+
+  public void setDateOfBirth(LocalDate dateOfBirth) {
+    this.dateOfBirth = dateOfBirth;
   }
 }

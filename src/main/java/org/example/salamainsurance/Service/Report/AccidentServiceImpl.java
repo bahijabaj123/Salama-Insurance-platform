@@ -19,7 +19,7 @@ public class AccidentServiceImpl implements AccidentService {
   @Override
   @Transactional
   public Accident saveAccident(Accident accident) {
-    // ✅ CORRECTION: La méthode getDrivers() doit retourner une List<Driver>
+    // La méthode getDrivers() doit retourner une List<Driver>
     if (accident.getDrivers() != null) {
       for (Driver driver : accident.getDrivers()) {  // Maintenant ça fonctionne
         driver.setAccident(accident);

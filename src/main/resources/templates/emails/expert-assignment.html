@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nouvelle assignation - Salama Insurance</title>
+  <title>New Assignment - Salama Insurance</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -102,45 +102,45 @@
 <div class="container">
   <div class="header">
     <h1>Salama Insurance</h1>
-    <h1><span>Nouvelle Mission d'Expertise</span></h1>
+    <h1><span>New Expertise Mission</span></h1>
   </div>
 
   <div class="content">
-    <h2>Bonjour <span th:text="${expertName}">Expert Dupont</span>,</h2>
+    <h2>Hello <span th:text="${expertName}">Expert Dupont</span>,</h2>
 
-    <p>Un nouveau sinistre vous a été assigné. Veuillez trouver ci-dessous les détails de la mission :</p>
+    <p>A new claim has been assigned to you. Please find below the mission details:</p>
 
     <div class="info-box">
-      <p><strong>Référence :</strong> <span th:text="${claimReference}">CLM-2024-001</span></p>
-      <p><strong>Région :</strong> <span th:text="${region}">Casablanca</span></p>
-      <p><strong>Type de dommage :</strong> <span th:text="${damageType}">Carrosserie</span></p>
-      <p><strong>Date d'assignation :</strong> <span th:text="${assignmentDate}">23/02/2026</span></p>
-      <p><strong>Urgence :</strong>
+      <p><strong>Reference:</strong> <span th:text="${claimReference}">CLM-2024-001</span></p>
+      <p><strong>Region:</strong> <span th:text="${region}">Casablanca</span></p>
+      <p><strong>Damage Type:</strong> <span th:text="${damageType}">Bodywork</span></p>
+      <p><strong>Assignment Date:</strong> <span th:text="${assignmentDate}">23/02/2026</span></p>
+      <p><strong>Urgency:</strong>
         <span class="badge" th:classappend="${urgencyLevel == 'HIGH' ? 'urgency-high' : (urgencyLevel == 'MEDIUM' ? 'urgency-medium' : '')}"
-              th:text="${urgencyLevel}">NORMALE</span>
+              th:text="${urgencyLevel}">NORMAL</span>
       </p>
     </div>
 
-    <h3>Détails du sinistre :</h3>
+    <h3>Claim Details:</h3>
     <div class="info-box">
-      <p><strong>Lieu :</strong> <span th:text="${accidentLocation}">Bd Mohammed V</span></p>
-      <p><strong>Date de l'accident :</strong> <span th:text="${accidentDate}">22/02/2026</span></p>
-      <p><strong>Description :</strong> <span th:text="${damageDescription}">Pare-chocs avant enfoncé</span></p>
+      <p><strong>Location:</strong> <span th:text="${accidentLocation}">Bd Mohammed V</span></p>
+      <p><strong>Accident Date:</strong> <span th:text="${accidentDate}">22/02/2026</span></p>
+      <p><strong>Description:</strong> <span th:text="${damageDescription}">Front bumper damaged</span></p>
     </div>
 
     <div style="text-align: center;">
-      <a href="#" class="button" th:href="${dashboardLink}">Accéder au dossier</a>
+      <a href="#" class="button" th:href="${dashboardLink}">Access File</a>
     </div>
 
     <p style="margin-top: 30px; font-style: italic; color: #666;">
-      Veuillez prendre contact avec le client dans les plus brefs délais pour planifier l'expertise.
+      Please contact the client as soon as possible to schedule the expertise.
     </p>
   </div>
 
   <div class="footer">
-    <p>Cet email a été envoyé automatiquement par le système Salama Insurance.</p>
-    <p>Merci de ne pas répondre à cet email. Pour toute question, contactez votre gestionnaire.</p>
-    <p>&copy; 2026 Salama Insurance. Tous droits réservés.</p>
+    <p>This email was sent automatically by the Salama Insurance system.</p>
+    <p>Please do not reply to this email. For any questions, contact your manager.</p>
+    <p>&copy; 2026 Salama Insurance. All rights reserved.</p>
   </div>
 </div>
 </body>
