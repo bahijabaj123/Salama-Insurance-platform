@@ -2,6 +2,7 @@ package org.example.salamainsurance.Controller;
 
 import org.example.salamainsurance.Entity.ComplaintSarra;
 import org.example.salamainsurance.Service.ComplaintSarraService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,13 +12,17 @@ import java.util.List;
 @RequestMapping("/api/complaints")
 
 public class ComplaintController {
-
+@Autowired
     private final ComplaintSarraService complaintSarraService;
 
     public ComplaintController(ComplaintSarraService complaintSarraService) {
         this.complaintSarraService = complaintSarraService;
     }
+    @PostMapping("/test-ai")
+    public ComplaintSarra testAi(@RequestBody String text) {
 
+        return complaintSarraService.CreateComplaint(text);
+    }
     @PostMapping("/add")
     public ComplaintSarra create(@RequestBody ComplaintSarra complaint) {
         return complaintSarraService.createComplaint(complaint);

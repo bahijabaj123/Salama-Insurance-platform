@@ -1,5 +1,8 @@
 package org.example.salamainsurance.Service;
 
+import jakarta.annotation.PostConstruct;
+import org.example.salamainsurance.Ai.DataLoader;
+import org.example.salamainsurance.Ai.NaiveBayesClassifier;
 import org.example.salamainsurance.Entity.ComplaintSarra;
 import org.example.salamainsurance.Entity.IndemnitySarra;
 import org.example.salamainsurance.Repository.ComplaintRepository;
@@ -13,6 +16,7 @@ import java.util.List;
 public class ComplaintSarraService implements IComplaintSarraService {
     @Autowired
     private ComplaintRepository complaintRepository;
+    private final NaiveBayesClassifier classifier = new NaiveBayesClassifier();
     @Autowired
     private IndemnityRepository indemnityRepository;
     @Override
@@ -48,6 +52,41 @@ public class ComplaintSarraService implements IComplaintSarraService {
     public void deleteComplaint(Long id) {
         complaintRepository.deleteById(id);
     }
+<<<<<<< HEAD
 
 
 }
+=======
+    @PostConstruct
+    public void initAi() {
+        try {
+            DataLoader loader = new DataLoader();
+            // Chemin vers ton fichier de données
+            String csvPath = "src/main/resources/data/complaint_dataset.csv";
+
+            List<String[]> trainingData = loader.loadClaims(csvPath);
+            classifier.train(trainingData);
+
+            System.out.println("🚀 IA Salama Insurance prête à l'emploi !");
+        } catch (Exception e) {
+            System.err.println("⚠️ Erreur lors de l'initialisation de l'IA : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Reçoit une réclamation, l'analyse avec l'IA, et la sauvegarde.
+     */
+    public ComplaintSarra CreateComplaint(String description) {
+        ComplaintSarra complaint = new ComplaintSarra();
+        complaint.setDescription(description);
+
+
+        String result = classifier.predict(description);
+        complaint.setDetectedSentiment(result);
+
+        return complaintRepository.save(complaint);
+    }
+
+}
+
+>>>>>>> feature-complaint-sarra

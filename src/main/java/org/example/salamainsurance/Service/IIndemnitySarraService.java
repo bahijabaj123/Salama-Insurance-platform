@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IIndemnitySarraService  {
-    IndemnitySarra calculateAndSave(Double grossAmount, Integer responsibility, Double fixedDeductible);
+
 
     List<IndemnitySarra> getAll();
 
     Optional<IndemnitySarra> getById(Long id);
 
     void delete(Long id);
+    IndemnitySarra calculateAdvancedPayout(Long id, Double marketValueAtExpertise, Double insuredValueInContract);
+    IndemnitySarra saveInitialData(Double gross, Integer resp, Double deductible);
 }
 

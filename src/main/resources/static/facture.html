@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Générateur de Facture Salama</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; border: 1px solid #ccc; padding: 10px; }
+        button { background-color: #2c3e50; color: white; padding: 10px 20px; border: none; cursor: pointer; width: 100%; }
+        #factureDisplay {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            background: #222;
+            color: #2ecc71;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            border-left: 5px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Analyse Sinistre & Facturation</h2>
+    <p>Entrez la description du sinistre :</p>
+    <textarea id="factureInput" placeholder="Ex: Ma voiture est totalement détruite, je suis très en colère..."></textarea>
+    <button onclick="getFacture()">Générer la Facture</button>
+
+    <div id="factureDisplay"></div>
+</div>
+
+<script>
+    async function getFacture() {
+        const textInput = document.getElementById('factureInput').value;
+        const display = document.getElementById('factureDisplay');
+
+        if(!textInput) { alert("Veuillez saisir un texte !"); return; }
+
+        try {
+            console.log("Envoi de la requête vers le backend...");
+            const response = await fetch('http://localhost:8082/api/indemnities/tester-facture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: textInput
+            });
+
+            if (response.status === 403 || response.status === 401) {
+                alert("Erreur Sécurité (403/401) : Spring Security bloque l'accès. Vérifie ton SecurityConfig !");
+                return;
+            }
+
+            const data = await response.text();
+            console.log("Données reçues :", data);
+
+            display.innerText = data;
+            display.style.display = 'block';
+
+        } catch (error) {
+            console.error("Erreur complète :", error);
+            alert("Erreur de connexion : Vérifie que ton projet IntelliJ tourne bien sur le port 8082.");
+        }
+    }
+</script>
+
+</body>
+</html>

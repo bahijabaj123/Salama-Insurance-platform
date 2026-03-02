@@ -3,7 +3,7 @@ package org.example.salamainsurance.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,4 +28,6 @@ public class ComplaintSarra {
         this.createdAt = LocalDateTime.now();
         this.status = ComplaintStatus.PENDING;
     }
+    private String sentiment; // Ajoutez cette ligne
+
 }
