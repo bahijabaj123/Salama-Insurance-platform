@@ -24,6 +24,27 @@ public class ComplaintController {
       return ResponseEntity.ok(complaint);
     } catch (Exception e) {
       return ResponseEntity.badRequest().build();
+@Autowired
+    private final ComplaintSarraService complaintSarraService;
+
+    public ComplaintController(ComplaintSarraService complaintSarraService) {
+        this.complaintSarraService = complaintSarraService;
+    }
+    @PostMapping("/test-ai")
+    public ComplaintSarra testAi(@RequestBody String text) {
+
+        return complaintSarraService.CreateComplaint(text);
+    }
+    @PostMapping("/add")
+    public ComplaintSarra create(@RequestBody ComplaintSarra complaint) {
+        return complaintSarraService.createComplaint(complaint);
+    }
+    @PostMapping("/add/indemnity/{indemnityId}")
+    public ResponseEntity<ComplaintSarra> createWithIndemnity(
+            @RequestBody ComplaintSarra complaint,
+            @PathVariable Long indemnityId) {
+        ComplaintSarra savedComplaint = complaintSarraService.createAndLinkToIndemnity(complaint, indemnityId);
+        return ResponseEntity.ok(savedComplaint);
     }
   }
 

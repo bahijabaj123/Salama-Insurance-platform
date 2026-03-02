@@ -13,6 +13,20 @@ import java.util.Optional;
 
 @Service
 public class ComplaintSarraService {
+public class ComplaintSarraService implements IComplaintSarraService {
+    @Autowired
+    private ComplaintRepository complaintRepository;
+    private final NaiveBayesClassifier classifier = new NaiveBayesClassifier();
+    @Autowired
+    private IndemnityRepository indemnityRepository;
+    @Override
+    public ComplaintSarra createComplaint(ComplaintSarra complaint) {
+        return complaintRepository.save(complaint);
+    }
+    public ComplaintSarra createAndLinkToIndemnity(ComplaintSarra complaint, Long indemnityId) {
+        IndemnitySarra indemnity = indemnityRepository.findById(indemnityId)
+                .orElseThrow(() -> new RuntimeException("Indemnité non trouvée avec l'ID : " + indemnityId));
+
 
   @Autowired
   private ComplaintRepository complaintRepository;
@@ -31,6 +45,7 @@ public class ComplaintSarraService {
     } catch (Exception e) {
       System.err.println(" Erreur initialisation IA : " + e.getMessage());
     }
+
   }
 
   // Création simple avec analyse IA
@@ -60,6 +75,8 @@ public class ComplaintSarraService {
       return complaintRepository.save(c);
     }).orElse(null);
   }
+=======
+
 
   // DELETE
   public void deleteComplaint(Long id) {
@@ -70,3 +87,36 @@ public class ComplaintSarraService {
     return complaintRepository.findAll();
   }
 }
+    @PostConstruct
+    public void initAi() {
+        try {
+            DataLoader loader = new DataLoader();
+            // Chemin vers ton fichier de données
+            String csvPath = "src/main/resources/data/complaint_dataset.csv";
+
+            List<String[]> trainingData = loader.loadClaims(csvPath);
+            classifier.train(trainingData);
+
+            System.out.println("🚀 IA Salama Insurance prête à l'emploi !");
+        } catch (Exception e) {
+            System.err.println("⚠️ Erreur lors de l'initialisation de l'IA : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Reçoit une réclamation, l'analyse avec l'IA, et la sauvegarde.
+     */
+    public ComplaintSarra CreateComplaint(String description) {
+        ComplaintSarra complaint = new ComplaintSarra();
+        complaint.setDescription(description);
+
+
+        String result = classifier.predict(description);
+        complaint.setDetectedSentiment(result);
+
+        return complaintRepository.save(complaint);
+    }
+
+}
+
+

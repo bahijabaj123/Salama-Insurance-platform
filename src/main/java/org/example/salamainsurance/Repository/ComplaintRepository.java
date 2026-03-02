@@ -7,10 +7,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 
 public interface ComplaintRepository extends JpaRepository<ComplaintSarra,Long> {
 
+<<<<<<< HEAD
     List<ComplaintSarra> findByIndemnity_IdIndemnity(Long id);
+=======
+    List<ComplaintSarra> findByIndemnityIdIndemnity(Long id);
+>>>>>>> feature-complaint-sarra
 
     List<ComplaintSarra> findByDetectedSentiment(String sentiment);
 

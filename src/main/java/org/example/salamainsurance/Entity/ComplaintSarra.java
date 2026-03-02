@@ -3,6 +3,7 @@ package org.example.salamainsurance.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -93,4 +94,6 @@ public class ComplaintSarra {
   }
 
   private String sentiment;
+    private String sentiment; // Ajoutez cette ligne
+
 }
