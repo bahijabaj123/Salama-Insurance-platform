@@ -1,8 +1,10 @@
 package org.example.salamainsurance.Service;
 
+import org.example.salamainsurance.DTO.RegisterRequest;
 import org.example.salamainsurance.DTO.UserCreateRequest;
 import org.example.salamainsurance.DTO.UserResponse;
 import org.example.salamainsurance.DTO.UserUpdateRequest;
+import org.example.salamainsurance.Entity.RoleName;
 import org.example.salamainsurance.Entity.User;
 import org.example.salamainsurance.Exception.DuplicateResourceException;
 import org.example.salamainsurance.Exception.ResourceNotFoundException;
@@ -23,6 +25,26 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    @Transactional
+    public UserResponse register(RegisterRequest req) {
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new DuplicateResourceException("Email already exists");
+        }
+
+        User user = User.builder()
+                .email(req.getEmail())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .fullName(req.getFullName())
+                .role(RoleName.CLIENT)
+                .enabled(false)
+                .locked(false)
+                .build();
+
+        User savedUser = userRepository.save(user);
+        return mapToResponse(savedUser);
     }
 
     @Override

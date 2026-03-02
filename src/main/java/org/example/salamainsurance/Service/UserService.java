@@ -1,5 +1,6 @@
 package org.example.salamainsurance.Service;
 
+import org.example.salamainsurance.DTO.RegisterRequest;
 import org.example.salamainsurance.DTO.UserCreateRequest;
 import org.example.salamainsurance.DTO.UserResponse;
 import org.example.salamainsurance.DTO.UserUpdateRequest;
@@ -7,6 +8,8 @@ import org.example.salamainsurance.DTO.UserUpdateRequest;
 import java.util.List;
 
 public interface UserService {
+
+    UserResponse register(RegisterRequest req);
 
     UserResponse create(UserCreateRequest req);
 
