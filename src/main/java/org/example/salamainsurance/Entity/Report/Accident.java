@@ -27,16 +27,53 @@ public class Accident {
 
   private String location;
 
+  public Accident(Long id, LocalDate accidentDate, String location, LocalTime time, Boolean injuries, Boolean propertyDamage, String observations, String sketch, AccidentStatus status, List<Driver> drivers, List<Photo> photos, List<Integer> damagedZones) {
+    this.id = id;
+    this.accidentDate = accidentDate;
+    this.location = location;
+    this.time = time;
+    this.injuries = injuries;
+    this.propertyDamage = propertyDamage;
+    this.observations = observations;
+    this.sketch = sketch;
+    this.status = status;
+    this.drivers = drivers;
+    this.photos = photos;
+    this.damagedZones = damagedZones;
+  }
+
   private Boolean injuries;
 
   private Boolean propertyDamage;
+
+  public Accident() {
+
+  }
+
+  public AccidentStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(AccidentStatus status) {
+    this.status = status;
+  }
 
   @Column(length = 1000)
   private String observations;
 
   private String sketch;
 
-  // @JsonManagedReference permet d'afficher les conducteurs dans le JSON de l'accident
+  @Enumerated(EnumType.STRING)
+  private AccidentStatus status;
+
+
+  // ✅ zones endommagées (1 à 8)
+  @ElementCollection
+  @CollectionTable(name = "accident_damaged_zones",
+    joinColumns = @JoinColumn(name = "accident_id"))
+  @Column(name = "zone")
+  private List<Integer> damagedZones;
+
   @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonManagedReference
   private List<Driver> drivers = new ArrayList<>();
@@ -45,7 +82,17 @@ public class Accident {
   @JsonManagedReference
   private List<Photo> photos = new ArrayList<>();
 
-  // --- Getters & Setters ---
+
+
+
+
+  public List<Integer> getDamagedZones() {
+    return damagedZones;
+  }
+
+  public void setDamagedZones(List<Integer> damagedZones) {
+    this.damagedZones = damagedZones;
+  }
 
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }

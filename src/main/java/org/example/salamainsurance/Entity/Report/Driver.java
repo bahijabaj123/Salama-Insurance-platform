@@ -6,6 +6,8 @@ import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 
 import java.time.LocalDate;
 
+import java.util.List;
+
 @Entity
 @Table(name = "drivers")
 public class Driver {
@@ -38,7 +40,24 @@ public class Driver {
   private Accident accident;
   private String email;
 
-  // --- Getters & Setters ---
+  @ElementCollection(targetClass = Circumstances.class)
+  @CollectionTable(
+    name = "driver_circumstances",
+    joinColumns = @JoinColumn(name = "driver_id")
+  )
+  @Enumerated(EnumType.STRING)
+  @Column(name = "circumstance")
+  private List<Circumstances> circumstances;
+
+  public List<Circumstances> getCircumstances() {
+    return circumstances;
+  }
+
+  public void setCircumstances(List<Circumstances> circumstances) {
+    this.circumstances = circumstances;
+  }
+
+// --- Getters & Setters ---
 
   public Long getId() {
     return id;
