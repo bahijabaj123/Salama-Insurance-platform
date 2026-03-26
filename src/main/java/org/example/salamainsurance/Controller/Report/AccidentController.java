@@ -1,11 +1,15 @@
 package org.example.salamainsurance.Controller.Report;
 
 import lombok.RequiredArgsConstructor;
+import org.example.salamainsurance.DTO.ResponsibilityResult;
 import org.example.salamainsurance.Entity.Report.Accident;
+import org.example.salamainsurance.Entity.Report.AccidentStatus;
+import org.example.salamainsurance.Repository.Report.AccidentRepository;
 import org.example.salamainsurance.Service.Report.AccidentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -14,10 +18,8 @@ import java.util.List;
 public class AccidentController {
 
   private final AccidentService accidentService;
-<<<<<<< HEAD
+
   private final AccidentRepository accidentRepository;
-=======
->>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
 
   // CREATE
   @PostMapping
@@ -40,7 +42,8 @@ public class AccidentController {
 
   // UPDATE
   @PutMapping("/{id}")
-  public ResponseEntity<Accident> updateAccident(@PathVariable Long id, @RequestBody Accident accidentDetails) {
+  public ResponseEntity<Accident> updateAccident(@PathVariable Long id,
+                                                 @RequestBody Accident accidentDetails) {
     return ResponseEntity.ok(accidentService.updateAccident(id, accidentDetails));
   }
 
@@ -50,7 +53,6 @@ public class AccidentController {
     accidentService.deleteAccident(id);
     return ResponseEntity.noContent().build();
   }
-<<<<<<< HEAD
 
   // LISTE ADMIN : TOUS LES ACCIDENTS
   @GetMapping("/admin/all")
@@ -93,14 +95,20 @@ public class AccidentController {
   @GetMapping("/{id}/responsibility")
   public ResponseEntity<ResponsibilityResult> calculateResponsibility(
     @PathVariable Long id) {
-    return ResponseEntity.ok(accidentService.calculateResponsibility(id));
+
+    return ResponseEntity.ok(
+      accidentService.calculateResponsibility(id)
+    );
   }
 
   @PutMapping("/{id}/validate")
   public ResponseEntity<String> validate(@PathVariable Long id) {
+
     accidentService.validateAccident(id);
+
     return ResponseEntity.ok("Accident validé + PDF généré");
   }
-=======
->>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
+
+
+
 }

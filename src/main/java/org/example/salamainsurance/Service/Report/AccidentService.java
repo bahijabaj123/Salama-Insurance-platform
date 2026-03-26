@@ -1,7 +1,10 @@
 package org.example.salamainsurance.Service.Report;
 
 
+import org.example.salamainsurance.DTO.ResponsibilityResult;
 import org.example.salamainsurance.Entity.Report.Accident;
+import org.example.salamainsurance.Entity.Report.AccidentStatus;
+
 import java.util.List;
 
 public interface AccidentService {
@@ -15,7 +18,6 @@ public interface AccidentService {
   void deleteAccident(Long id);
 
   Accident updateAccident(Long id, Accident accidentDetails);
-<<<<<<< HEAD
 
   List<Accident> getAccidentsByStatus(AccidentStatus status);
 
@@ -24,10 +26,10 @@ public interface AccidentService {
   ResponsibilityResult calculateResponsibility(Long id);
 
   void validateAccident(Long id);
+
+  List<Accident> getAll();
 }
-=======
-}
 
 
 
->>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
+

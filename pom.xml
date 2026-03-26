@@ -44,7 +44,6 @@
       <scope>runtime</scope>
     </dependency>
 
-<<<<<<< HEAD
 
     <!-- iText 7 Core (la bonne version) -->
     <dependency>
@@ -54,8 +53,6 @@
       <type>pom</type>
     </dependency>
 
-=======
->>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -70,7 +67,6 @@
       <scope>test</scope>
     </dependency>
 
-<<<<<<< HEAD
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -78,8 +74,7 @@
     </dependency>
 
 
-=======
->>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
+
   </dependencies>
 
   <build>
