@@ -1,10 +1,15 @@
 package org.example.salamainsurance.Service.Report;
 
 import lombok.RequiredArgsConstructor;
+<<<<<<< HEAD
 import org.example.salamainsurance.DTO.ResponsibilityResult;
 import org.example.salamainsurance.Entity.Report.*;
+=======
+import org.example.salamainsurance.Entity.Report.Accident;
+import org.example.salamainsurance.Entity.Report.Driver;
+import org.example.salamainsurance.Entity.Report.Photo;
+>>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,32 +21,30 @@ public class AccidentServiceImpl implements AccidentService {
 
   private final AccidentRepository accidentRepository;
 
-  @Autowired
-  private ResponsibilityService responsibilityService;
-
-  @Autowired
-  private PdfService pdfService;
-
   @Override
   @Transactional
   public Accident saveAccident(Accident accident) {
+<<<<<<< HEAD
+=======
+    // La méthode getDrivers() doit retourner une List<Driver>
+>>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
     if (accident.getDrivers() != null) {
       accident.getDrivers().forEach(driver -> driver.setAccident(accident));
     }
+<<<<<<< HEAD
+=======
+
+    // Pour les photos
+>>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
     if (accident.getPhotos() != null) {
       accident.getPhotos().forEach(photo -> photo.setAccident(accident));
     }
+
     return accidentRepository.save(accident);
   }
 
-
   @Override
   public List<Accident> getAllAccidents() {
-    return accidentRepository.findAll();
-  }
-
-  @Override
-  public List<Accident> getAll() {
     return accidentRepository.findAll();
   }
 
@@ -62,75 +65,5 @@ public class AccidentServiceImpl implements AccidentService {
       return saveAccident(accidentDetails);
     }
     return null;
-  }
-
-  @Override
-  public List<Accident> getAccidentsByStatus(AccidentStatus status) {
-    return accidentRepository.findByStatus(status);
-  }
-
-  @Override
-  public Accident changeStatus(Long id, AccidentStatus status) {
-    Accident accident = getAccidentById(id);
-    if (accident != null) {
-      accident.setStatus(status);
-      return accidentRepository.save(accident);
-    }
-    return null;
-  }
-
-  public ResponsibilityResult calculateResponsibility(Long accidentId) {
-
-    Accident accident = accidentRepository.findById(accidentId).orElseThrow();
-
-    int scoreA = 0;
-    int scoreB = 0;
-
-    for (Driver driver : accident.getDrivers()) {
-
-      int driverScore = driver.getCircumstances()
-        .stream()
-        .mapToInt(Circumstances::getFaultPercentage)
-        .sum();
-
-      if (driver.getDriverType() == DriverType.DRIVER_A)
-        scoreA = driverScore;
-
-      if (driver.getDriverType() == DriverType.DRIVER_B)
-        scoreB = driverScore;
-    }
-
-    int total = scoreA + scoreB;
-
-    int percentA = total == 0 ? 0 : (scoreA * 100) / total;
-    int percentB = total == 0 ? 0 : (scoreB * 100) / total;
-
-    String decision;
-
-    if (percentA > percentB)
-      decision = "DRIVER_A_RESPONSABLE";
-
-    else if (percentB > percentA)
-      decision = "DRIVER_B_RESPONSABLE";
-
-    else
-      decision = "RESPONSABILITE_PARTAGEE";
-
-    return new ResponsibilityResult(percentA, percentB, decision);
-  }
-
-  public void validateAccident(Long id) {
-
-    Accident accident = accidentRepository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Accident non trouvé"));
-
-    accident.setStatus(AccidentStatus.VALIDE);
-
-    ResponsibilityResult result =
-      responsibilityService.calculate(accident);
-
-    accidentRepository.save(accident);
-
-    pdfService.generatePdf(accident, result);
   }
 }

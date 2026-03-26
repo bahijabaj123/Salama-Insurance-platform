@@ -1,9 +1,7 @@
 package org.example.salamainsurance.Service.Report;
 
-import org.example.salamainsurance.DTO.ResponsibilityResult;
-import org.example.salamainsurance.Entity.Report.Accident;
-import org.example.salamainsurance.Entity.Report.AccidentStatus;
 
+import org.example.salamainsurance.Entity.Report.Accident;
 import java.util.List;
 
 public interface AccidentService {
@@ -12,13 +10,12 @@ public interface AccidentService {
 
   List<Accident> getAllAccidents();
 
-  List<Accident> getAll(); // pour l’admin
-
   Accident getAccidentById(Long id);
 
   void deleteAccident(Long id);
 
   Accident updateAccident(Long id, Accident accidentDetails);
+<<<<<<< HEAD
 
   List<Accident> getAccidentsByStatus(AccidentStatus status);
 
@@ -28,3 +25,9 @@ public interface AccidentService {
 
   void validateAccident(Long id);
 }
+=======
+}
+
+
+
+>>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7
