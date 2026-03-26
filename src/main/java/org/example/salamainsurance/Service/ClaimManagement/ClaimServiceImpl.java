@@ -3,15 +3,16 @@ package org.example.salamainsurance.Service.ClaimManagement;
 import lombok.extern.slf4j.Slf4j;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
-import org.example.salamainsurance.Entity.ExpertManagement.Expert;
-import org.example.salamainsurance.Entity.ExpertManagement.ExpertStatus;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.example.salamainsurance.Entity.Expert.ExpertStatus;
 import org.example.salamainsurance.Entity.ClaimManagement.Insurer;
 import org.example.salamainsurance.Entity.Report.Accident;
 import org.example.salamainsurance.Exception.ResourceNotFoundException;
 import org.example.salamainsurance.Repository.ClaimManagement.ClaimRepository;
-import org.example.salamainsurance.Repository.ExpertRepo.ExpertRepository;
+import org.example.salamainsurance.Repository.Expert.ExpertHassenRepository;  // ← CORRIGÉ
 import org.example.salamainsurance.Repository.ClaimManagement.InsurerRepository;
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
+import org.example.salamainsurance.Service.Notification.EnhancedEmailService;
 import org.example.salamainsurance.Service.Notification.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,7 +35,7 @@ public class ClaimServiceImpl implements ClaimService {
   private AccidentRepository accidentRepository;
 
   @Autowired
-  private ExpertRepository expertRepository;
+  private ExpertHassenRepository expertRepository;
 
   @Autowired
   private InsurerRepository insurerRepository;
@@ -44,6 +45,10 @@ public class ClaimServiceImpl implements ClaimService {
 
   @Autowired
   private NotificationService notificationService;
+
+  @Autowired
+  private EnhancedEmailService enhancedEmailService;
+
 
   @Autowired
   private IntelligentExpertAssignmentService intelligentAssignmentService;
@@ -158,47 +163,67 @@ public class ClaimServiceImpl implements ClaimService {
   @Override
   public Claim assignExpertToClaim(Long claimId, Long expertId) {
     Claim claim = getClaimById(claimId);
-    Expert expert = expertRepository.findById(expertId)
+    ExpertHassen expert = expertRepository.findById(expertId.intValue())
       .orElseThrow(() -> new ResourceNotFoundException("Expert not found with id: " + expertId));
 
-    if (expert.getStatus() != ExpertStatus.AVAILABLE && expert.getStatus() != ExpertStatus.BUSY) {
+    // 1. Vérifier que l'expert est assignable (AVAILABLE, BUSY ou ACTIVE)
+    Set<ExpertStatus> assignableStatuses = Set.of(
+      ExpertStatus.AVAILABLE,
+      ExpertStatus.BUSY,
+      ExpertStatus.ACTIVE
+    );
+    if (!assignableStatuses.contains(expert.getStatus())) {
       throw new IllegalStateException("Expert is not available. Status: " + expert.getStatus());
     }
 
-    if (expert.getCurrentWorkload() >= expert.getMaxWorkload()) {
+    // 2. Vérifier la charge de travail (gérer les null)
+    int currentWorkload = expert.getCurrentWorkload() != null ? expert.getCurrentWorkload() : 0;
+    int maxWorkload = expert.getMaxWorkload() != null ? expert.getMaxWorkload() : 10;
+    if (currentWorkload >= maxWorkload) {
       throw new IllegalStateException("Expert has reached maximum workload");
     }
 
+
+    // 3. Désassigner l'ancien expert si nécessaire
     if (claim.getExpert() != null) {
-      Expert previousExpert = claim.getExpert();
-      previousExpert.setCurrentWorkload(Math.max(0, previousExpert.getCurrentWorkload() - 1));
+      ExpertHassen previousExpert = claim.getExpert();
+      int prevWorkload = previousExpert.getCurrentWorkload() != null ? previousExpert.getCurrentWorkload() : 0;
+      previousExpert.setCurrentWorkload(Math.max(0, prevWorkload - 1));
       if (previousExpert.getCurrentWorkload() < previousExpert.getMaxWorkload()) {
         previousExpert.setStatus(ExpertStatus.AVAILABLE);
       }
       expertRepository.save(previousExpert);
     }
 
+    // 4. Assigner le nouvel expert
     claim.setExpert(expert);
     claim.setStatus(ClaimStatus.ASSIGNED_TO_EXPERT);
     claim.setAssignedDate(LocalDateTime.now());
     claim.addAction("Assigned to expert: " + expert.getFirstName() + " " + expert.getLastName());
 
-    expert.setCurrentWorkload(expert.getCurrentWorkload() + 1);
+    // 5. Mettre à jour la charge de l'expert
+    expert.setCurrentWorkload(currentWorkload + 1);
     expert.setLastAssignmentDate(LocalDateTime.now());
 
-    if (expert.getCurrentWorkload() >= expert.getMaxWorkload()) {
+    if ((currentWorkload + 1) >= maxWorkload) {
       expert.setStatus(ExpertStatus.BUSY);
     }
     expertRepository.save(expert);
-
+    // 6. Sauvegarder le sinistre
     Claim savedClaim = claimRepository.save(claim);
 
-    notificationService.sendToExpert(expert,
-      "You have been assigned to claim: " + claim.getReference() +
-        " in region: " + claim.getRegion());
+    // 7. Envoyer l'email de notification
+    try {
+      enhancedEmailService.sendExpertAssignmentEmail(expert, claim);
+      System.out.println("✅ Email d'assignation envoyé à: " + expert.getEmail());
+    } catch (Exception e) {
+      System.err.println("❌ Erreur envoi email: " + e.getMessage());
+      e.printStackTrace();
+    }
 
     return savedClaim;
   }
+
 
   @Override
   public Claim autoAssignExpert(Long claimId) {
@@ -244,10 +269,15 @@ public class ClaimServiceImpl implements ClaimService {
       throw new IllegalStateException("Claim has no expert assigned");
     }
 
-    Expert expert = claim.getExpert();
+    ExpertHassen expert = claim.getExpert();
 
-    expert.setCurrentWorkload(Math.max(0, expert.getCurrentWorkload() - 1));
-    if (expert.getCurrentWorkload() < expert.getMaxWorkload()) {
+    // Gérer les valeurs null
+    int currentWorkload = expert.getCurrentWorkload() != null ? expert.getCurrentWorkload() : 0;
+    int maxWorkload = expert.getMaxWorkload() != null ? expert.getMaxWorkload() : 10;
+
+    expert.setCurrentWorkload(Math.max(0, currentWorkload - 1));
+
+    if (expert.getCurrentWorkload() < maxWorkload) {
       expert.setStatus(ExpertStatus.AVAILABLE);
     }
     expertRepository.save(expert);
@@ -259,6 +289,7 @@ public class ClaimServiceImpl implements ClaimService {
 
     return claimRepository.save(claim);
   }
+
 
   // ========== STATUS MANAGEMENT ==========
 
@@ -301,7 +332,7 @@ public class ClaimServiceImpl implements ClaimService {
     }
 
     if (claim.getExpert() != null) {
-      Expert expert = claim.getExpert();
+      ExpertHassen expert = claim.getExpert();
       expert.setCurrentWorkload(Math.max(0, expert.getCurrentWorkload() - 1));
       if (expert.getCurrentWorkload() < expert.getMaxWorkload()) {
         expert.setStatus(ExpertStatus.AVAILABLE);
@@ -320,7 +351,7 @@ public class ClaimServiceImpl implements ClaimService {
   @Override
   public List<Claim> searchClaims(String reference, ClaimStatus status, String region,
                                   Long expertId, LocalDateTime startDate, LocalDateTime endDate) {
-    return claimRepository.searchClaims(reference, status, region, expertId, startDate, endDate);
+    return claimRepository.searchClaims(reference, status, region, expertId != null ? expertId.intValue() : null , startDate, endDate);
   }
 
   @Override
@@ -329,7 +360,7 @@ public class ClaimServiceImpl implements ClaimService {
   }
 
   @Override
-  public List<Claim> findByExpertId(Long expertId) {
+  public List<Claim> findByExpertId(Integer expertId) {
     return claimRepository.findByExpertId(expertId);
   }
 
@@ -451,7 +482,7 @@ public class ClaimServiceImpl implements ClaimService {
   private void updateExpertPerformance(Claim claim) {
     if (claim.getExpert() == null) return;
 
-    Expert expert = claim.getExpert();
+    ExpertHassen expert = claim.getExpert();
 
     if (claim.getOpeningDate() != null && claim.getClosingDate() != null) {
       long hours = java.time.Duration.between(claim.getOpeningDate(), claim.getClosingDate()).toHours();

@@ -3,6 +3,7 @@ package org.example.salamainsurance.Service.Expert;
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
 import org.example.salamainsurance.Repository.Expert.ExpertHassenRepository;
 import org.springframework.stereotype.Service;
+import org.example.salamainsurance.Entity.Expert.ExpertStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
@@ -16,7 +17,8 @@ public class ExpertHassenService implements IExpertHassenService {
     private final ExpertHassenRepository expertRepository;
 
     public ExpertHassenService(ExpertHassenRepository expertRepository) {
-        this.expertRepository = expertRepository;
+
+      this.expertRepository = expertRepository;
     }
 
     // CREATE
@@ -52,7 +54,7 @@ public class ExpertHassenService implements IExpertHassenService {
         expert.setPhone(newExpert.getPhone());
         expert.setFax(newExpert.getFax());
         expert.setSpecialty(newExpert.getSpecialty());
-        expert.setStatus(newExpert.getStatus());
+      expert.setStatus(newExpert.getStatus());
         expert.setInterventionZone(newExpert.getInterventionZone());
         expert.setRegistrationDate(newExpert.getRegistrationDate());
         expert.setYearsOfExperience(newExpert.getYearsOfExperience());
@@ -75,10 +77,10 @@ public class ExpertHassenService implements IExpertHassenService {
         return expertRepository.findByInterventionZone(zone);
     }
 
-    // SEARCH BY STATUS
+  // SEARCH BY STATUS
     @Override
-    public List<ExpertHassen> findByStatus(ExpertHassen.Status status) {
-        return expertRepository.findByStatus(status);
+    public List<ExpertHassen> findByStatus(ExpertStatus status) {
+      return expertRepository.findByStatus(status);
     }
 
     // ===== MÉTHODES AVANCÉES =====
@@ -98,9 +100,9 @@ public class ExpertHassenService implements IExpertHassenService {
         return expertRepository.findByYearsOfExperienceGreaterThanEqual(minYears);
     }
 
-    @Override
+  @Override
     @Transactional
-    public ExpertHassen changeStatus(Integer id, ExpertHassen.Status newStatus) {
+    public ExpertHassen changeStatus(Integer id, ExpertStatus newStatus) {
         ExpertHassen expert = getExpertById(id);
         expert.setStatus(newStatus);
         return expertRepository.save(expert);
@@ -109,8 +111,8 @@ public class ExpertHassenService implements IExpertHassenService {
     @Override
     public Map<String, Object> getExpertStatistics() {
         long totalExperts = expertRepository.count();
-        long actifs = expertRepository.countByStatus(ExpertHassen.Status.ACTIVE);
-        long inactifs = expertRepository.countByStatus(ExpertHassen.Status.INACTIVE);
+      long actifs = expertRepository.countByStatus(ExpertStatus.ACTIVE);
+      long inactifs = expertRepository.countByStatus(ExpertStatus.INACTIVE);
 
         List<Object[]> parZone = expertRepository.countParZone();
         Map<String, Long> repartitionZone = new LinkedHashMap<>();
@@ -125,4 +127,6 @@ public class ExpertHassenService implements IExpertHassenService {
         stats.put("repartitionParZone", repartitionZone);
         return stats;
     }
+
+
 }

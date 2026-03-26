@@ -1,6 +1,7 @@
 package org.example.salamainsurance.Service.Expert;
 
 import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
+import org.example.salamainsurance.Entity.Expert.ExpertiseStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,13 +24,13 @@ public interface IExpertReportHassenService {
     // ===== MÉTHODES AVANCÉES =====
 
     // Changer le statut d'un rapport
-    ExpertReportHassen changerStatut(Integer id, ExpertReportHassen.StatutRapport nouveauStatut);
+    ExpertReportHassen changerStatut(Integer id, ExpertiseStatus nouveauStatut);
 
     // Calcul automatique des totaux du rapport
     ExpertReportHassen calculerTotaux(Integer id);
 
     // Recherche par statut
-    List<ExpertReportHassen> findByStatut(ExpertReportHassen.StatutRapport statut);
+    List<ExpertReportHassen> findByStatut(ExpertiseStatus statut);
 
     // Recherche par numéro de référence
     ExpertReportHassen findByNumeroReference(String numeroReference);

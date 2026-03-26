@@ -1,6 +1,7 @@
 package org.example.salamainsurance.Repository.Expert;
 
 import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
+import org.example.salamainsurance.Entity.Expert.ExpertiseStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,7 +26,7 @@ public interface ExpertReportHassenRepository extends JpaRepository<ExpertReport
 
     Optional<ExpertReportHassen> findByNumeroReference(String numeroReference);
 
-    List<ExpertReportHassen> findByStatutRapport(ExpertReportHassen.StatutRapport statutRapport);
+  List<ExpertReportHassen> findByStatutRapport(ExpertiseStatus statut);
 
     List<ExpertReportHassen> findByDateMissionBetween(LocalDate start, LocalDate end);
 

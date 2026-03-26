@@ -1,6 +1,7 @@
 package org.example.salamainsurance.Service.Fraud;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
@@ -56,13 +57,14 @@ public class FraudDetectionService {
   private List<FraudRule> defineRules() {
     List<FraudRule> rules = new ArrayList<>();
 
-    rules.add(new FraudRule("R1", "Délai de déclaration > 7 jours", 30, false, null));
-    rules.add(new FraudRule("R2", "Accident de nuit (23h-5h)", 25, false, null));
-    rules.add(new FraudRule("R3", "Client avec plus de 3 sinistres", 40, false, null));
-    rules.add(new FraudRule("R4", "Photos insuffisantes (< 2 photos)", 20, false, null));
-    rules.add(new FraudRule("R5", "Blessures signalées mais pas de photos", 35, false, null));
-    rules.add(new FraudRule("R6", "Conducteur de moins de 20 ans", 30, false, null));
-    rules.add(new FraudRule("R7", "Accident déclaré un week-end", 15, false, null));
+    rules.add(new FraudRule("R1", "Late declaration (>7 days)", 30, false, null));
+    rules.add(new FraudRule("R2", "Night accident (11pm-5am)", 25, false, null));
+    rules.add(new FraudRule("R3", "Client with more than 3 claims", 40, false, null));
+    rules.add(new FraudRule("R4", "Insufficient photos (<2 photos)", 20, false, null));
+    rules.add(new FraudRule("R5", "Injuries reported without photos", 35, false, null));
+    rules.add(new FraudRule("R6", "Driver under 20 years old", 30, false, null));
+    rules.add(new FraudRule("R7", "Accident declared on weekend", 15, false, null));
+    rules.add(new FraudRule("R8", "Same address for both drivers", 25, false, null));
 
     return rules;
   }
@@ -71,16 +73,16 @@ public class FraudDetectionService {
   //  Met à jour ou insère
   @Transactional
   public FraudAnalysis analyzeClaimWithAlert(Long claimId) {
-    log.info(" Analyse de fraude pour le sinistre ID: {}", claimId);
+    log.info(" Fraud analysis for claim ID: {}", claimId);
 
     // Vérifier si une analyse existe déjà
     FraudAnalysis existingAnalysis = fraudAnalysisRepository.findByClaimId(claimId);
 
     if (existingAnalysis != null) {
-      log.info(" Analyse existante trouvée, mise à jour...");
+      log.info(" Existing analysis found, updating..");
       return updateExistingAnalysis(existingAnalysis, claimId);
     } else {
-      log.info(" Nouvelle analyse à créer...");
+      log.info("Creating new analysis..");
       return createNewAnalysis(claimId);
     }
   }
@@ -88,7 +90,7 @@ public class FraudDetectionService {
   //  Créer une nouvelle analyse
   private FraudAnalysis createNewAnalysis(Long claimId) {
     Claim claim = claimRepository.findById(claimId)
-      .orElseThrow(() -> new RuntimeException("Sinistre non trouvé: " + claimId));
+      .orElseThrow(() -> new RuntimeException("claim not found " + claimId));
 
     // Calculer le score
     FraudScoreResult result = calculateFraudScore(claim);
@@ -104,11 +106,11 @@ public class FraudDetectionService {
     try {
       analysis.setTriggeredRules(objectMapper.writeValueAsString(result.getTriggeredRules()));
     } catch (JsonProcessingException e) {
-      log.error("Erreur sérialisation règles: {}", e.getMessage());
+      log.error("Error serializing rules: {}", e.getMessage());
     }
 
     FraudAnalysis savedAnalysis = fraudAnalysisRepository.save(analysis);
-    log.info(" Nouvelle analyse créée - Score: {}, Risque: {}", result.getScore(), result.getRiskLevel());
+    log.info(" New analysis created - Score: {}, Risk: {}", result.getScore(), result.getRiskLevel());
 
     // Envoyer alertes
     sendFraudAlerts(savedAnalysis, claim);
@@ -119,7 +121,7 @@ public class FraudDetectionService {
   // Mettre à jour une analyse existante
   private FraudAnalysis updateExistingAnalysis(FraudAnalysis analysis, Long claimId) {
     Claim claim = claimRepository.findById(claimId)
-      .orElseThrow(() -> new RuntimeException("Sinistre non trouvé: " + claimId));
+      .orElseThrow(() -> new RuntimeException("Claim not found: " + claimId));
 
     // Recalculer le score
     FraudScoreResult result = calculateFraudScore(claim);
@@ -133,11 +135,11 @@ public class FraudDetectionService {
     try {
       analysis.setTriggeredRules(objectMapper.writeValueAsString(result.getTriggeredRules()));
     } catch (JsonProcessingException e) {
-      log.error("Erreur sérialisation règles: {}", e.getMessage());
+      log.error("Error serializing rules: {}", e.getMessage());
     }
 
     FraudAnalysis updatedAnalysis = fraudAnalysisRepository.save(analysis);
-    log.info("Analyse mise à jour - Score: {}, Risque: {}", result.getScore(), result.getRiskLevel());
+    log.info(" Analysis updated - Score: {}, Risk: {}", result.getScore(), result.getRiskLevel());
 
     // Envoyer alertes
     sendFraudAlerts(updatedAnalysis, claim);
@@ -164,10 +166,10 @@ public class FraudDetectionService {
         FraudRule rule = rules.stream()
           .filter(r -> r.getCode().equals("R1"))
           .findFirst()
-          .orElse(new FraudRule("R1", "Délai de déclaration > 7 jours", 30, false, null));
+          .orElse(new FraudRule("R1", "Late declaration (>7 days)", 30, false, null));
 
         rule.setTriggered(true);
-        rule.setDetails(daysDelay + " jours de retard");
+        rule.setDetails(daysDelay + " days delay");
         triggeredRules.add(rule);
         totalScore += rule.getWeight();
       }
@@ -180,10 +182,10 @@ public class FraudDetectionService {
         FraudRule rule = rules.stream()
           .filter(r -> r.getCode().equals("R2"))
           .findFirst()
-          .orElse(new FraudRule("R2", "Accident de nuit (23h-5h)", 25, false, null));
+          .orElse(new FraudRule("R2", "Night accident (11pm-5am)", 25, false, null));
 
         rule.setTriggered(true);
-        rule.setDetails("Accident à " + hour + "h");
+        rule.setDetails("Accident at " + hour + "h");
         triggeredRules.add(rule);
         totalScore += rule.getWeight();
       }
@@ -198,10 +200,10 @@ public class FraudDetectionService {
         FraudRule rule = rules.stream()
           .filter(r -> r.getCode().equals("R3"))
           .findFirst()
-          .orElse(new FraudRule("R3", "Client avec plus de 3 sinistres", 40, false, null));
+          .orElse(new FraudRule("R3", "Client with more than 3 claims", 40, false, null));
 
         rule.setTriggered(true);
-        rule.setDetails(clientClaimsCount + " sinistres pour ce client");
+        rule.setDetails(clientClaimsCount + " claims for this client");
         triggeredRules.add(rule);
         totalScore += rule.getWeight();
       }
@@ -214,10 +216,10 @@ public class FraudDetectionService {
         FraudRule rule = rules.stream()
           .filter(r -> r.getCode().equals("R4"))
           .findFirst()
-          .orElse(new FraudRule("R4", "Photos insuffisantes (< 2 photos)", 20, false, null));
+          .orElse(new FraudRule("R4", "Insufficient photos (<2 photos)", 20, false, null));
 
         rule.setTriggered(true);
-        rule.setDetails(photoCount + " photo(s) fournie(s)");
+        rule.setDetails(photoCount + " photo(s) provided");
         triggeredRules.add(rule);
         totalScore += rule.getWeight();
       }
@@ -235,10 +237,10 @@ public class FraudDetectionService {
         FraudRule rule = rules.stream()
           .filter(r -> r.getCode().equals("R5"))
           .findFirst()
-          .orElse(new FraudRule("R5", "Blessures signalées mais pas de photos", 35, false, null));
+          .orElse(new FraudRule("R5", "Injuries reported without photos", 35, false, null));
 
         rule.setTriggered(true);
-        rule.setDetails("Blessures déclarées mais seulement " + photoCount + " photo(s)");
+        rule.setDetails("Injuries declared but only " + photoCount + " photo(s)");
         triggeredRules.add(rule);
         totalScore += rule.getWeight();
       }
@@ -273,10 +275,10 @@ public class FraudDetectionService {
           FraudRule rule = rules.stream()
             .filter(r -> r.getCode().equals("R6"))
             .findFirst()
-            .orElse(new FraudRule("R6", "Conducteur de moins de 20 ans", 30, false, null));
+            .orElse(new FraudRule("R6", "Driver under 20 years old", 30, false, null));
 
           rule.setTriggered(true);
-          rule.setDetails("Âge du conducteur: " + age + " ans (conducteur principal)");
+          rule.setDetails("Driver age: " + age + " years");
           triggeredRules.add(rule);
           totalScore += rule.getWeight();
         }
@@ -292,14 +294,35 @@ public class FraudDetectionService {
         FraudRule rule = rules.stream()
           .filter(r -> r.getCode().equals("R7"))
           .findFirst()
-          .orElse(new FraudRule("R7", "Accident déclaré un week-end", 15, false, null));
+          .orElse(new FraudRule("R7", "Accident declared on weekend", 15, false, null));
 
         rule.setTriggered(true);
-        rule.setDetails("Jour: " + day.toString());
+        rule.setDetails("Day: " + day.toString());
         triggeredRules.add(rule);
         totalScore += rule.getWeight();
       }
     }
+
+    // Règle R8: Same address for both drivers (NOUVELLE RÈGLE)
+    if (claim.getAccident() != null && claim.getAccident().getDrivers() != null &&
+      claim.getAccident().getDrivers().size() >= 2) {
+      Driver driver1 = claim.getAccident().getDrivers().get(0);
+      Driver driver2 = claim.getAccident().getDrivers().get(1);
+
+      if (driver1.getAddress() != null && driver2.getAddress() != null &&
+        driver1.getAddress().equals(driver2.getAddress())) {
+        FraudRule rule = rules.stream()
+          .filter(r -> r.getCode().equals("R8"))
+          .findFirst()
+          .orElse(new FraudRule("R8", "Same address for both drivers", 25, false, null));
+
+        rule.setTriggered(true);
+        rule.setDetails("Both drivers share the same address: " + driver1.getAddress());
+        triggeredRules.add(rule);
+        totalScore += rule.getWeight();
+      }
+    }
+
 
     // Déterminer le niveau de risque
     RiskLevel riskLevel;
@@ -307,13 +330,13 @@ public class FraudDetectionService {
 
     if (totalScore >= 70) {
       riskLevel = RiskLevel.HIGH;
-      recommendation = "🔴 INVESTIGATION APPROFONDIE REQUISE";
+      recommendation = "🔴 DEEP INVESTIGATION REQUIRED";
     } else if (totalScore >= 40) {
       riskLevel = RiskLevel.MEDIUM;
-      recommendation = "🟠 VÉRIFICATION HUMAINE RECOMMANDÉE";
+      recommendation = "🟠 HUMAN VERIFICATION RECOMMENDED";
     } else {
       riskLevel = RiskLevel.LOW;
-      recommendation = "🟢 TRAITEMENT AUTOMATIQUE - Risque faible";
+      recommendation = "🟢 AUTOMATIC PROCESSING - Low risk";
     }
 
     return new FraudScoreResult(totalScore, riskLevel, recommendation, triggeredRules);
@@ -325,17 +348,24 @@ public class FraudDetectionService {
   private EnhancedEmailService enhancedEmailService;
 
   private void sendFraudAlerts(FraudAnalysis analysis, Claim claim) {
-    String riskLevel = analysis.getRiskLevel().toString();
     String to = "benabdeljalilbahija@gmail.com";
-    enhancedEmailService.sendFraudAlertEmail(
-      to,
-      riskLevel,
-      claim.getReference(),
-      analysis.getFraudScore(),
-      parseTriggeredRules(analysis.getTriggeredRules()),
-      claim.getRegion()
-    );
+    String riskLevel = analysis.getRiskLevel().toString();
+    String claimRef = claim.getReference();
+    int score = analysis.getFraudScore();
+    List<FraudRule> rules = parseTriggeredRules(analysis.getTriggeredRules());
+    String region = claim.getRegion();
+
+    // AJOUTEZ CES LOGS POUR VÉRIFIER
+    System.out.println("=== ENVOI EMAIL FRAUDE ===");
+    System.out.println("Destinataire: " + to);
+    System.out.println("Règles déclenchées: " + rules.size());
+    for (FraudRule rule : rules) {
+      System.out.println("  - " + rule.getCode() + ": " + rule.getDescription());
+    }
+
+    enhancedEmailService.sendFraudAlertEmail(to, riskLevel, claimRef, score, rules, region);
   }
+
 
   // Classe interne pour le résultat
   private class FraudScoreResult {
@@ -362,9 +392,10 @@ public class FraudDetectionService {
       if (triggeredRulesJson == null || triggeredRulesJson.isEmpty() || triggeredRulesJson.equals("[]")) {
         return new ArrayList<>();
       }
-      // Si tu veux parser le JSON pour récupérer les vraies règles
+
       return objectMapper.readValue(triggeredRulesJson,
-        objectMapper.getTypeFactory().constructCollectionType(List.class, FraudRule.class));
+        new TypeReference<List<FraudRule>>() {});
+
     } catch (Exception e) {
       log.error("❌ Erreur parsing règles: {}", e.getMessage());
       return new ArrayList<>();

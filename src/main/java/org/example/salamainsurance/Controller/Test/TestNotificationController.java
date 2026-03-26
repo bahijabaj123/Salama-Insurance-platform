@@ -1,8 +1,9 @@
 package org.example.salamainsurance.Controller.Test;
 
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
-import org.example.salamainsurance.Entity.ExpertManagement.Expert;
-import org.example.salamainsurance.Repository.ExpertRepo.ExpertRepository;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.example.salamainsurance.Repository.Expert.ExpertReportHassenRepository;
+import org.example.salamainsurance.Repository.Expert.ExpertHassenRepository;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimService;
 import org.example.salamainsurance.Service.Notification.NotificationService;
 import org.example.salamainsurance.Service.Notification.EnhancedEmailService;
@@ -28,18 +29,17 @@ public class TestNotificationController {
   private EnhancedEmailService enhancedEmailService;
 
   @Autowired
-  private ExpertRepository expertRepository;
+  private ExpertHassenRepository expertRepository;
 
   @Autowired
   private ClaimService claimService;
 
-  // ✅ Test template avec ResponseEntity
   @GetMapping("/test-template/{expertId}/{claimId}")
   public ResponseEntity<?> testTemplate(
-    @PathVariable Long expertId,
+    @PathVariable Integer expertId,
     @PathVariable Long claimId) {
     try {
-      Expert expert = expertRepository.findById(expertId)
+      ExpertHassen expert = expertRepository.findById(expertId)
         .orElseThrow(() -> new RuntimeException("Expert not found"));
 
       Claim claim = claimService.getClaimById(claimId);
@@ -98,9 +98,9 @@ public class TestNotificationController {
   }
   // Test simple (String)
   @GetMapping("/test-simple/{expertId}")
-  public String testSimple(@PathVariable Long expertId, @RequestParam String message) {
+  public String testSimple(@PathVariable Integer expertId, @RequestParam String message) {
     try {
-      Expert expert = expertRepository.findById(expertId)
+      ExpertHassen expert = expertRepository.findById(expertId)
         .orElseThrow(() -> new RuntimeException("Expert not found"));
 
       notificationService.sendToExpert(expert, message);
@@ -111,4 +111,65 @@ public class TestNotificationController {
       return "❌ Erreur: " + e.getMessage();
     }
   }
+
+  // ===== TEST EMAIL D'ASSIGNATION =====
+  @GetMapping("/test-assign-email/{expertId}")
+  public ResponseEntity<?> testAssignEmail(@PathVariable Integer expertId) {
+    try {
+      ExpertHassen expert = expertRepository.findById(expertId)
+        .orElseThrow(() -> new RuntimeException("Expert not found with ID: " + expertId));
+
+      Claim claim = claimService.getClaimById(1L); // Utilise le claim ID 1
+
+      notificationService.sendToExpert(expert,
+        "Test assignment for claim: " + claim.getReference() +
+          " in region: " + claim.getRegion());
+
+      Map<String, String> response = new HashMap<>();
+      response.put("status", "success");
+      response.put("message", "Email envoyé à " + expert.getEmail());
+      response.put("expert", expert.getFirstName() + " " + expert.getLastName());
+      response.put("claim", claim.getReference());
+
+      return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+      Map<String, String> error = new HashMap<>();
+      error.put("status", "error");
+      error.put("message", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+  }
+
+  // ===== TEST EMAIL D'ASSIGNATION AVEC CLAIM SPÉCIFIQUE =====
+  @GetMapping("/test-assign-email/{expertId}/{claimId}")
+  public ResponseEntity<?> testAssignEmailWithClaim(
+    @PathVariable Integer expertId,
+    @PathVariable Long claimId) {
+    try {
+      ExpertHassen expert = expertRepository.findById(expertId)
+        .orElseThrow(() -> new RuntimeException("Expert not found with ID: " + expertId));
+
+      Claim claim = claimService.getClaimById(claimId);
+
+      notificationService.sendToExpert(expert,
+        "Test assignment for claim: " + claim.getReference() +
+          " in region: " + claim.getRegion());
+
+      Map<String, String> response = new HashMap<>();
+      response.put("status", "success");
+      response.put("message", "Email envoyé à " + expert.getEmail());
+      response.put("expert", expert.getFirstName() + " " + expert.getLastName());
+      response.put("claim", claim.getReference());
+
+      return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+      Map<String, String> error = new HashMap<>();
+      error.put("status", "error");
+      error.put("message", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+  }
+
 }

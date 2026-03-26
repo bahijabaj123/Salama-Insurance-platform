@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class ExpertScore {
-  private Long expertId;
+  private Integer expertId;
   private String expertName;
   private Double score;
   private List<String> matchReasons;

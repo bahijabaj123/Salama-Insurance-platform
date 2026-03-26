@@ -36,8 +36,9 @@ public interface ClaimService {
                            Long expertId, LocalDateTime startDate, LocalDateTime endDate);
 
   List<Claim> findByStatus(ClaimStatus status);
-  List<Claim> findByExpertId(Long expertId);
-  List<Claim> findByRegion(String region);
+  List<Claim> findByExpertId(Integer expertId);
+
+    List<Claim> findByRegion(String region);
   List<Claim> findByDateRange(LocalDateTime start, LocalDateTime end);
 
   // ========== STATISTICS & REPORTING ==========

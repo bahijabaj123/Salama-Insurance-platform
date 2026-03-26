@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Repository.ExpertRepo;
+/*package org.example.salamainsurance.Repository.ExpertRepo;
 
 import org.example.salamainsurance.Entity.ExpertManagement.Expert;
 import org.example.salamainsurance.Entity.ExpertManagement.ExpertStatus;
@@ -26,3 +26,4 @@ public interface ExpertRepository extends JpaRepository<Expert, Long> {
 
   List<Expert> findByStatus(ExpertStatus expertStatus);
 }
+*/

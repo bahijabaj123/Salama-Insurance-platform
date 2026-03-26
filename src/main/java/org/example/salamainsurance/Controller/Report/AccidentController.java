@@ -18,7 +18,6 @@ import java.util.List;
 public class AccidentController {
 
   private final AccidentService accidentService;
-  private final AccidentRepository accidentRepository;
 
   // CREATE
   @PostMapping
@@ -52,6 +51,7 @@ public class AccidentController {
     accidentService.deleteAccident(id);
     return ResponseEntity.noContent().build();
   }
+
 
   // LISTE ADMIN : TOUS LES ACCIDENTS
   @GetMapping("/admin/all")
@@ -102,4 +102,5 @@ public class AccidentController {
     accidentService.validateAccident(id);
     return ResponseEntity.ok("Accident validé + PDF généré");
   }
+
 }

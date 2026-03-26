@@ -4,6 +4,7 @@ import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
 import org.example.salamainsurance.Service.Expert.ExpertReportHassenService;
 import org.example.salamainsurance.Service.Expert.RapportExpertisePdfService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.example.salamainsurance.Entity.Expert.ExpertiseStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -75,9 +76,9 @@ public class ExpertReportHassenController {
     // CHANGER STATUT : PATCH /api/rapports-expertise/{id}/statut?nouveauStatut=VALIDE
     @PatchMapping("/{id}/statut")
     public ResponseEntity<ExpertReportHassen> changerStatut(
-            @PathVariable Integer id,
-            @RequestParam ExpertReportHassen.StatutRapport nouveauStatut) {
-        return ResponseEntity.ok(reportService.changerStatut(id, nouveauStatut));
+      @PathVariable Integer id,
+      @RequestParam ExpertiseStatus nouveauStatut) {
+      return ResponseEntity.ok(reportService.changerStatut(id, nouveauStatut));
     }
 
     // CALCUL AUTOMATIQUE DES TOTAUX : POST /api/rapports-expertise/{id}/calculer-totaux
@@ -89,9 +90,10 @@ public class ExpertReportHassenController {
     // RECHERCHE PAR STATUT : GET /api/rapports-expertise/statut/VALIDE
     @GetMapping("/statut/{statut}")
     public ResponseEntity<List<ExpertReportHassen>> getByStatut(
-            @PathVariable ExpertReportHassen.StatutRapport statut) {
-        return ResponseEntity.ok(reportService.findByStatut(statut));
+      @PathVariable ExpertiseStatus statut) {
+      return ResponseEntity.ok(reportService.findByStatut(statut));
     }
+
 
     // RECHERCHE PAR RÉFÉRENCE : GET /api/rapports-expertise/reference/REF-001
     @GetMapping("/reference/{reference}")

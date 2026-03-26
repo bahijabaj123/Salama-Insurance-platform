@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Entity.ExpertManagement;
+/*package org.example.salamainsurance.Entity.ExpertManagement;
 
 import jakarta.persistence.*;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
@@ -113,3 +113,4 @@ public class ExpertiseReport {
   public LocalDateTime getSubmittedAt() { return submittedAt; }
   public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
 }
+*/

@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Entity.ExpertManagement;
+/*package org.example.salamainsurance.Entity.ExpertManagement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -147,3 +147,4 @@ public class Expert {
   public List<Claim> getClaims() { return claims; }
   public void setClaims(List<Claim> claims) { this.claims = claims; }
 }
+*/

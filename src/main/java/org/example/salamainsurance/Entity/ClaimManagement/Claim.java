@@ -2,8 +2,8 @@ package org.example.salamainsurance.Entity.ClaimManagement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.example.salamainsurance.Entity.ExpertManagement.Expert;
-import org.example.salamainsurance.Entity.ExpertManagement.ExpertiseReport;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
 import org.example.salamainsurance.Entity.Report.Accident;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -28,7 +28,6 @@ public class Claim {
   private LocalDateTime closingDate;
   private LocalDateTime lastModifiedDate;
 
-  // NOUVEAU CHAMP AJOUTÉ
   @Column(name = "assigned_date")
   private LocalDateTime assignedDate;
 
@@ -44,8 +43,8 @@ public class Claim {
   @ManyToOne
   @JoinColumn(name = "expert_id")
   @JsonIgnore
-  @JsonIgnoreProperties({"claims", "expertiseReports"})  // ← IGNORE CES CHAMPS
-  private Expert expert;
+  @JsonIgnoreProperties({"claims", "expertReports"})  // ← IGNORE CES CHAMPS pour eviter les boucles
+  private ExpertHassen expert;
 
   // Insurer who created/manages
   @ManyToOne
@@ -56,7 +55,7 @@ public class Claim {
   // Expertise reports
   @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL)
   @JsonIgnore
-  private List<ExpertiseReport> expertiseReports = new ArrayList<>();
+  private List<ExpertReportHassen> expertiseReports = new ArrayList<>();
 
   // Region extracted from accident location
   private String region;
@@ -198,7 +197,7 @@ public class Claim {
     this.lastModifiedDate = lastModifiedDate;
   }
 
-  // ✅ NOUVEAU GETTER/SETTER
+  // NOUVEAU GETTER/SETTER
   public LocalDateTime getAssignedDate() {
     return assignedDate;
   }
@@ -235,11 +234,11 @@ public class Claim {
     }
   }
 
-  public Expert getExpert() {
+  public ExpertHassen getExpert() {
     return expert;
   }
 
-  public void setExpert(Expert expert) {
+  public void setExpert(ExpertHassen expert) {
     this.expert = expert;
     if (expert != null) {
       this.assignedDate = LocalDateTime.now();
@@ -254,11 +253,11 @@ public class Claim {
     this.insurer = insurer;
   }
 
-  public List<ExpertiseReport> getExpertiseReports() {
+  public List<ExpertReportHassen> getExpertiseReports() {
     return expertiseReports;
   }
 
-  public void setExpertiseReports(List<ExpertiseReport> expertiseReports) {
+  public void setExpertiseReports(List<ExpertReportHassen> expertiseReports) {
     this.expertiseReports = expertiseReports;
   }
 
@@ -286,7 +285,7 @@ public class Claim {
     this.actionHistory = actionHistory;
   }
 
-  public ExpertiseReport getLatestExpertiseReport() {
+  public ExpertReportHassen getLatestExpertiseReport() {
     if (expertiseReports == null || expertiseReports.isEmpty()) {
       return null;
     }

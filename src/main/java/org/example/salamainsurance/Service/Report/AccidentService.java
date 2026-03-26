@@ -15,7 +15,19 @@ public interface AccidentService {
   void deleteAccident(Long id);
 
   Accident updateAccident(Long id, Accident accidentDetails);
+<<<<<<< HEAD
+
+  List<Accident> getAccidentsByStatus(AccidentStatus status);
+
+  Accident changeStatus(Long id, AccidentStatus status);
+
+  ResponsibilityResult calculateResponsibility(Long id);
+
+  void validateAccident(Long id);
+}
+=======
 }
 
 
 
+>>>>>>> 2afc754fccad9612ef2f50ffe6659f379a7758e7

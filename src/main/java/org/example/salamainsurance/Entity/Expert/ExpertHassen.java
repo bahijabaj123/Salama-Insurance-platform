@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -49,11 +52,13 @@ public class ExpertHassen {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 10)
-    private Status status;
+    private ExpertStatus status;  // ← utilise l'enum fusionné
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "intervention_zone", length = 20)
     private InterventionZone interventionZone;
+// ← region devient intervention_zone
 
     @Column(name = "registration_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -75,17 +80,47 @@ public class ExpertHassen {
         Gabes, Medenine, Tataouine, Gafsa, Tozeur, Kebili
     }
 
-    public enum Status {
-        ACTIVE, INACTIVE
-    }
+    //public enum Status {
+       // ACTIVE, INACTIVE
+    //}
 
-    // ===== CONSTRUCTORS =====
+  // ===== PROPRIÉTÉS de bahija =====
+  @Column(name = "current_workload")
+  private Integer currentWorkload = 0;
+
+  @Column(name = "available")
+  private Boolean available = true;
+
+  @Column(name = "performance_score")
+  private Integer performanceScore = 100;
+
+  @Column(name = "active_claims")
+  private Integer activeClaims = 0;
+
+  @Column(name = "average_processing_time")
+  private Double averageProcessingTime;
+
+  @Column(name = "validation_rate")
+  private Double validationRate;
+
+  @Column(name = "max_workload")
+  private Integer maxWorkload;
+
+  @Column(name = "last_assignment_date")
+  private LocalDateTime lastAssignmentDate;
+
+  @OneToMany(mappedBy = "expert")
+  @JsonIgnore
+  private List<Claim> claims;
+
+
+  // ===== CONSTRUCTORS =====
     public ExpertHassen() {
     }
 
     public ExpertHassen(String lastName, String firstName, String address, String city,
                         String postalCode, String email, String phone, String fax,
-                        String specialty, Status status, InterventionZone interventionZone,
+                        String specialty, ExpertStatus status, InterventionZone interventionZone,
                         LocalDate registrationDate, Integer yearsOfExperience) {
         this.lastName = lastName;
         this.firstName = firstName;
@@ -133,8 +168,8 @@ public class ExpertHassen {
     public String getSpecialty() { return specialty; }
     public void setSpecialty(String specialty) { this.specialty = specialty; }
 
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    public ExpertStatus getStatus() { return status; }
+    public void setStatus(ExpertStatus status) { this.status = status; }
 
     public InterventionZone getInterventionZone() { return interventionZone; }
     public void setInterventionZone(InterventionZone interventionZone) { this.interventionZone = interventionZone; }
@@ -147,4 +182,34 @@ public class ExpertHassen {
 
     public List<ExpertReportHassen> getExpertReports() { return expertReports; }
     public void setExpertReports(List<ExpertReportHassen> expertReports) { this.expertReports = expertReports; }
+
+  // propriétés de bahija
+  public Integer getCurrentWorkload() { return currentWorkload; }
+  public void setCurrentWorkload(Integer currentWorkload) { this.currentWorkload = currentWorkload; }
+
+  public Boolean getAvailable() { return available; }
+  public void setAvailable(Boolean available) { this.available = available; }
+
+  public Integer getPerformanceScore() { return performanceScore; }
+  public void setPerformanceScore(Integer performanceScore) { this.performanceScore = performanceScore; }
+
+  public Integer getActiveClaims() { return activeClaims; }
+  public void setActiveClaims(Integer activeClaims) { this.activeClaims = activeClaims; }
+
+  public Double getAverageProcessingTime() { return averageProcessingTime; }
+  public void setAverageProcessingTime(Double averageProcessingTime) { this.averageProcessingTime = averageProcessingTime; }
+
+  public Double getValidationRate() { return validationRate; }
+  public void setValidationRate(Double validationRate) { this.validationRate = validationRate; }
+
+  public Integer getMaxWorkload() { return maxWorkload; }
+  public void setMaxWorkload(Integer maxWorkload) { this.maxWorkload = maxWorkload; }
+
+  public LocalDateTime getLastAssignmentDate() { return lastAssignmentDate; }
+  public void setLastAssignmentDate(LocalDateTime lastAssignmentDate) { this.lastAssignmentDate = lastAssignmentDate; }
+
+  public List<Claim> getClaims() { return claims; }
+  public void setClaims(List<Claim> claims) { this.claims = claims; }
+
+
 }

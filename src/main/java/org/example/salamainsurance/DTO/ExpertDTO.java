@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 
 @Data
 public class ExpertDTO {
-  private Long id;
+  private Integer id;
   private String firstName;
   private String lastName;
   private String email;
-  private String phoneNumber;
-  private String region;
+  private String phone;
+  private String interventionZone;
   private String speciality;
   private String status;
   private Integer performanceScore;
@@ -19,5 +19,4 @@ public class ExpertDTO {
   private Double averageProcessingTime;
   private Integer yearsOfExperience;
   private LocalDateTime lastAssignmentDate;
-  // PAS DE LISTE CLAIMS !
 }

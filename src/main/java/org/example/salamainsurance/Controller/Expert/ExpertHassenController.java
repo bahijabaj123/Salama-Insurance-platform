@@ -1,6 +1,7 @@
 package org.example.salamainsurance.Controller.Expert;
 
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.example.salamainsurance.Entity.Expert.ExpertStatus;
 import org.example.salamainsurance.Service.Expert.ExpertHassenService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,11 @@ public class ExpertHassenController {
         return ResponseEntity.ok(expertService.getAllExperts());
     }
 
+  @GetMapping
+  public ResponseEntity<List<ExpertHassen>> getAllExperts() {
+    return ResponseEntity.ok(expertService.getAllExperts());
+  }
+
     // READ BY ID - Obtenir un expert par ID
     @GetMapping("/{id}")
     public ResponseEntity<ExpertHassen> getById(@PathVariable Integer id) {
@@ -52,6 +58,12 @@ public class ExpertHassenController {
         return ResponseEntity.noContent().build();
     }
 
+  @GetMapping("/available")
+  public ResponseEntity<List<ExpertHassen>> getAvailableExperts() {
+    List<ExpertHassen> availableExperts = expertService.findByStatus(ExpertStatus.AVAILABLE);
+    return ResponseEntity.ok(availableExperts);
+  }
+
     // SEARCH BY ZONE - Rechercher par zone d'intervention
     @GetMapping("/zone/{zone}")
     public ResponseEntity<List<ExpertHassen>> getByZone(@PathVariable ExpertHassen.InterventionZone zone) {
@@ -60,7 +72,7 @@ public class ExpertHassenController {
 
     // SEARCH BY STATUS - Rechercher par statut
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<ExpertHassen>> getByStatus(@PathVariable ExpertHassen.Status status) {
+    public ResponseEntity<List<ExpertHassen>> getByStatus(@PathVariable ExpertStatus status) {
         return ResponseEntity.ok(expertService.findByStatus(status));
     }
 
@@ -88,7 +100,7 @@ public class ExpertHassenController {
     @PatchMapping("/{id}/statut")
     public ResponseEntity<ExpertHassen> changeStatus(
             @PathVariable Integer id,
-            @RequestParam ExpertHassen.Status nouveauStatut) {
+            @RequestParam ExpertStatus nouveauStatut) {
         return ResponseEntity.ok(expertService.changeStatus(id, nouveauStatut));
     }
 

@@ -6,6 +6,7 @@ import org.example.salamainsurance.Repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;        // ← CORRIGÉ
 
 import java.time.LocalDateTime;
 
@@ -75,13 +76,12 @@ public class NotificationService {
     notificationRepository.save(notification);
   }
 
-  // Méthode pour envoyer à un expert (compatible avec ton ancien code)
-  public void sendToExpert(org.example.salamainsurance.Entity.ExpertManagement.Expert expert, String message) {
+  public void sendToExpert(ExpertHassen expert, String message) {
     NotificationEvent event = NotificationEvent.builder()
       .recipientType(RecipientType.EXPERT)
-      .recipientId(expert.getId())
+      .recipientId(Long.valueOf(expert.getIdExpert()))
       .recipientEmail(expert.getEmail())
-      .recipientPhone(expert.getPhoneNumber())
+      .recipientPhone(expert.getPhone())
       .recipientName(expert.getFirstName() + " " + expert.getLastName())
       .channel(NotificationChannel.EMAIL)
       .type(NotificationType.INFO_REQUEST)
@@ -92,6 +92,7 @@ public class NotificationService {
 
     sendNotification(event);
   }
+
 
   // Méthode pour envoyer à un assureur
   public void sendToInsurer(org.example.salamainsurance.Entity.ClaimManagement.Insurer insurer, String message) {

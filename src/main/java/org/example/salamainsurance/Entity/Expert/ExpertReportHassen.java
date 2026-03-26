@@ -2,8 +2,12 @@ package org.example.salamainsurance.Entity.Expert;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -140,7 +144,54 @@ public class ExpertReportHassen {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statut_rapport", length = 20)
-    private StatutRapport statutRapport;
+    private ExpertiseStatus  statutRapport;
+
+  // Dans ExpertReportHassen.java
+  @ManyToOne
+  @JoinColumn(name = "claim_id", nullable = false)
+  private Claim claim;
+
+
+  // =====  PROPRIÉTÉS de bahija =====
+  @Column(name = "expertise_date")
+  private LocalDateTime expertiseDate;
+
+  @Column(name = "findings", length = 2000)
+  private String findings;
+
+  @Column(name = "estimated_repair_cost")
+  private Double estimatedRepairCost;
+
+  @Column(name = "estimated_indemnity")
+  private Double estimatedIndemnity;
+
+
+  @ElementCollection
+  @CollectionTable(name = "expertise_photos", joinColumns = @JoinColumn(name = "expertise_id"))
+  @Column(name = "photo_url")
+  private List<String> expertPhotos = new ArrayList<>();
+
+  @Column(name = "is_validated")
+  private Boolean isValidated = false;
+
+  @Column(name = "validation_comments")
+  private String validationComments;
+
+  @Column(name = "claim_valid")
+  private Boolean claimValid;
+
+  @Column(name = "rejection_reason")
+  private String rejectionReason;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "expertise_status")
+  private ExpertiseStatus expertiseStatus = ExpertiseStatus.DRAFT;
+
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
+
+  @Column(name = "submitted_at")
+  private LocalDateTime submittedAt;
 
     // ===== Relations =====
     @ManyToOne(fetch = FetchType.LAZY)
@@ -165,9 +216,9 @@ public class ExpertReportHassen {
         BON, ASSEZ_BON, MOYEN, MAUVAIS, EPAVE
     }
 
-    public enum StatutRapport {
-        EN_COURS, TERMINE, VALIDE, ANNULE
-    }
+    //public enum StatutRapport {
+     //   EN_COURS, TERMINE, VALIDE, ANNULE
+    //}
 
     // ===== CONSTRUCTORS =====
     public ExpertReportHassen() {}
@@ -287,8 +338,8 @@ public class ExpertReportHassen {
     public String getConclusions() { return conclusions; }
     public void setConclusions(String conclusions) { this.conclusions = conclusions; }
 
-    public StatutRapport getStatutRapport() { return statutRapport; }
-    public void setStatutRapport(StatutRapport statutRapport) { this.statutRapport = statutRapport; }
+    public ExpertiseStatus  getStatutRapport() { return statutRapport; }
+    public void setStatutRapport(ExpertiseStatus  statutRapport) { this.statutRapport = statutRapport; }
 
     public ExpertHassen getExpert() { return expert; }
     public void setExpert(ExpertHassen expert) { this.expert = expert; }
@@ -301,4 +352,43 @@ public class ExpertReportHassen {
 
     public List<PieceJointeHassen> getPiecesJointes() { return piecesJointes; }
     public void setPiecesJointes(List<PieceJointeHassen> piecesJointes) { this.piecesJointes = piecesJointes; }
+
+  // getters/setters de bahija
+  public LocalDateTime getExpertiseDate() { return expertiseDate; }
+  public void setExpertiseDate(LocalDateTime expertiseDate) { this.expertiseDate = expertiseDate; }
+
+  public String getFindings() { return findings; }
+  public void setFindings(String findings) { this.findings = findings; }
+
+  public Double getEstimatedRepairCost() { return estimatedRepairCost; }
+  public void setEstimatedRepairCost(Double estimatedRepairCost) { this.estimatedRepairCost = estimatedRepairCost; }
+
+  public Double getEstimatedIndemnity() { return estimatedIndemnity; }
+  public void setEstimatedIndemnity(Double estimatedIndemnity) { this.estimatedIndemnity = estimatedIndemnity; }
+
+  public List<String> getExpertPhotos() { return expertPhotos; }
+  public void setExpertPhotos(List<String> expertPhotos) { this.expertPhotos = expertPhotos; }
+
+  public Boolean getIsValidated() { return isValidated; }
+  public void setIsValidated(Boolean isValidated) { this.isValidated = isValidated; }
+
+  public String getValidationComments() { return validationComments; }
+  public void setValidationComments(String validationComments) { this.validationComments = validationComments; }
+
+  public Boolean getClaimValid() { return claimValid; }
+  public void setClaimValid(Boolean claimValid) { this.claimValid = claimValid; }
+
+  public String getRejectionReason() { return rejectionReason; }
+  public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+  public ExpertiseStatus getExpertiseStatus() { return expertiseStatus; }
+  public void setExpertiseStatus(ExpertiseStatus expertiseStatus) { this.expertiseStatus = expertiseStatus; }
+
+  public LocalDateTime getCreatedAt() { return createdAt; }
+  public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+  public LocalDateTime getSubmittedAt() { return submittedAt; }
+  public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
+
+
 }

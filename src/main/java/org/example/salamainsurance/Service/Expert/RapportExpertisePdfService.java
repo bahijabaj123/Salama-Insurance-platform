@@ -16,11 +16,7 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
-import org.example.salamainsurance.Entity.Expert.DommageHassen;
-import org.example.salamainsurance.Entity.Expert.ExpertHassen;
-import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
-import org.example.salamainsurance.Entity.Expert.MainOeuvreHassen;
-import org.example.salamainsurance.Entity.Expert.PhotoAccident;
+import org.example.salamainsurance.Entity.Expert.*;
 import org.example.salamainsurance.Repository.Expert.ExpertReportHassenRepository;
 import org.example.salamainsurance.Repository.Expert.PhotoAccidentRepository;
 import org.springframework.stereotype.Service;
@@ -157,21 +153,22 @@ public class RapportExpertisePdfService {
         rightCell.add(new Paragraph(safe(rapport.getNumeroReference()))
                 .setFontSize(16).setBold().setFontColor(BLUE_DARK));
 
-        String statut = rapport.getStatutRapport() != null ? rapport.getStatutRapport().name() : "N/A";
-        DeviceRgb statutColor = getStatutColor(rapport.getStatutRapport());
-        rightCell.add(new Paragraph("STATUT: " + statut)
-                .setFontSize(10).setBold().setFontColor(statutColor));
+      String statut = rapport.getStatutRapport() != null ? rapport.getStatutRapport().name() : "N/A";
+      DeviceRgb statutColor = getStatutColor(rapport.getStatutRapport());
+      rightCell.add(new Paragraph("STATUT: " + statut)
+        .setFontSize(10).setBold().setFontColor(statutColor));
 
-        headerTable.addCell(leftCell);
-        headerTable.addCell(rightCell);
-        document.add(headerTable);
+      headerTable.addCell(leftCell);
+      headerTable.addCell(rightCell);
+      document.add(headerTable);
 
-        document.add(new Paragraph("")
-                .setBorderBottom(new SolidBorder(BLUE_DARK, 2))
-                .setMarginBottom(15));
+      document.add(new Paragraph("")
+        .setBorderBottom(new SolidBorder(BLUE_DARK, 2))
+        .setMarginBottom(15));
     }
 
-    private void addGeneralInfo(Document document, ExpertReportHassen rapport) {
+
+  private void addGeneralInfo(Document document, ExpertReportHassen rapport) {
         document.add(createSectionTitle("GENERAL INFO"));
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{25, 25, 25, 25}))
@@ -516,7 +513,7 @@ public class RapportExpertisePdfService {
         table.addCell(valCell);
     }
 
-    private DeviceRgb getStatutColor(ExpertReportHassen.StatutRapport statut) {
+    private DeviceRgb getStatutColor(ExpertiseStatus statut) {
         if (statut == null) return new DeviceRgb(128, 128, 128);
         switch (statut) {
             case EN_COURS: return ORANGE;

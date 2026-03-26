@@ -13,6 +13,16 @@ public interface ComplaintRepository extends JpaRepository<ComplaintSarra,Long> 
   // OU
   List<ComplaintSarra> findByIndemnityIdIndemnity(Long idIndemnity);
 
+public interface ComplaintRepository extends JpaRepository<ComplaintSarra,Long> {
+
+    List<ComplaintSarra> findByIndemnityId(Long indemnityId);
+public interface ComplaintRepository extends JpaRepository<ComplaintSarra,Long> {
+
+  // CORRECTION: Utilisez indemnity.idIndemnity au lieu de indemnityId
+  List<ComplaintSarra> findByIndemnity_IdIndemnity(Long idIndemnity);
+  // OU
+  List<ComplaintSarra> findByIndemnityIdIndemnity(Long idIndemnity);
+
   List<ComplaintSarra> findByDetectedSentiment(String sentiment);
 
   List<ComplaintSarra> findByPriority(String priority);

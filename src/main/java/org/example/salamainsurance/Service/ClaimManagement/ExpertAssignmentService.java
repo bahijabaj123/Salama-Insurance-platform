@@ -1,8 +1,9 @@
 package org.example.salamainsurance.Service.ClaimManagement;
 
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
-import org.example.salamainsurance.Entity.ExpertManagement.Expert;
-import org.example.salamainsurance.Repository.ExpertRepo.ExpertRepository;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;        // ← CORRIGÉ
+import org.example.salamainsurance.Entity.Expert.ExpertStatus;
+import org.example.salamainsurance.Repository.Expert.ExpertHassenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -11,23 +12,35 @@ import java.util.List;
 public class ExpertAssignmentService {
 
   @Autowired
-  private ExpertRepository expertRepository;
+  private ExpertHassenRepository expertRepository;
 
-  public Expert findBestExpertForClaim(Claim claim) {
+  public ExpertHassen findBestExpertForClaim(Claim claim) {
     String region = claim.getRegion();
 
+    // Convertir la String region en InterventionZone
+    ExpertHassen.InterventionZone zone = null;
+    try {
+      // Convertir "Tunis" → "TUNIS", "Ben Arous" → "BEN_AROUS"
+      String zoneName = region.toUpperCase().replace(" ", "_");
+      zone = ExpertHassen.InterventionZone.valueOf(zoneName);
+    } catch (IllegalArgumentException e) {
+      // Si la région n'existe pas dans l'enum, retourner null
+      return null;
+    }
+
     // Get available experts in the region, sorted by best fit
-    List<Expert> availableExperts = expertRepository.findBestExpertsForAssignment(region);
+    List<ExpertHassen> availableExperts = expertRepository.findBestExpertsForAssignment(zone);
 
     if (availableExperts.isEmpty()) {
       return null;
     }
 
+
     // Score each expert based on multiple factors
-    Expert bestExpert = null;
+    ExpertHassen bestExpert = null;
     double bestScore = -1;
 
-    for (Expert expert : availableExperts) {
+    for (ExpertHassen expert : availableExperts) {
       double score = calculateExpertScore(expert, claim);
       if (score > bestScore) {
         bestScore = score;
@@ -38,7 +51,7 @@ public class ExpertAssignmentService {
     return bestExpert;
   }
 
-  private double calculateExpertScore(Expert expert, Claim claim) {
+  private double calculateExpertScore(ExpertHassen expert, Claim claim) {
     double score = 0;
 
     // Performance score (40% weight)

@@ -168,10 +168,10 @@
     <h3>📋 Triggered Rules</h3>
     <div class="rules-box">
       <div class="rule-item" th:each="rule : ${triggeredRules}">
-        <span class="rule-code" th:text="${rule.code}">R1</span>
-        <span th:text="${rule.description}">Delayed declaration > 7 days</span>
+        <span class="rule-code" th:text="'[' + ${rule.code} + ']'">[R1]</span>
+        <span th:text="${rule.description}">Rule description</span>
         <br>
-        <small style="color: #666;" th:text="${rule.details}">12 days late</small>
+        <small style="color: #666;" th:text="${rule.details}">Details</small>
       </div>
     </div>
 

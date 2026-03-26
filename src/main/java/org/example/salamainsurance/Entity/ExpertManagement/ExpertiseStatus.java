@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Entity.ExpertManagement;
+/*package org.example.salamainsurance.Entity.ExpertManagement;
 
 public enum ExpertiseStatus {
   DRAFT,              // Brouillon
@@ -6,3 +6,4 @@ public enum ExpertiseStatus {
   VALIDATED,          // Validé
   REJECTED            // Rejeté
 }
+*/

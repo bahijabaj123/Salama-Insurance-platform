@@ -41,6 +41,7 @@ public class PatternDetectionService {
   @PersistenceContext
   private EntityManager entityManager;
 
+
   // Map pour stocker les patterns en mémoire
   private Map<String, PatternCounter> patternCounters = new HashMap<>();
 
@@ -49,6 +50,8 @@ public class PatternDetectionService {
     private int count = 0;
     private List<String> details = new ArrayList<>();
     private String riskLevel = "MEDIUM";
+
+    public PatternCounter() {}
 
     public void increment() {
       count++;

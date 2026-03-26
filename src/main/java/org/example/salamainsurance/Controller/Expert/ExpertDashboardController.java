@@ -3,6 +3,8 @@ package org.example.salamainsurance.Controller.Expert;
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
 import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
 import org.example.salamainsurance.Service.Expert.ExpertHassenService;
+import org.example.salamainsurance.Entity.Expert.ExpertStatus;
+import org.example.salamainsurance.Entity.Expert.ExpertiseStatus;
 import org.example.salamainsurance.Service.Expert.ExpertReportHassenService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -83,10 +85,10 @@ public class ExpertDashboardController {
 
     private List<Map<String, Object>> buildCards(List<ExpertHassen> experts, List<ExpertReportHassen> rapports) {
         long totalExperts = experts.size();
-        long expertsActifs = experts.stream().filter(e -> e.getStatus() == ExpertHassen.Status.ACTIVE).count();
+        long expertsActifs = experts.stream().filter(e -> e.getStatus() ==  ExpertStatus.ACTIVE).count();
         long totalRapports = rapports.size();
-        long rapportsEnCours = countByStatut(rapports, ExpertReportHassen.StatutRapport.EN_COURS);
-        long rapportsValides = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
+        long rapportsEnCours = countByStatut(rapports, ExpertiseStatus.EN_COURS);
+        long rapportsValides = countByStatut(rapports, ExpertiseStatus.VALIDE);
 
         BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
         BigDecimal totalFournituresHT = sumField(rapports, ExpertReportHassen::getTotalFournituresHT);
@@ -151,13 +153,13 @@ public class ExpertDashboardController {
 
     private List<Map<String, Object>> buildGauges(List<ExpertHassen> experts, List<ExpertReportHassen> rapports) {
         long totalRapports = rapports.size();
-        long rapportsValides = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
-        long rapportsTermines = countByStatut(rapports, ExpertReportHassen.StatutRapport.TERMINE);
-        long rapportsEnCours = countByStatut(rapports, ExpertReportHassen.StatutRapport.EN_COURS);
-        long rapportsAnnules = countByStatut(rapports, ExpertReportHassen.StatutRapport.ANNULE);
+        long rapportsValides = countByStatut(rapports, ExpertiseStatus.VALIDE);
+        long rapportsTermines = countByStatut(rapports, ExpertiseStatus.TERMINE);
+        long rapportsEnCours = countByStatut(rapports, ExpertiseStatus.EN_COURS);
+        long rapportsAnnules = countByStatut(rapports, ExpertiseStatus.ANNULE);
 
         long totalExperts = experts.size();
-        long expertsActifs = experts.stream().filter(e -> e.getStatus() == ExpertHassen.Status.ACTIVE).count();
+        long expertsActifs = experts.stream().filter(e -> e.getStatus() == ExpertStatus.ACTIVE).count();
 
         List<Map<String, Object>> gauges = new ArrayList<>();
 
@@ -219,20 +221,20 @@ public class ExpertDashboardController {
         Map<String, Object> charts = new LinkedHashMap<>();
 
         // ── PIE CHART : Répartition rapports par statut ──
-        Map<String, Object> pieStatut = new LinkedHashMap<>();
-        pieStatut.put("type", "pie");
-        pieStatut.put("titre", "Rapports par Statut");
-        List<Map<String, Object>> pieData = new ArrayList<>();
-        for (ExpertReportHassen.StatutRapport statut : ExpertReportHassen.StatutRapport.values()) {
-            long count = countByStatut(rapports, statut);
-            Map<String, Object> slice = new LinkedHashMap<>();
-            slice.put("label", statut.name());
-            slice.put("value", count);
-            slice.put("color", getStatutColor(statut));
-            pieData.add(slice);
-        }
-        pieStatut.put("data", pieData);
-        charts.put("rapportsParStatut", pieStatut);
+      Map<String, Object> pieStatut = new LinkedHashMap<>();
+      pieStatut.put("type", "pie");
+      pieStatut.put("titre", "Rapports par Statut");
+      List<Map<String, Object>> pieData = new ArrayList<>();
+      for (ExpertiseStatus statut : ExpertiseStatus.values()) {
+        long count = countByStatut(rapports, statut);
+        Map<String, Object> slice = new LinkedHashMap<>();
+        slice.put("label", statut.name());
+        slice.put("value", count);
+        slice.put("color", getStatutColor(statut));
+        pieData.add(slice);
+      }
+      pieStatut.put("data", pieData);
+      charts.put("rapportsParStatut", pieStatut);
 
         // ── DONUT CHART : Répartition experts par zone ──
         Map<String, Object> donutZone = new LinkedHashMap<>();
@@ -297,7 +299,7 @@ public class ExpertDashboardController {
         charts.put("fournituresVsMainOeuvre", pieFournitureMO);
 
         // ── DONUT CHART : Experts Actifs vs Inactifs ──
-        long actifs = experts.stream().filter(e -> e.getStatus() == ExpertHassen.Status.ACTIVE).count();
+        long actifs = experts.stream().filter(e -> e.getStatus() == ExpertStatus.ACTIVE).count();
         long inactifs = experts.size() - actifs;
         Map<String, Object> donutActif = new LinkedHashMap<>();
         donutActif.put("type", "donut");
@@ -326,13 +328,14 @@ public class ExpertDashboardController {
 
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> buildScorecards(List<ExpertHassen> experts) {
-        return experts.stream().map(expert -> {
-            List<ExpertReportHassen> rapports = reportService.getReportsByExpertId(expert.getIdExpert());
-            int totalRapports = rapports.size();
-            long rapportsValides = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
-            long rapportsEnCours = countByStatut(rapports, ExpertReportHassen.StatutRapport.EN_COURS);
-            long rapportsAnnules = countByStatut(rapports, ExpertReportHassen.StatutRapport.ANNULE);
-            BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
+      return experts.stream().map(expert -> {
+          List<ExpertReportHassen> rapports = reportService.getReportsByExpertId(expert.getIdExpert());
+          int totalRapports = rapports.size();
+          long rapportsValides = countByStatut(rapports, ExpertiseStatus.VALIDE);
+          long rapportsEnCours = countByStatut(rapports, ExpertiseStatus.EN_COURS);
+          long rapportsAnnules = countByStatut(rapports, ExpertiseStatus.ANNULE);
+          BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
+
 
             int score = calculerScore(expert, totalRapports, rapportsValides, rapportsAnnules);
             String niveau = score >= 80 ? "EXCELLENT" : score >= 60 ? "BON" : score >= 40 ? "MOYEN" : "FAIBLE";
@@ -381,7 +384,7 @@ public class ExpertDashboardController {
         }
         int exp = expert.getYearsOfExperience() != null ? expert.getYearsOfExperience() : 0;
         score += Math.min(exp * 2, 15);
-        if (expert.getStatus() == ExpertHassen.Status.ACTIVE) {
+        if (expert.getStatus() == ExpertStatus.ACTIVE) {
             score += 10;
         }
         return Math.min(score, 100);
@@ -412,7 +415,7 @@ public class ExpertDashboardController {
 
         // 🟠 HAUTE — Rapports EN_COURS > 30 jours
         rapports.stream()
-                .filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.EN_COURS
+                .filter(r -> r.getStatutRapport() == ExpertiseStatus.EN_COURS
                         && r.getDateMission() != null && r.getDateMission().isBefore(seuilDate))
                 .forEach(r -> {
                     long jours = java.time.temporal.ChronoUnit.DAYS.between(r.getDateMission(), LocalDate.now());
@@ -425,10 +428,10 @@ public class ExpertDashboardController {
 
         // 🟡 MOYENNE — Experts INACTIVE avec rapports EN_COURS
         experts.stream()
-                .filter(e -> e.getStatus() == ExpertHassen.Status.INACTIVE)
+                .filter(e -> e.getStatus() == ExpertStatus.INACTIVE)
                 .forEach(e -> {
                     long nbEnCours = reportService.getReportsByExpertId(e.getIdExpert()).stream()
-                            .filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.EN_COURS).count();
+                            .filter(r -> r.getStatutRapport() == ExpertiseStatus.EN_COURS).count();
                     if (nbEnCours > 0) {
                         alertList.add(buildAlert("MOYENNE", "🟡",
                                 "Expert inactif avec dossiers ouverts",
@@ -440,7 +443,7 @@ public class ExpertDashboardController {
 
         // 🔵 INFO — Rapports sans totaux calculés
         rapports.stream()
-                .filter(r -> r.getTotalNet() == null && r.getStatutRapport() != ExpertReportHassen.StatutRapport.ANNULE)
+                .filter(r -> r.getTotalNet() == null && r.getStatutRapport() != ExpertiseStatus.ANNULE)
                 .forEach(r -> alertList.add(buildAlert("INFO", "🔵",
                         "Totaux non calculés",
                         "Rapport " + safe(r.getNumeroReference()) + " (ID:" + r.getIdRapport() + ") — totaux financiers non calculés",
@@ -482,17 +485,17 @@ public class ExpertDashboardController {
     // ╚══════════════════════════════════════════════════════════════════╝
     @GetMapping("/expert/{id}/fiche-complete")
     public ResponseEntity<Map<String, Object>> getFicheExpertComplete(@PathVariable Integer id) {
-        ExpertHassen expert = expertService.getExpertById(id);
-        List<ExpertReportHassen> rapports = reportService.getReportsByExpertId(id);
+      ExpertHassen expert = expertService.getExpertById(id);
+      List<ExpertReportHassen> rapports = reportService.getReportsByExpertId(id);
 
-        int totalRapports = rapports.size();
-        long nbValides = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
-        long nbEnCours = countByStatut(rapports, ExpertReportHassen.StatutRapport.EN_COURS);
-        long nbTermines = countByStatut(rapports, ExpertReportHassen.StatutRapport.TERMINE);
-        long nbAnnules = countByStatut(rapports, ExpertReportHassen.StatutRapport.ANNULE);
-        BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
+      int totalRapports = rapports.size();
+      long nbValides = countByStatut(rapports, ExpertiseStatus.VALIDE);
+      long nbEnCours = countByStatut(rapports, ExpertiseStatus.EN_COURS);
+      long nbTermines = countByStatut(rapports, ExpertiseStatus.TERMINE);
+      long nbAnnules = countByStatut(rapports, ExpertiseStatus.ANNULE);
+      BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
 
-        int score = calculerScore(expert, totalRapports, nbValides, nbAnnules);
+      int score = calculerScore(expert, totalRapports, nbValides, nbAnnules);
         String niveau = score >= 80 ? "EXCELLENT" : score >= 60 ? "BON" : score >= 40 ? "MOYEN" : "FAIBLE";
 
         List<Map<String, Object>> derniers = rapports.stream()
@@ -572,7 +575,7 @@ public class ExpertDashboardController {
 
         // Section experts
         long totalExperts = experts.size();
-        long expertsActifs = experts.stream().filter(e -> e.getStatus() == ExpertHassen.Status.ACTIVE).count();
+        long expertsActifs = experts.stream().filter(e -> e.getStatus() ==  ExpertStatus.ACTIVE).count();
         long expertsInactifs = totalExperts - expertsActifs;
 
         Map<String, Long> repartitionZone = experts.stream()
@@ -587,12 +590,12 @@ public class ExpertDashboardController {
         expertsSection.put("repartitionParZone", repartitionZone);
 
         // Section rapports
-        long totalRapports = rapports.size();
-        long rapportsEnCours = countByStatut(rapports, ExpertReportHassen.StatutRapport.EN_COURS);
-        long rapportsTermines = countByStatut(rapports, ExpertReportHassen.StatutRapport.TERMINE);
-        long rapportsValides = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
-        long rapportsAnnules = countByStatut(rapports, ExpertReportHassen.StatutRapport.ANNULE);
-        BigDecimal totalNetGlobal = sumField(rapports, ExpertReportHassen::getTotalNet);
+      long totalRapports = rapports.size();
+      long rapportsEnCours = countByStatut(rapports, ExpertiseStatus.EN_COURS);
+      long rapportsTermines = countByStatut(rapports, ExpertiseStatus.TERMINE);
+      long rapportsValides = countByStatut(rapports, ExpertiseStatus.VALIDE);
+      long rapportsAnnules = countByStatut(rapports, ExpertiseStatus.ANNULE);
+      BigDecimal totalNetGlobal = sumField(rapports, ExpertReportHassen::getTotalNet);
 
         Map<String, Object> rapportsSection = new LinkedHashMap<>();
         rapportsSection.put("totalRapports", totalRapports);
@@ -642,7 +645,7 @@ public class ExpertDashboardController {
         List<Map<String, Object>> result = experts.stream()
                 .map(expert -> {
                     List<ExpertReportHassen> rapports = reportService.getReportsByExpertId(expert.getIdExpert());
-                    long nbValides = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
+                    long nbValides = countByStatut(rapports, ExpertiseStatus.VALIDE);
                     BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
 
                     Map<String, Object> row = new LinkedHashMap<>();
@@ -671,7 +674,7 @@ public class ExpertDashboardController {
     @GetMapping("/rapports-en-attente")
     public ResponseEntity<List<Map<String, Object>>> getRapportsEnAttente() {
         List<ExpertReportHassen> enCours = reportService.findByStatut(
-                ExpertReportHassen.StatutRapport.EN_COURS);
+          ExpertiseStatus.EN_COURS);
 
         List<Map<String, Object>> result = enCours.stream().map(r -> {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -705,12 +708,12 @@ public class ExpertDashboardController {
 
         List<ExpertReportHassen> rapports = reportService.findByPeriode(debut, fin);
 
-        long nbEnCours  = countByStatut(rapports, ExpertReportHassen.StatutRapport.EN_COURS);
-        long nbTermines = countByStatut(rapports, ExpertReportHassen.StatutRapport.TERMINE);
-        long nbValides  = countByStatut(rapports, ExpertReportHassen.StatutRapport.VALIDE);
-        long nbAnnules  = countByStatut(rapports, ExpertReportHassen.StatutRapport.ANNULE);
+      long nbEnCours  = countByStatut(rapports, ExpertiseStatus.EN_COURS);
+      long nbTermines = countByStatut(rapports, ExpertiseStatus.TERMINE);
+      long nbValides  = countByStatut(rapports, ExpertiseStatus.VALIDE);
+      long nbAnnules  = countByStatut(rapports, ExpertiseStatus.ANNULE);
 
-        BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
+      BigDecimal totalNet = sumField(rapports, ExpertReportHassen::getTotalNet);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("periode", Map.of("debut", debut.toString(), "fin", fin.toString()));
@@ -750,7 +753,7 @@ public class ExpertDashboardController {
 
         // Rapports EN_COURS depuis plus de 30 jours
         List<Map<String, Object>> rapportsAnciens = rapports.stream()
-                .filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.EN_COURS
+                .filter(r -> r.getStatutRapport() == ExpertiseStatus.EN_COURS
                         && r.getDateMission() != null && r.getDateMission().isBefore(seuilDate))
                 .map(r -> {
                     long jours = java.time.temporal.ChronoUnit.DAYS.between(r.getDateMission(), LocalDate.now());
@@ -765,10 +768,10 @@ public class ExpertDashboardController {
 
         // Experts INACTIVE avec rapports EN_COURS
         List<Map<String, Object>> expertsInactifs = experts.stream()
-                .filter(e -> e.getStatus() == ExpertHassen.Status.INACTIVE)
+                .filter(e -> e.getStatus() == ExpertStatus.INACTIVE)
                 .map(e -> {
                     long nbEnCours = reportService.getReportsByExpertId(e.getIdExpert()).stream()
-                            .filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.EN_COURS).count();
+                            .filter(r -> r.getStatutRapport() == ExpertiseStatus.EN_COURS).count();
                     if (nbEnCours > 0) {
                         Map<String, Object> m = new LinkedHashMap<>();
                         m.put("idExpert", e.getIdExpert());
@@ -809,7 +812,7 @@ public class ExpertDashboardController {
                     List<ExpertHassen> expertsZone = entry.getValue();
 
                     long nbActifs = expertsZone.stream()
-                            .filter(e -> e.getStatus() == ExpertHassen.Status.ACTIVE).count();
+                            .filter(e -> e.getStatus() == ExpertStatus.ACTIVE).count();
 
                     long totalRapportsZone = 0;
                     BigDecimal totalNetZone = BigDecimal.ZERO;
@@ -876,9 +879,10 @@ public class ExpertDashboardController {
     //  MÉTHODES UTILITAIRES PRIVÉES
     // ══════════════════════════════════════════════════════════════
 
-    private long countByStatut(List<ExpertReportHassen> rapports, ExpertReportHassen.StatutRapport statut) {
-        return rapports.stream().filter(r -> r.getStatutRapport() == statut).count();
-    }
+  private long countByStatut(List<ExpertReportHassen> rapports, ExpertiseStatus statut) {
+    return rapports.stream().filter(r -> r.getStatutRapport() == statut).count();
+  }
+
 
     private BigDecimal sumField(List<ExpertReportHassen> rapports, java.util.function.Function<ExpertReportHassen, BigDecimal> extractor) {
         return rapports.stream()
@@ -912,13 +916,24 @@ public class ExpertDashboardController {
         return "#e74c3c";
     }
 
-    private String getStatutColor(ExpertReportHassen.StatutRapport statut) {
-        switch (statut) {
-            case EN_COURS: return "#f39c12";
-            case TERMINE:  return "#3498db";
-            case VALIDE:   return "#2ecc71";
-            case ANNULE:   return "#e74c3c";
-            default:       return "#95a5a6";
-        }
+  private String getStatutColor(ExpertiseStatus statut) {
+    switch (statut) {
+      case DRAFT:     return "#95a5a6";
+      case SUBMITTED: return "#f39c12";
+      case EN_COURS:  return "#f39c12";
+      case TERMINE:   return "#3498db";
+      case VALIDE:    return "#2ecc71";
+      case REJETE:    return "#e74c3c";
+      case ANNULE:    return "#e74c3c";
+      default:        return "#95a5a6";
     }
+
+    }
+
+  @GetMapping("/available-experts")
+  public ResponseEntity<List<ExpertHassen>> getAvailableExperts() {
+    List<ExpertHassen> available = expertService.findByStatus(ExpertStatus.AVAILABLE);
+    return ResponseEntity.ok(available);
+  }
+
 }

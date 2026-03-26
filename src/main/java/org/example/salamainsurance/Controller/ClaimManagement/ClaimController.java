@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -169,9 +170,9 @@ public class ClaimController {
 
       if (claim.getExpert() != null) {
         ClaimResponseDTO.ExpertSummaryDTO expertDTO = new ClaimResponseDTO.ExpertSummaryDTO();
-        expertDTO.setId(claim.getExpert().getId());
+        expertDTO.setId(Long.valueOf(claim.getExpert().getIdExpert()));
         expertDTO.setName(claim.getExpert().getFirstName() + " " + claim.getExpert().getLastName());
-        expertDTO.setSpeciality(claim.getExpert().getSpeciality());
+        expertDTO.setSpeciality(claim.getExpert().getSpecialty());
         response.setExpert(expertDTO);
       }
 
@@ -213,9 +214,9 @@ public class ClaimController {
 
       if (claim.getExpert() != null) {
         Map<String, Object> expertMap = new HashMap<>();
-        expertMap.put("id", claim.getExpert().getId());
+        expertMap.put("id", Long.valueOf(claim.getExpert().getIdExpert()));
         expertMap.put("name", claim.getExpert().getFirstName() + " " + claim.getExpert().getLastName());
-        expertMap.put("speciality", claim.getExpert().getSpeciality());
+        expertMap.put("speciality", claim.getExpert().getSpecialty());
         expertMap.put("performanceScore", claim.getExpert().getPerformanceScore());
         response.put("assignedExpert", expertMap);
         response.put("assignedDate", claim.getAssignedDate());
@@ -296,7 +297,7 @@ public class ClaimController {
   }
 
   @GetMapping("/expert/{expertId}")
-  public ResponseEntity<List<Claim>> getClaimsByExpert(@PathVariable Long expertId) {
+  public ResponseEntity<List<Claim>> getClaimsByExpert(@PathVariable Integer expertId) {
     return ResponseEntity.ok(claimService.findByExpertId(expertId));
   }
 

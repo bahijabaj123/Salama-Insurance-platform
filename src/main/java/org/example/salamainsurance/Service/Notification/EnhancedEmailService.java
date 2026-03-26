@@ -4,7 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
-import org.example.salamainsurance.Entity.ExpertManagement.Expert;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;  // ← CORRIGÉ
 import org.example.salamainsurance.Entity.Fraud.FraudRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -31,7 +31,7 @@ public class EnhancedEmailService {
 
   private final String fromEmail = "adsalamainsurance@gmail.com";
 
-  public void sendExpertAssignmentEmail(Expert expert, Claim claim) {
+  public void sendExpertAssignmentEmail(ExpertHassen  expert, Claim claim) {
     try {
       MimeMessage message = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -121,7 +121,7 @@ public class EnhancedEmailService {
       context.setVariable("analysisDate",
         LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
       context.setVariable("region", region);
-      context.setVariable("triggeredRules", rules);
+      context.setVariable("triggeredRules", rules);  // ← C'EST ICI QUE LES RÈGLES SONT PASSÉES
       context.setVariable("dashboardLink", "http://localhost:8082/fraud/" + claimRef);
       context.setVariable("actionRequired",
         "HIGH".equals(riskLevel) ? "BLOQUER" : "VÉRIFIER");

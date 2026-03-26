@@ -19,7 +19,8 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
   List<Claim> findByStatus(ClaimStatus status);
 
   // Find by expert
-  List<Claim> findByExpertId(Long expertId);
+  @Query("SELECT c FROM Claim c WHERE c.expert.idExpert = :expertId")
+  List<Claim> findByExpertId(@Param("expertId") Integer expertId);
 
   // Find by region
   List<Claim> findByRegionContaining(String region);
@@ -35,14 +36,14 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
     "(:reference IS NULL OR c.reference LIKE %:reference%) AND " +
     "(:status IS NULL OR c.status = :status) AND " +
     "(:region IS NULL OR c.region LIKE %:region%) AND " +
-    "(:expertId IS NULL OR c.expert.id = :expertId) AND " +
+    "(:expertId IS NULL OR c.expert.idExpert = :expertId) AND " +
     "(:startDate IS NULL OR c.openingDate >= :startDate) AND " +
     "(:endDate IS NULL OR c.openingDate <= :endDate)")
   List<Claim> searchClaims(
     @Param("reference") String reference,
     @Param("status") ClaimStatus status,
     @Param("region") String region,
-    @Param("expertId") Long expertId,
+    @Param("expertId") Integer expertId,
     @Param("startDate") LocalDateTime startDate,
     @Param("endDate") LocalDateTime endDate);
 
@@ -76,7 +77,7 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
   // Trouver les sinistres après une date
   List<Claim> findByOpeningDateAfter(LocalDateTime date);
 
-  //  OU avec @Query (plus explicite)
+  //  oU avec @Query (plus explicite)
   @Query("SELECT c FROM Claim c WHERE c.openingDate > :date")
   List<Claim> findClaimsAfterDate(@Param("date") LocalDateTime date);
 

@@ -118,7 +118,7 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
         report.setTotalNet(newReport.getTotalNet());
         report.setNatureDegats(newReport.getNatureDegats());
         report.setConclusions(newReport.getConclusions());
-        report.setStatutRapport(newReport.getStatutRapport());
+      report.setStatutRapport(newReport.getStatutRapport());
 
         return reportRepository.save(report);
     }
@@ -132,13 +132,14 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
         reportRepository.deleteById(id);
     }
 
-    @Override
-    @Transactional
-    public ExpertReportHassen changerStatut(Integer id, ExpertReportHassen.StatutRapport nouveauStatut) {
-        ExpertReportHassen report = getReportById(id);
-        report.setStatutRapport(nouveauStatut);
-        return reportRepository.save(report);
-    }
+  @Override
+  @Transactional
+  public ExpertReportHassen changerStatut(Integer id, ExpertiseStatus nouveauStatut) {
+    ExpertReportHassen report = getReportById(id);
+    report.setStatutRapport(nouveauStatut);
+    return reportRepository.save(report);
+  }
+
 
     @Override
     @Transactional
@@ -180,7 +181,7 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
 
     // SEARCH BY STATUS
     @Override
-    public List<ExpertReportHassen> findByStatut(ExpertReportHassen.StatutRapport statut) {
+    public List<ExpertReportHassen> findByStatut(ExpertiseStatus statut) {
         return reportRepository.findByStatutRapport(statut);
     }
 
@@ -214,10 +215,10 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
                 .map(ExpertReportHassen::getTotalNet)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        long enCours = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.EN_COURS).count();
-        long termines = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.TERMINE).count();
-        long valides = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.VALIDE).count();
-        long annules = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.ANNULE).count();
+        long enCours = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.EN_COURS).count();
+        long termines = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.TERMINE).count();
+        long valides = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.VALIDE).count();
+        long annules = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.ANNULE).count();
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("expertId", expertId);
@@ -238,9 +239,9 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
                 .map(ExpertReportHassen::getTotalNet)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        long enCours = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.EN_COURS).count();
-        long termines = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.TERMINE).count();
-        long valides = rapports.stream().filter(r -> r.getStatutRapport() == ExpertReportHassen.StatutRapport.VALIDE).count();
+        long enCours = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.EN_COURS).count();
+        long termines = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.TERMINE).count();
+        long valides = rapports.stream().filter(r -> r.getStatutRapport() ==  ExpertiseStatus.VALIDE).count();
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalRapports", rapports.size());
