@@ -68,11 +68,45 @@ public class AccidentServiceImpl implements AccidentService {
     return null;
   }
 
-  @Override
-  public ResponsibilityResult calculateResponsibility(Long id) {
-    return null;
-  }
+  public ResponsibilityResult calculateResponsibility(Long accidentId) {
 
+    Accident accident = accidentRepository.findById(accidentId).orElseThrow();
+
+    int scoreA = 0;
+    int scoreB = 0;
+
+    for (Driver driver : accident.getDrivers()) {
+
+      int driverScore = driver.getCircumstances()
+        .stream()
+        .mapToInt(Circumstances::getFaultPercentage)
+        .sum();
+
+      if (driver.getDriverType() == DriverType.DRIVER_A)
+        scoreA = driverScore;
+
+      if (driver.getDriverType() == DriverType.DRIVER_B)
+        scoreB = driverScore;
+    }
+
+    int total = scoreA + scoreB;
+
+    int percentA = total == 0 ? 0 : (scoreA * 100) / total;
+    int percentB = total == 0 ? 0 : (scoreB * 100) / total;
+
+    String decision;
+
+    if (percentA > percentB)
+      decision = "DRIVER_A_RESPONSABLE";
+
+    else if (percentB > percentA)
+      decision = "DRIVER_B_RESPONSABLE";
+
+    else
+      decision = "RESPONSABILITE_PARTAGEE";
+
+    return new ResponsibilityResult(percentA, percentB, decision);
+  }
   @Override
   public void validateAccident(Long id) {
 

@@ -10,20 +10,21 @@ import java.util.List;
 @Service
 public class GarageProximityService {
 
+    public record GarageWithDistance(RepairShopLinda garage, double distanceKm) {}
+
     private final RepairShopLindaRepository repairShopLindaRepository;
 
     public GarageProximityService(RepairShopLindaRepository repairShopLindaRepository) {
         this.repairShopLindaRepository = repairShopLindaRepository;
     }
 
-    public List<RepairShopLinda> findNearestGarages(double clientLat, double clientLng, int limit) {
+    public List<GarageWithDistance> findNearestGarages(double clientLat, double clientLng, int limit) {
         List<RepairShopLinda> allGarages = repairShopLindaRepository.findAll();
 
         return allGarages.stream()
                 .filter(g -> g.getLatitude() != null && g.getLongitude() != null)
-                .sorted(Comparator.comparingDouble(
-                        g -> distanceInKm(clientLat, clientLng, g.getLatitude(), g.getLongitude())
-                ))
+                .map(g -> new GarageWithDistance(g, distanceInKm(clientLat, clientLng, g.getLatitude(), g.getLongitude())))
+                .sorted(Comparator.comparingDouble(GarageWithDistance::distanceKm))
                 .limit(limit)
                 .toList();
     }

@@ -8,6 +8,10 @@
     <link rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
+    <!-- FullCalendar CSS (calendrier dispo/indispo) -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css"/>
+
     <style>
         body { font-family: Arial; }
         #map {
@@ -16,6 +20,67 @@
             border-radius: 10px;
         }
         h2 { text-align: center; }
+
+        /* Modal calendrier */
+        #availability-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: none;
+            z-index: 10000;
+            padding: 24px;
+        }
+        #availability-modal .modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            max-width: 1000px;
+            margin: 6vh auto 0 auto;
+            padding: 14px 14px 10px 14px;
+        }
+        #availability-modal .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 8px;
+        }
+        #availability-modal .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        #availability-modal .close-btn {
+            cursor: pointer;
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 700;
+        }
+        #availability-legend {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            font-size: 13px;
+            margin: 6px 0 10px 0;
+        }
+        #availability-legend .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        #availability-legend .available-swatch { background: #d1fae5; }
+        #availability-legend .unavailable-swatch { background: #fee2e2; }
+
+        /* Jours passés: blanc + numéro barré */
+        .fc-daygrid-day.availability-past {
+            background-color: #ffffff !important;
+        }
+        .fc-daygrid-day.availability-past .fc-daygrid-day-number {
+            text-decoration: line-through;
+            color: #9ca3af !important;
+        }
     </style>
 </head>
 <body>
@@ -25,10 +90,38 @@
     Clique sur la carte → Position client en vert | Garages proches en rouge
 </p>
 
+<div id="closest-garage-msg" style="text-align:center; font-size:1.2em; font-weight:bold; margin:10px 0; min-height:28px; color:#2e7d32;"></div>
+
 <div id="map"></div>
+
+<!-- Modal calendrier disponibilité -->
+<div id="availability-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="availability-title">Disponibilité du garage</div>
+            <button class="close-btn" id="availability-close-btn" type="button">Fermer</button>
+        </div>
+
+        <div id="availability-legend">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div class="swatch available-swatch"></div>
+                Jour disponible (vert)
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div class="swatch unavailable-swatch"></div>
+                Jour non disponible (rouge)
+            </div>
+        </div>
+
+        <div id="availability-calendar"></div>
+    </div>
+</div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- FullCalendar JS (calendrier) -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
 <script>
     // Centre sur la Tunisie (modifiable)
@@ -42,6 +135,135 @@
 
     let clientMarker = null;
     let garageMarkers = [];
+
+    // Etat calendrier disponibilité (FullCalendar)
+    let availabilityCalendar = null;
+    let currentGarageId = null;
+
+    function normalizeYMD(value) {
+        // FullCalendar peut fournir 'YYYY-MM-DD' ou 'YYYY-MM-DDTHH:mm:ss...'
+        // On prend toujours la partie date.
+        return String(value || '').slice(0, 10);
+    }
+
+    function dateToYMD(dateObj) {
+        // dateObj: Date
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
+    }
+
+    function toBoolean(val) {
+        if (typeof val === 'boolean') return val;
+        if (typeof val === 'number') return val === 1;
+        if (typeof val === 'string') {
+            const s = val.trim().toLowerCase();
+            if (s === '1' || s === 'true' || s === 'yes') return true;
+            if (s === '0' || s === 'false' || s === 'no') return false;
+        }
+        return Boolean(val);
+    }
+
+    function isoDatePlusDays(isoDate, days) {
+        // isoDate: 'YYYY-MM-DD'
+        // Important: on évite `toISOString()` (qui peut décaler la date selon le fuseau horaire).
+        isoDate = normalizeYMD(isoDate);
+        const [y, m, d] = isoDate.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() + days);
+
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+    }
+
+    async function fetchAvailability(garageId, start, end) {
+        const url = `/api/garages/${garageId}/availability?start=${start}&end=${end}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Availability request failed: ${res.status}`);
+        return await res.json();
+    }
+
+    function openAvailabilityCalendar(garageId, garageName) {
+        currentGarageId = garageId;
+
+        const todayYMD = dateToYMD(new Date());
+
+        const modal = document.getElementById('availability-modal');
+        const title = document.getElementById('availability-title');
+        title.textContent = `Disponibilité - ${garageName || 'Garage'}`;
+        modal.style.display = 'block';
+
+        const calendarEl = document.getElementById('availability-calendar');
+
+        if (!availabilityCalendar) {
+            availabilityCalendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: 'auto',
+                locale: 'fr',
+                timeZone: 'local',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: ''
+                },
+                events: async function (info, successCallback, failureCallback) {
+                    try {
+                        if (!currentGarageId) {
+                            successCallback([]);
+                            return;
+                        }
+
+                        // info.endStr est généralement exclusif => conversion en inclusif
+                        const startStr = normalizeYMD(info.startStr); // inclus (YYYY-MM-DD)
+                        const endExclusiveStr = normalizeYMD(info.endStr); // exclu (YYYY-MM-DD)
+                        const endInclusiveStr = isoDatePlusDays(endExclusiveStr, -1);
+
+                        const availabilityRows = await fetchAvailability(
+                            currentGarageId,
+                            startStr,
+                            endInclusiveStr
+                        );
+
+                        // DEBUG (optionnel) : tu peux voir la réponse dans la console
+                        // console.log('availabilityRows', availabilityRows);
+
+                        const backgroundEvents = (availabilityRows || []).map(row => {
+                            const dateStr = normalizeYMD(row.date); // 'YYYY-MM-DD'
+                            const available = toBoolean(row.available);
+
+                            // Ne colore pas les jours passés: ils seront affichés blanc + barré.
+                            if (dateStr < todayYMD) return null;
+
+                            return {
+                                start: dateStr,
+                                end: isoDatePlusDays(dateStr, 1),
+                                allDay: true,
+                                display: 'background',
+                                // Couleurs contrastées pour éviter l'effet "quasi invisible"
+                                backgroundColor: available ? '#16a34a' : '#dc2626',
+                                borderColor: available ? '#16a34a' : '#dc2626',
+                                zIndex: available ? 1 : 2,
+                                title: ''
+                            };
+                        });
+
+                        successCallback(backgroundEvents.filter(Boolean));
+                    } catch (e) {
+                        console.error(e);
+                        failureCallback(e);
+                    }
+                }
+                ,
+                dayCellClassNames: function (arg) {
+                    const ymd = dateToYMD(arg.date);
+                    return ymd < todayYMD ? ['availability-past'] : [];
+                }
+            });
+
+            availabilityCalendar.render();
+        } else {
+            availabilityCalendar.refetchEvents();
+        }
+    }
 
     function clearGarages() {
         garageMarkers.forEach(m => map.removeLayer(m));
@@ -74,21 +296,53 @@
 
             clearGarages();
 
-            // 🔴 Afficher garages proches
-            garages.forEach(g => {
+            const msgEl = document.getElementById('closest-garage-msg');
+            if (garages.length > 0) {
+                const closest = garages[0];
+                msgEl.textContent = `Le plus proche garage est ${closest.name} (à ${closest.distanceKm} km)`;
+                msgEl.style.display = 'block';
+            } else {
+                msgEl.textContent = '';
+                msgEl.style.display = 'none';
+            }
+
+            // 🔴 Afficher garages proches (le 1er = plus proche, en orange)
+            garages.forEach((g, index) => {
+                const isClosest = index === 0;
                 const marker = L.circleMarker([g.latitude, g.longitude], {
-                    radius: 8,
-                    color: "red",
-                    fillColor: "red",
-                    fillOpacity: 1
+                    radius: isClosest ? 10 : 8,
+                    color: isClosest ? "orange" : "red",
+                    fillColor: isClosest ? "orange" : "red",
+                    fillOpacity: 1,
+                    weight: isClosest ? 3 : 2
                 }).addTo(map)
-                    .bindPopup("Garage: " + g.name);
+                    .bindPopup(isClosest
+                        ? `⭐ Plus proche: ${g.name} (${g.distanceKm} km)`
+                        : `Garage: ${g.name} (${g.distanceKm} km)`);
+
+                // Au clic sur un garage, on ouvre le calendrier de disponibilité
+                marker.on('click', function () {
+                    openAvailabilityCalendar(g.id, g.name);
+                });
 
                 garageMarkers.push(marker);
             });
 
         } catch (error) {
             console.error("Erreur API:", error);
+            document.getElementById('closest-garage-msg').textContent = '';
+        }
+    });
+
+    // Ferme la modal calendrier
+    document.getElementById('availability-close-btn').addEventListener('click', function () {
+        document.getElementById('availability-modal').style.display = 'none';
+    });
+
+    // Ferme aussi si l'on clique sur le fond de la modal
+    document.getElementById('availability-modal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            this.style.display = 'none';
         }
     });
 </script>

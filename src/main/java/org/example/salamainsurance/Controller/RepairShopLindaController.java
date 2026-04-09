@@ -1,54 +1,65 @@
 package org.example.salamainsurance.Controller;
 
+import jakarta.validation.Valid;
 import org.example.salamainsurance.DTO.RepairShopLindaRequest;
 import org.example.salamainsurance.Entity.RepairShopLinda;
 import org.example.salamainsurance.Service.RepairShopLindaService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/repair-shops-linda")
 public class RepairShopLindaController {
 
-    private final RepairShopLindaService service;
+  private final RepairShopLindaService service;
 
-    public RepairShopLindaController(RepairShopLindaService service) {
-        this.service = service;
-    }
+  public RepairShopLindaController(RepairShopLindaService service) {
+    this.service = service;
+  }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public RepairShopLinda create(@Valid @RequestBody RepairShopLindaRequest request) {
-        return service.create(request);
-    }
+  // CREATE
+  @PostMapping
+  public ResponseEntity<RepairShopLinda> create(@Valid @RequestBody RepairShopLindaRequest request) {
+    RepairShopLinda created = service.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(created);
+  }
 
-    @GetMapping("/{id}")
-    public RepairShopLinda get(@PathVariable Long id) {
-        return service.getById(id);
-    }
+  // GET BY ID
+  @GetMapping("/{id}")
+  public ResponseEntity<RepairShopLinda> get(@PathVariable Long id) {
+    RepairShopLinda shop = service.getById(id); // doit lancer 404 si non trouvé (voir plus bas)
+    return ResponseEntity.ok(shop);
+  }
 
-    @GetMapping
-    public List<RepairShopLinda> getAll() {
-        return service.getAll();
-    }
+  // GET ALL
+  @GetMapping
+  public ResponseEntity<List<RepairShopLinda>> getAll() {
+    return ResponseEntity.ok(service.getAll());
+  }
 
-    @PutMapping("/{id}")
-    public RepairShopLinda update(@PathVariable Long id,
-                                  @Valid @RequestBody RepairShopLindaRequest request) {
-        return service.update(id, request);
-    }
+  // UPDATE
+  @PutMapping("/{id}")
+  public ResponseEntity<RepairShopLinda> update(
+    @PathVariable Long id,
+    @Valid @RequestBody RepairShopLindaRequest request
+  ) {
+    RepairShopLinda updated = service.update(id, request);
+    return ResponseEntity.ok(updated);
+  }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
-    }
+  // DELETE
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> delete(@PathVariable Long id) {
+    service.delete(id);
+    return ResponseEntity.noContent().build();
+  }
 
-    @GetMapping("/partners")
-    public List<RepairShopLinda> getPartners() {
-        return service.getPartnerShops();
-    }
+  // GET PARTNERS
+  @GetMapping("/partners")
+  public ResponseEntity<List<RepairShopLinda>> getPartners() {
+    return ResponseEntity.ok(service.getPartnerShops());
+  }
 }

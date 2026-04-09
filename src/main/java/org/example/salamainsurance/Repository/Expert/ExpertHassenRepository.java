@@ -9,6 +9,7 @@ import org.example.salamainsurance.Entity.Expert.ExpertStatus;
 
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ExpertHassenRepository extends JpaRepository<ExpertHassen, Integer> {
@@ -56,4 +57,5 @@ public interface ExpertHassenRepository extends JpaRepository<ExpertHassen, Inte
     }
   }
 
+  Optional<ExpertHassen> findByEmail(String email);
 }

@@ -235,7 +235,7 @@ public class Claim {
   }
 
   public ExpertHassen getExpert() {
-    return expert;
+    return this.expert;  // ← retourne l'attribut, pas null
   }
 
   public void setExpert(ExpertHassen expert) {

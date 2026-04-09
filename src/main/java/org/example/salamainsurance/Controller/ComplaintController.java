@@ -27,7 +27,7 @@ public class ComplaintController {
     }
   }
 
-  // Ajout via objet JSON complet
+
   @PostMapping("/add")
   public ResponseEntity<ComplaintSarra> create(@RequestBody ComplaintSarra complaint) {
     try {

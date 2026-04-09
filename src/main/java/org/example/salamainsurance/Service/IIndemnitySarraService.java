@@ -13,7 +13,10 @@ public interface IIndemnitySarraService  {
     Optional<IndemnitySarra> getById(Long id);
 
     void delete(Long id);
-    IndemnitySarra calculateAdvancedPayout(Long id, Double marketValueAtExpertise, Double insuredValueInContract);
+
+  IndemnitySarra calculateAndSave(Double gross, Integer resp, Double fixedDed);
+
+  IndemnitySarra calculateAdvancedPayout(Long id, Double marketValueAtExpertise, Double insuredValueInContract);
     IndemnitySarra saveInitialData(Double gross, Integer resp, Double deductible);
 }
 

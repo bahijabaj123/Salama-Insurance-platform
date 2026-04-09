@@ -1,5 +1,4 @@
 package org.example.salamainsurance.Service;
-
 import org.example.salamainsurance.DTO.RepairShopLindaRequest;
 import org.example.salamainsurance.Entity.RepairShopLinda;
 import org.example.salamainsurance.Repository.RepairShopLindaRepository;
