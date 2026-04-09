@@ -10,7 +10,7 @@
 
 ## 📋 Overview
 
-This project was developed as part of the **PIDEV – 3rd Year Engineering Program** at **Esprit School of Engineering** (Academic Year 2025–2026).
+This project was developed as part of the **PIDEV – 4Th Year Engineering Program** at **Esprit School of Engineering** (Academic Year 2025–2026).
 
 Salama Insurance is an intelligent digital insurance platform that revolutionizes the claims management process through complete dematerialization, AI-powered assistance, and end-to-end process automation. The platform serves clients, insurance experts, and insurers with a seamless, transparent, and efficient digital experience.
 
@@ -59,7 +59,7 @@ Salama Insurance is an intelligent digital insurance platform that revolutionize
 ## 🎓 Academic Context
 
 **Developed at Esprit School of Engineering – Tunisia**  
-**Program:** PIDEV - 3rd Year Engineering  
+**Program:** PIDEV - 4Th Year Engineering  
 **Academic Year:** 2025–2026  
 **Institution:** Esprit School of Engineering (Tunis, Tunisia)
 
