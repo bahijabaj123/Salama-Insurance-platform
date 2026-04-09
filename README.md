@@ -76,5 +76,5 @@ Salama Insurance is an intelligent digital insurance platform that revolutionize
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/bahijabaj123/Esprit-PIDEV-3A10-2025-2026-SalamaInsurance.git
+git clone https://github.com/bahijabaj123/Esprit-PIDEV-4infini1-2025-2026-SalamaInsurancePlatform.git
 cd Esprit-PIDEV-3A10-2025-2026-SalamaInsurance
