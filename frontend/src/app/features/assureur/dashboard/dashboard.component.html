@@ -1,0 +1,128 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1>📊 Tableau de bord Assureur</h1>
+    <button mat-raised-button color="primary" (click)="refreshData()">
+      <mat-icon>refresh</mat-icon> Actualiser
+    </button>
+  </div>
+
+  <!-- Spinner de chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement des données...</p>
+  </div>
+
+   <!-- Carte des sinistres -->
+  <mat-card class="map-card">
+    <mat-card-header>
+      <mat-card-title>🗺️ Carte des sinistres</mat-card-title>
+      <mat-card-subtitle>{{ claims.length }} sinistre(s) affiché(s)</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <app-tunisia-map 
+        [claims]="claims" 
+        (regionSelected)="filterByRegion($event)"
+        (claimSelected)="goToClaim($event)">
+      </app-tunisia-map>
+    </mat-card-content>
+  </mat-card>
+  
+
+  <!-- Contenu du dashboard -->
+  <div *ngIf="!loading">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <mat-card class="kpi-card" (click)="goToClaims()">
+        <div class="kpi-icon blue"><mat-icon>assignment</mat-icon></div>
+        <div class="kpi-value">{{ totalClaims }}</div>
+        <div class="kpi-label">Total Sinistres</div>
+      </mat-card>
+
+      <mat-card class="kpi-card" (click)="filterByStatus('OPENED')">
+        <div class="kpi-icon orange"><mat-icon>pending</mat-icon></div>
+        <div class="kpi-value">{{ pendingClaims }}</div>
+        <div class="kpi-label">En attente</div>
+      </mat-card>
+
+      <mat-card class="kpi-card" (click)="filterByStatus('ASSIGNED_TO_EXPERT')">
+        <div class="kpi-icon cyan"><mat-icon>engineering</mat-icon></div>
+        <div class="kpi-value">{{ inProgressClaims }}</div>
+        <div class="kpi-label">En cours</div>
+      </mat-card>
+
+      <mat-card class="kpi-card" (click)="filterByStatus('CLOSED')">
+        <div class="kpi-icon green"><mat-icon>check_circle</mat-icon></div>
+        <div class="kpi-value">{{ closedClaims }}</div>
+        <div class="kpi-label">Clôturés</div>
+      </mat-card>
+
+      <mat-card class="kpi-card" (click)="filterByStatus('URGENT')">
+        <div class="kpi-icon red"><mat-icon>warning</mat-icon></div>
+        <div class="kpi-value">{{ urgentClaims }}</div>
+        <div class="kpi-label">Urgents</div>
+      </mat-card>
+
+      <mat-card class="kpi-card">
+        <div class="kpi-icon purple"><mat-icon>speed</mat-icon></div>
+        <div class="kpi-value">{{ avgProcessingDays }}j</div>
+        <div class="kpi-label">Traitement moyen</div>
+      </mat-card>
+    </div>
+
+    <!-- Graphiques 2x2 -->
+    <div class="charts-grid">
+      <!-- Camembert - Régions -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>📍 Sinistres par région</mat-card-title>
+          <mat-card-subtitle>Cliquez sur une région pour filtrer</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas #regionChart></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Barres - Statuts -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>📊 Répartition par statut</mat-card-title>
+          <mat-card-subtitle>Cliquez sur une barre pour filtrer</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas #statusChart></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Ligne - Évolution -->
+      <mat-card class="chart-card full-width">
+        <mat-card-header>
+          <mat-card-title>📈 Évolution des sinistres</mat-card-title>
+          <mat-card-subtitle>6 derniers mois</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container line-chart">
+            <canvas #trendChart></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Doughnut - Urgence -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>⚡ Niveau d'urgence</mat-card-title>
+          <mat-card-subtitle>Répartition des sinistres par criticité</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container small-chart">
+            <canvas #urgencyChart></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

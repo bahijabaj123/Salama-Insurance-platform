@@ -1,0 +1,38 @@
+<aside class="sidebar">
+  <div class="sidebar__brand">
+    <div class="sidebar__mark" aria-hidden="true">S</div>
+    <div class="sidebar__brand-text">
+      <span class="sidebar__brand-title">Salama</span>
+      <span class="sidebar__brand-sub">Admin</span>
+    </div>
+  </div>
+
+  <mat-nav-list class="sidebar__nav" aria-label="Admin primary">
+    @for (item of items; track item.path) {
+      <a
+        mat-list-item
+        class="sidebar__item"
+        [routerLink]="item.path"
+        routerLinkActive="sidebar__item--active"
+        [routerLinkActiveOptions]="{ exact: item.path === '/admin/dashboard' }"
+      >
+        <mat-icon matListItemIcon>
+          @switch (item.icon) {
+            @case ('dashboard') { dashboard }
+            @case ('users') { group }
+            @case ('requests') { rule }
+          }
+        </mat-icon>
+        <span matListItemTitle>{{ item.label }}</span>
+      </a>
+    }
+  </mat-nav-list>
+
+  <div class="sidebar__footer">
+    <button mat-stroked-button color="primary" type="button" class="sidebar__logout" (click)="onLogout()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </div>
+</aside>
+

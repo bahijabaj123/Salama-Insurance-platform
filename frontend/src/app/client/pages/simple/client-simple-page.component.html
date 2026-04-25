@@ -1,0 +1,20 @@
+<div class="page">
+  <header class="page__header">
+    <h2 class="page__title">{{ title }}</h2>
+    @if (subtitle) {
+      <p class="page__subtitle">{{ subtitle }}</p>
+    }
+  </header>
+
+  <section class="page__card">
+    <p class="page__lede">
+      This screen is a placeholder for the <strong>{{ title }}</strong> module. Your team can replace this component
+      with the real feature implementation when ready.
+    </p>
+    <ul class="page__list">
+      <li>Keep routes stable for predictable navigation.</li>
+      <li>Use the existing layout shell for consistent spacing.</li>
+      <li>Wire APIs incrementally without changing the overall structure.</li>
+    </ul>
+  </section>
+</div>

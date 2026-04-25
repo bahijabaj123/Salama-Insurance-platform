@@ -1,0 +1,286 @@
+<div class="client-app">
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SIDEBAR (TON SIDEBAR)                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="logo-zone">
+      <div class="logo-row">
+        <div class="logo-s">S</div>
+        <div>
+          <div class="logo-name">Salama Insurance</div>
+          <div class="logo-sub">Espace client</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-label">Menu</div>
+      
+      <!-- Première partie : liens principaux -->
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         [routerLink]="item.route">
+        <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+        <span class="nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
+        <span class="nav-badge" *ngIf="!item.badge && item.label === 'Mes sinistres' && activeClaims.length">
+          {{ activeClaims.length }}
+        </span>
+      </a>
+      
+      <!-- Séparateur -->
+      <div class="nav-divider"></div>
+      
+      <!-- Deuxième partie : profil et déconnexion -->
+      <a routerLink="/client/profile" class="nav-item">
+        <mat-icon class="nav-icon">person</mat-icon>
+        <span>Mon profil</span>
+      </a>
+      <a routerLink="/client/logout" class="nav-item">
+        <mat-icon class="nav-icon">logout</mat-icon>
+        <span>Déconnexion</span>
+      </a>
+    </nav>
+
+    <div class="user-zone">
+      <div class="user-av">{{ CLIENT_INIT() }}</div>
+      <div class="user-info">
+        <div class="user-name">{{ CLIENT_NAME() }}</div>
+        <div class="user-role">Client Salama</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT                                                        -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">Tableau de bord</div>
+        <div class="topbar-sub">Bienvenue, {{ CLIENT_NAME() }} — voici l'état de vos dossiers</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notif-btn" matTooltip="Notifications" (click)="goToNotifications()">
+          <mat-icon>notifications</mat-icon>
+          <span class="notif-dot"></span>
+        </div>
+        <button class="chat-fab" (click)="openAssistant()">
+          <mat-icon>smart_toy</mat-icon>
+          Assistant IA
+        </button>
+      </div>
+    </header>
+
+    <!-- Contenu -->
+    <div class="content">
+
+      <!-- ── LOADING ──────────────────────────────────────────────────── -->
+      <div class="center-state" *ngIf="loading">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>Chargement de vos dossiers…</p>
+      </div>
+
+      <!-- ── ERREUR ───────────────────────────────────────────────────── -->
+      <div class="error-state" *ngIf="error && !loading">
+        <mat-icon>wifi_off</mat-icon>
+        <p>{{ error }}</p>
+        <button class="retry-btn" (click)="loadData()">Réessayer</button>
+      </div>
+
+      <ng-container *ngIf="!loading && !error">
+
+        <!-- ── HERO CARD ─────────────────────────────────────────────── -->
+        <div class="hero-card">
+          <div class="hero-top">
+            <div>
+              <div class="hero-greeting">Bonjour, {{ CLIENT_NAME().split(' ')[0] }}</div>
+              <div class="hero-title">Vos sinistres en cours</div>
+              <div class="hero-contract">
+                Contrat N° {{ CLIENT_REF }} · Valide jusqu'au 31/12/2026
+              </div>
+            </div>
+            <span class="hero-badge">Client Premium</span>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-val">{{ activeClaims.length }}</div>
+              <div class="hero-stat-lbl">Sinistres actifs</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val">{{ allClaims | filterHasExpert }}</div>
+              <div class="hero-stat-lbl">Expert assigné</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val">{{ allClaims.length }}</div>
+              <div class="hero-stat-lbl">Total dossiers</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val">{{ closedClaims.length }}</div>
+              <div class="hero-stat-lbl">Clôturés</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── KPI CARDS ─────────────────────────────────────────────── -->
+        <div class="kpi-grid">
+          <div class="kpi-card" *ngFor="let k of kpis" [style.border-left-color]="k.color">
+            <div class="kpi-val" [style.color]="k.color">{{ k.value }}</div>
+            <div class="kpi-lbl">{{ k.label }}</div>
+            <div class="kpi-sub">{{ k.sub }}</div>
+          </div>
+        </div>
+
+        <!-- ── 2 COLONNES : liste + timeline ────────────────────────── -->
+        <div class="two-col">
+
+          <!-- Mes sinistres -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Mes sinistres</span>
+              <button class="see-all" (click)="goToList()">Voir tout →</button>
+            </div>
+
+            <div class="empty-mini" *ngIf="allClaims.length === 0">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun sinistre enregistré</p>
+            </div>
+
+            <div class="sinistre-list">
+              <div *ngFor="let c of allClaims.slice(0, 4); trackBy: trackById"
+                   class="sinistre-item"
+                   (click)="goToClaim(c.id)">
+                <div class="sin-row1">
+                  <span class="sin-ref">{{ c.reference }}</span>
+                  <span class="sin-badge" [ngClass]="STATUS_BADGE_CSS[c.status]">
+                    {{ STATUS_LABELS[c.status] }}
+                  </span>
+                </div>
+                <div class="sin-row2">
+                  <span class="sin-type">{{ c.region || '—' }}</span>
+                  <span class="sin-date">{{ c.openingDate | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="sin-urgency" *ngIf="c.urgencyScore">
+                  <div class="urg-bar">
+                    <div class="urg-fill"
+                         [ngClass]="getUrgencyClass(c.urgencyScore)"
+                         [style.width.%]="c.urgencyScore">
+                    </div>
+                  </div>
+                  <span class="urg-val">{{ c.urgencyScore }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline sinistre actif -->
+          <div class="card" *ngIf="latestClaim">
+            <div class="card-header">
+              <span class="card-title">Suivi en temps réel</span>
+              <span class="card-ref">{{ latestClaim.reference }}</span>
+            </div>
+
+            <div class="timeline">
+              <div *ngFor="let step of TIMELINE_STEPS; let last = last"
+                   class="tl-item"
+                   [class.tl-last]="last">
+                <div class="tl-left">
+                  <div class="tl-circle"
+                       [ngClass]="'tl-' + getTimelineStepState(latestClaim, step.key)">
+                    <mat-icon>
+                      {{ getTimelineStepState(latestClaim, step.key) === 'done'
+                         ? 'check'
+                         : getTimelineStepState(latestClaim, step.key) === 'active'
+                         ? 'arrow_forward'
+                         : 'schedule' }}
+                    </mat-icon>
+                  </div>
+                  <div class="tl-line"
+                       *ngIf="!last"
+                       [class.tl-line-done]="getTimelineStepState(latestClaim, step.key) === 'done'">
+                  </div>
+                </div>
+                <div class="tl-content" [class.tl-active-content]="getTimelineStepState(latestClaim, step.key) === 'active'">
+                  <div class="tl-title">{{ step.label }}</div>
+                  <div class="tl-meta" *ngIf="getTimelineDate(latestClaim, step.key)">
+                    {{ getTimelineDate(latestClaim, step.key) }}
+                  </div>
+                  <div class="tl-pending-lbl"
+                       *ngIf="getTimelineStepState(latestClaim, step.key) === 'pending'">
+                    En attente
+                  </div>
+                  <div class="expert-card"
+                       *ngIf="step.key === 'assigned' && latestClaim.expert &&
+                              getTimelineStepState(latestClaim, 'assigned') !== 'pending'">
+                    <div class="exp-av">{{ expertInitials(latestClaim) }}</div>
+                    <div class="exp-info">
+                      <div class="exp-name">{{ expertName(latestClaim) }}</div>
+                      <div class="exp-spec">{{ latestClaim.expert.specialty || 'Expert' }}</div>
+                    </div>
+                    <button class="exp-contact" (click)="openAssistant()">
+                      Contacter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card center-card" *ngIf="!latestClaim && !loading">
+            <mat-icon>assignment_late</mat-icon>
+            <p>Aucun sinistre actif</p>
+          </div>
+
+        </div>
+
+        <!-- ── GRAPHIQUE ──────────────────────────────────────────────── -->
+        <div class="chart-container">
+          <h3>📈 Évolution de vos sinistres</h3>
+          <div class="chart-wrapper">
+            <canvas #trendChart></canvas>
+          </div>
+        </div>
+
+        <!-- ── CHATBOT PREVIEW ───────────────────────────────────────── -->
+        <div class="card chatbot-card">
+          <div class="card-header">
+            <span class="card-title">
+              <mat-icon>smart_toy</mat-icon>
+              Assistant IA Salama
+            </span>
+            <button class="see-all" (click)="openAssistant()">Ouvrir →</button>
+          </div>
+          <div class="chat-bubble">
+            <div class="chat-av-big">S</div>
+            <div class="chat-content">
+              <div class="chat-msg">
+                <ng-container *ngIf="latestClaim">
+                  Bonjour {{ CLIENT_NAME().split(' ')[0] }} ! Votre sinistre
+                  <strong>{{ latestClaim.reference }}</strong> est
+                  {{ STATUS_LABELS[latestClaim.status] | lowercase }}.
+                  <ng-container *ngIf="latestClaim.expert">
+                    L'expert <strong>{{ expertName(latestClaim) }}</strong> est en charge de votre dossier.
+                  </ng-container>
+                </ng-container>
+                <ng-container *ngIf="!latestClaim">
+                  Bonjour {{ CLIENT_NAME().split(' ')[0] }} ! Je suis votre assistant Salama. Comment puis-je vous aider ?
+                </ng-container>
+              </div>
+              <div class="chat-suggestions">
+                <button class="sugg" (click)="openAssistant()">Délai d'indemnisation ?</button>
+                <button class="sugg" (click)="openAssistant()">Contacter l'expert</button>
+                <button class="sugg" (click)="openAssistant()">Ajouter un document</button>
+                <button class="sugg" (click)="openAssistant()">Statut du sinistre</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </main>
+</div>
