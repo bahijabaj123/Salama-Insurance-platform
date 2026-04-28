@@ -11,13 +11,56 @@ import { finalize } from 'rxjs/operators';
 import { AuthStorageService } from '../../../core/auth/auth-storage.service';
 import type { LoginApiErrorBody } from '../../../core/auth/login.models';
 import { AdminApiService } from '../../core/admin-api.service';
-import type { AdminMetricPoint, AdminUserRow, AdminUserSummary } from '../../core/admin.models';
+import type {
+  AccountRatesResponse,
+  AdminMetricPoint,
+  AdminUserRow,
+  AdminUserSummary,
+  UserGrowthResponse
+} from '../../core/admin.models';
 
 type ChartModel = {
   title: string;
   total: number;
   points: AdminMetricPoint[];
 };
+
+type GrowthBar = {
+  period: string;
+  label: string;
+  count: number;
+  heightPct: number;
+};
+
+const MONTH_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec'
+];
+
+const MONTH_LONG = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+];
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -41,6 +84,37 @@ export class AdminDashboardComponent implements OnInit {
   readonly pendingPreview = computed(() =>
     (this.recentUsers() ?? []).filter((u) => u.requestedRole && u.approvalStatus === 'PENDING').slice(0, 4)
   );
+
+  readonly userGrowth = signal<UserGrowthResponse | null>(null);
+  readonly accountRates = signal<AccountRatesResponse | null>(null);
+  readonly businessLoading = signal(true);
+  readonly businessError = signal<string | null>(null);
+
+  readonly growthState = computed<'up' | 'down' | 'neutral'>(() => {
+    const g = this.userGrowth();
+    if (!g || typeof g.growthRate !== 'number' || Number.isNaN(g.growthRate)) {
+      return 'neutral';
+    }
+    if (g.growthRate > 0) return 'up';
+    if (g.growthRate < 0) return 'down';
+    return 'neutral';
+  });
+
+  readonly chartBars = computed<GrowthBar[]>(() => {
+    const g = this.userGrowth();
+    if (!g || !Array.isArray(g.series) || g.series.length === 0) return [];
+    const max = g.series.reduce((acc, p) => Math.max(acc, p?.count ?? 0), 0);
+    return g.series.map((p) => {
+      const count = p?.count ?? 0;
+      const heightPct = max > 0 ? Math.max(2, Math.round((count / max) * 100)) : 0;
+      return {
+        period: p?.period ?? '',
+        label: this.formatPeriodShort(p?.period),
+        count,
+        heightPct
+      };
+    });
+  });
 
   ngOnInit(): void {
     this.load();
@@ -103,16 +177,105 @@ export class AdminDashboardComponent implements OnInit {
         },
         error: (e: unknown) => this.setErrorFromHttp(e, 'Unable to load locked users.')
       });
+
+    this.loadBusinessInsights();
+  }
+
+  private loadBusinessInsights(): void {
+    this.businessLoading.set(true);
+    this.businessError.set(null);
+
+    let pending = 2;
+    const finishOne = () => {
+      pending -= 1;
+      if (pending <= 0) this.businessLoading.set(false);
+    };
+
+    this.api
+      .getUsersGrowth(6)
+      .pipe(finalize(finishOne))
+      .subscribe({
+        next: (g) => this.userGrowth.set(g),
+        error: (e: unknown) => this.setBusinessErrorFromHttp(e, 'Unable to load user growth analytics.')
+      });
+
+    this.api
+      .getAccountRates()
+      .pipe(finalize(finishOne))
+      .subscribe({
+        next: (r) => this.accountRates.set(r),
+        error: (e: unknown) => this.setBusinessErrorFromHttp(e, 'Unable to load account rates.')
+      });
+  }
+
+  formatPeriod(period: string | null | undefined): string {
+    if (!period) return '—';
+    const [year, month] = period.split('-');
+    const m = Number(month);
+    const y = Number(year);
+    if (!y || !m || m < 1 || m > 12) return period;
+    return `${MONTH_LONG[m - 1]} ${y}`;
+  }
+
+  formatPeriodShort(period: string | null | undefined): string {
+    if (!period) return '—';
+    const [, month] = period.split('-');
+    const m = Number(month);
+    if (!m || m < 1 || m > 12) return period;
+    return MONTH_SHORT[m - 1];
+  }
+
+  formatPercent(value: number | null | undefined, withSign = false): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '—';
+    const sign = withSign && value > 0 ? '+' : '';
+    return `${sign}${value.toFixed(1)}%`;
+  }
+
+  clampPercent(value: number | null | undefined): number {
+    if (value === null || value === undefined || Number.isNaN(value)) return 0;
+    return Math.max(0, Math.min(100, value));
+  }
+
+  private setBusinessErrorFromHttp(err: unknown, fallback: string): void {
+    if (this.businessError()) return;
+
+    if (err instanceof HttpErrorResponse && err.status === 401) {
+      this.authStorage.clear();
+      this.businessError.set('Your session has expired. Please sign in again.');
+      return;
+    }
+
+    if (!(err instanceof HttpErrorResponse)) {
+      this.businessError.set(fallback);
+      return;
+    }
+
+    const body = err.error as LoginApiErrorBody | string | null | undefined;
+    if (body && typeof body === 'object' && !Array.isArray(body) && typeof body.message === 'string') {
+      this.businessError.set(body.message);
+      return;
+    }
+
+    this.businessError.set(fallback);
   }
 
   donutBackground(points: AdminMetricPoint[]): string {
     const filtered = points.filter((p) => p.value > 0);
     const total = filtered.reduce((acc, p) => acc + p.value, 0);
     if (!total) {
-      return 'conic-gradient(#e2e8f0 0deg 360deg)';
+      return 'conic-gradient(#f4f1fa 0deg 360deg)';
     }
 
-    const colors = ['#0f4c81', '#5eb0ff', '#22c55e', '#f59e0b', '#ef4444', '#a78bfa', '#14b8a6'];
+    // Soft pastel palette for a charming admin dashboard.
+    const colors = [
+      '#A0C4FF', // powder blue
+      '#FFADAD', // soft coral
+      '#CAFFBF', // pastel mint
+      '#FFD6A5', // pastel peach
+      '#BDB2FF', // periwinkle
+      '#FFC6FF', // pastel pink
+      '#9BF6FF'  // pastel sky
+    ];
     let current = 0;
     const stops: string[] = [];
     filtered.forEach((p, idx) => {
@@ -124,7 +287,7 @@ export class AdminDashboardComponent implements OnInit {
       stops.push(`${color} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`);
     });
     if (current < 360) {
-      stops.push(`#e2e8f0 ${current.toFixed(2)}deg 360deg`);
+      stops.push(`#f4f1fa ${current.toFixed(2)}deg 360deg`);
     }
     return `conic-gradient(${stops.join(', ')})`;
   }

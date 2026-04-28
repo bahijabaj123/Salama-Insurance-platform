@@ -4,11 +4,13 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import type {
+  AccountRatesResponse,
   AdminPage,
   AdminUserRow,
   AdminUserSummary,
   AdminUsersByApprovalStatusResponse,
-  AdminUsersByRoleResponse
+  AdminUsersByRoleResponse,
+  UserGrowthResponse
 } from './admin.models';
 
 export type AdminUsersQuery = {
@@ -40,6 +42,20 @@ export class AdminApiService {
   getUsersByApprovalStatus(): Observable<AdminUsersByApprovalStatusResponse[]> {
     return this.http.get<AdminUsersByApprovalStatusResponse[]>(
       `${environment.apiBaseUrl}/api/admin/dashboard/users-by-approval-status`
+    );
+  }
+
+  getUsersGrowth(months: number = 6): Observable<UserGrowthResponse> {
+    const params = new HttpParams().set('months', String(months));
+    return this.http.get<UserGrowthResponse>(
+      `${environment.apiBaseUrl}/api/admin/dashboard/users-growth`,
+      { params }
+    );
+  }
+
+  getAccountRates(): Observable<AccountRatesResponse> {
+    return this.http.get<AccountRatesResponse>(
+      `${environment.apiBaseUrl}/api/admin/dashboard/account-rates`
     );
   }
 

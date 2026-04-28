@@ -135,6 +135,158 @@
     </mat-card>
   </section>
 
+  <section class="business" aria-label="Business Insights">
+    <header class="business__head">
+      <p class="business__eyebrow">Business Insights</p>
+      <h2 class="business__title">Adoption, activation and operational risk</h2>
+      <p class="business__sub">
+        User growth measures platform adoption over time, while activation and rejection
+        rates help evaluate acquisition quality and operational risk.
+      </p>
+    </header>
+
+    @if (businessError()) {
+      <mat-card class="banner banner--error" role="alert">
+        <strong>Some business insights couldn't be loaded</strong>
+        <span>{{ businessError() }}</span>
+      </mat-card>
+    }
+
+    <div class="business__grid">
+      <mat-card class="card card--growth saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">User growth</h3>
+            <p class="card__sub">Monthly registrations over the last 6 months</p>
+          </div>
+          @if (userGrowth(); as g) {
+            <span
+              class="growth__rate"
+              [class.growth__rate--up]="growthState() === 'up'"
+              [class.growth__rate--down]="growthState() === 'down'"
+              [class.growth__rate--neutral]="growthState() === 'neutral'"
+              [attr.aria-label]="'Growth rate ' + formatPercent(g.growthRate, true)"
+            >
+              <mat-icon class="growth__icon" aria-hidden="true">
+                @switch (growthState()) {
+                  @case ('up') { trending_up }
+                  @case ('down') { trending_down }
+                  @default { trending_flat }
+                }
+              </mat-icon>
+              {{ formatPercent(g.growthRate, true) }}
+            </span>
+          }
+        </div>
+
+        @if (businessLoading() && !userGrowth()) {
+          <div class="growth-skeleton" aria-busy="true"></div>
+        } @else {
+          @if (userGrowth(); as g) {
+            <div class="growth-summary">
+              <div class="growth-summary__cell">
+                <span class="growth-summary__label">{{ formatPeriod(g.currentMonth?.period) }}</span>
+                <span class="growth-summary__value">{{ g.currentMonth?.count ?? '—' }}</span>
+                <span class="growth-summary__hint">Current month registrations</span>
+              </div>
+              <div class="growth-summary__cell">
+                <span class="growth-summary__label">{{ formatPeriod(g.previousMonth?.period) }}</span>
+                <span class="growth-summary__value">{{ g.previousMonth?.count ?? '—' }}</span>
+                <span class="growth-summary__hint">Previous month registrations</span>
+              </div>
+              <div class="growth-summary__cell growth-summary__cell--accent">
+                <span class="growth-summary__label">vs. last month</span>
+                <span class="growth-summary__value">{{ formatPercent(g.currentVsPreviousPercent) }}</span>
+                <span class="growth-summary__hint">
+                  This month reached {{ formatPercent(g.currentVsPreviousPercent) }} of last month's
+                  registrations · Growth rate {{ formatPercent(g.growthRate, true) }}
+                </span>
+              </div>
+            </div>
+
+            @if (chartBars().length > 0) {
+              <div class="bars" role="img" aria-label="Monthly registrations chart">
+                @for (bar of chartBars(); track bar.period) {
+                  <div class="bar-col" [attr.title]="bar.label + ': ' + bar.count + ' users'">
+                    <span class="bar-col__count">{{ bar.count }}</span>
+                    <div class="bar-col__track">
+                      <div class="bar-col__fill" [style.height.%]="bar.heightPct"></div>
+                    </div>
+                    <span class="bar-col__label">{{ bar.label }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty">No growth data available.</div>
+            }
+          } @else {
+            <div class="empty">No growth data available.</div>
+          }
+        }
+      </mat-card>
+
+      <mat-card class="card card--rate saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">Activation rate</h3>
+            <p class="card__sub">
+              Activated users reflect accounts that completed verification and became usable.
+            </p>
+          </div>
+        </div>
+
+        @if (businessLoading() && !accountRates()) {
+          <div class="rate-skeleton" aria-busy="true"></div>
+        } @else {
+          @if (accountRates(); as r) {
+            <div class="rate">
+              <div class="rate__value rate__value--positive">{{ formatPercent(r.activationRate) }}</div>
+              <div class="rate__bar" aria-hidden="true">
+                <div
+                  class="rate__bar-fill rate__bar-fill--positive"
+                  [style.width.%]="clampPercent(r.activationRate)"
+                ></div>
+              </div>
+              <p class="rate__hint">Share of accounts successfully activated</p>
+            </div>
+          } @else {
+            <div class="empty">No data.</div>
+          }
+        }
+      </mat-card>
+
+      <mat-card class="card card--rate saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">Rejection rate</h3>
+            <p class="card__sub">
+              Rejected requests indicate the proportion of users refused during approval.
+            </p>
+          </div>
+        </div>
+
+        @if (businessLoading() && !accountRates()) {
+          <div class="rate-skeleton" aria-busy="true"></div>
+        } @else {
+          @if (accountRates(); as r) {
+            <div class="rate">
+              <div class="rate__value rate__value--negative">{{ formatPercent(r.rejectionRate) }}</div>
+              <div class="rate__bar" aria-hidden="true">
+                <div
+                  class="rate__bar-fill rate__bar-fill--negative"
+                  [style.width.%]="clampPercent(r.rejectionRate)"
+                ></div>
+              </div>
+              <p class="rate__hint">Share of role requests refused</p>
+            </div>
+          } @else {
+            <div class="empty">No data.</div>
+          }
+        }
+      </mat-card>
+    </div>
+  </section>
+
   <section class="previews">
     <mat-card class="card saas-card">
       <div class="card__head">

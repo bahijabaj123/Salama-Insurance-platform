@@ -166,3 +166,17 @@
     0 16px 44px rgb(0 0 0 / 0.28),
     0 1px 0 rgb(255 255 255 / 0.55) inset;
 }
+
+.btn--nav-ghost {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.28);
+  color: #f8fafc;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.08) inset;
+}
+
+.btn--nav-ghost:hover {
+  transform: translateY(-1px);
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.42);
+  color: #fff;
+}

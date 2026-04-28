@@ -61,6 +61,10 @@ export class LoginComponent {
     window.location.assign(`${environment.apiBaseUrl}/oauth2/authorization/google`);
   }
 
+  onGithubSignIn(): void {
+    window.location.assign(`${environment.apiBaseUrl}/oauth2/authorization/github`);
+  }
+
   onSubmit(): void {
     if (this.loginSuccess) {
       return;

@@ -1,11 +1,9 @@
 import { Component, input, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-admin-topbar',
-  imports: [MatToolbarModule, MatButtonModule, MatIconModule],
+  imports: [RouterLink],
   templateUrl: './admin-topbar.component.html',
   styleUrl: './admin-topbar.component.scss'
 })
