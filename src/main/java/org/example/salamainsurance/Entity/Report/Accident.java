@@ -58,7 +58,9 @@ public class Accident {
   @Column(length = 1000)
   private String observations;
 
+  @Column(columnDefinition = "LONGTEXT")
   private String sketch;
+
 
   @Enumerated(EnumType.STRING)
   private AccidentStatus status;
@@ -78,6 +80,8 @@ public class Accident {
   @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonManagedReference
   private List<Photo> photos = new ArrayList<>();
+
+
 
 
 
@@ -120,4 +124,12 @@ public class Accident {
 
   public List<Photo> getPhotos() { return photos; }
   public void setPhotos(List<Photo> photos) { this.photos = photos; }
-}
+
+  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
+  private List<Damage> damages = new ArrayList<>();
+
+  public List<Damage> getDamages() { return damages; }
+  public void setDamages(List<Damage> damages) { this.damages = damages; } }
+
+

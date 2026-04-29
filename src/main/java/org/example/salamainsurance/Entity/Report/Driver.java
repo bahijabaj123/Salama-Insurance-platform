@@ -26,8 +26,9 @@ public class Driver {
   private String policyNumber; // NumContrat
   private String licensePlate; // Immatriculation
   private String carMake; // MarqueVoiture
-  private String signature;
 
+  @Column(columnDefinition = "LONGTEXT")
+  private String signature;
   @ManyToOne
   @JoinColumn(name = "accident_id")
   @JsonBackReference

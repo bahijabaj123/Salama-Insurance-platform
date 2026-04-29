@@ -1,6 +1,6 @@
 package org.example.salamainsurance.Service.Report;
 
-import org.example.salamainsurance.DTO.ResponsibilityResult;
+import org.example.salamainsurance.DTO.*;
 import org.example.salamainsurance.Entity.Report.Accident;
 import org.example.salamainsurance.Entity.Report.AccidentStatus;
 
@@ -27,4 +27,12 @@ public interface AccidentService {
   ResponsibilityResult calculateResponsibility(Long id);
 
   void validateAccident(Long id);
+
+  Accident createConstatFromRequest(ConstatRequest request);
+
+  void saveDamages(Long accidentId, List<DamageRequest> damages);
+
+  StatsDTO getStats();
+
+  List<ConstatSummaryDTO> getRecentConstats();
 }
