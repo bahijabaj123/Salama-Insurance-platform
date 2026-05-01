@@ -1,0 +1,84 @@
+<div class="client-app">
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- SIDEBAR (TON SIDEBAR)                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="logo-zone">
+      <div class="logo-row">
+        <div class="logo-s">S</div>
+        <div>
+          <div class="logo-name">Salama Insurance</div>
+          <div class="logo-sub">Espace client</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-label">Menu</div>
+      
+      <!-- Première partie : liens principaux -->
+      <a *ngFor="let item of navItems"
+         class="nav-item"
+         [class.active]="item.active"
+         [routerLink]="item.route">
+        <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+        <span class="nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
+        <span class="nav-badge" *ngIf="!item.badge && item.label === 'Mes sinistres' && activeClaims.length">
+          {{ activeClaims.length }}
+        </span>
+      </a>
+      
+      <!-- Séparateur -->
+      <div class="nav-divider"></div>
+      
+      <!-- Deuxième partie : profil et déconnexion -->
+      <a routerLink="/client/profile" class="nav-item">
+        <mat-icon class="nav-icon">person</mat-icon>
+        <span>Mon profil</span>
+      </a>
+      <a routerLink="/client/logout" class="nav-item">
+        <mat-icon class="nav-icon">logout</mat-icon>
+        <span>Déconnexion</span>
+      </a>
+    </nav>
+
+    <div class="user-zone">
+      <div class="user-av">{{ CLIENT_INIT() }}</div>
+      <div class="user-info">
+        <div class="user-name">{{ CLIENT_NAME() }}</div>
+        <div class="user-role">Client Salama</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT                                                        -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">Tableau de bord</div>
+        <div class="topbar-sub">Bienvenue, {{ CLIENT_NAME() }} — voici l'état de vos dossiers</div>
+      </div>
+      <div class="topbar-right">
+        <div class="notif-btn" matTooltip="Notifications" (click)="goToNotifications()">
+          <mat-icon>notifications</mat-icon>
+          <span class="notif-dot"></span>
+        </div>
+        <button class="chat-fab" (click)="openAssistant()">
+          <mat-icon>smart_toy</mat-icon>
+          Assistant IA
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </main>
+</div>

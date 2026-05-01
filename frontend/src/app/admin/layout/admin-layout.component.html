@@ -1,0 +1,19 @@
+<mat-sidenav-container class="admin-layout">
+  <mat-sidenav class="admin-layout__sidenav" [opened]="sidenavOpen()" mode="side">
+    <app-admin-sidebar (logout)="onLogout()" />
+  </mat-sidenav>
+
+  <mat-sidenav-content class="admin-layout__shell">
+    <app-admin-topbar
+      [pageTitle]="pageTitle()"
+      [identity]="identity()"
+      (notificationsClick)="onNotificationsStub()"
+      (settingsClick)="onSettingsStub()"
+    />
+
+    <main class="admin-layout__content saas">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+

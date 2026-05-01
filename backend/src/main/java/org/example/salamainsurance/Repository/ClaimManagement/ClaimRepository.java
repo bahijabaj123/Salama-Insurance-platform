@@ -1,0 +1,84 @@
+package org.example.salamainsurance.Repository.ClaimManagement;
+
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Repository
+public interface ClaimRepository extends JpaRepository<Claim, Long> {
+
+  // Find by reference
+  Claim findByReference(String reference);
+
+  // Find by status
+  List<Claim> findByStatus(ClaimStatus status);
+
+  // Find by expert
+  @Query("SELECT c FROM Claim c WHERE c.expert.idExpert = :expertId")
+  List<Claim> findByExpertId(@Param("expertId") Integer expertId);
+
+  // Find by region
+  List<Claim> findByRegionContaining(String region);
+
+  // Find by accident ID
+  Claim findByAccidentId(Long accidentId);
+
+  // Find by date range
+  List<Claim> findByOpeningDateBetween(LocalDateTime start, LocalDateTime end);
+
+  // Advanced search
+  @Query("SELECT c FROM Claim c WHERE " +
+    "(:reference IS NULL OR c.reference LIKE %:reference%) AND " +
+    "(:status IS NULL OR c.status = :status) AND " +
+    "(:region IS NULL OR c.region LIKE %:region%) AND " +
+    "(:expertId IS NULL OR c.expert.idExpert = :expertId) AND " +
+    "(:startDate IS NULL OR c.openingDate >= :startDate) AND " +
+    "(:endDate IS NULL OR c.openingDate <= :endDate)")
+  List<Claim> searchClaims(
+    @Param("reference") String reference,
+    @Param("status") ClaimStatus status,
+    @Param("region") String region,
+    @Param("expertId") Integer expertId,
+    @Param("startDate") LocalDateTime startDate,
+    @Param("endDate") LocalDateTime endDate);
+
+  // Statistics
+  @Query("SELECT COUNT(c) FROM Claim c WHERE c.status = :status")
+  Long countByStatus(@Param("status") ClaimStatus status);
+
+  @Query("SELECT AVG(c.urgencyScore) FROM Claim c WHERE c.openingDate >= :since")
+  Double averageUrgencyScore(@Param("since") LocalDateTime since);
+
+  @Query("SELECT c.region, COUNT(c) FROM Claim c GROUP BY c.region")
+  List<Object[]> countByRegion();
+
+  // Find claims with no expert assigned
+  List<Claim> findByExpertIsNullAndStatus(ClaimStatus status);
+
+  //Partie notification plannification
+  // Pour les rappels
+  List<Claim> findByStatusAndAssignedDateBefore(ClaimStatus status, LocalDateTime date);
+
+  // Pour les sinistres urgents
+  List<Claim> findByUrgencyScoreGreaterThan(int score);
+
+  // Pour les statistiques hebdomadaires
+  long countByOpeningDateAfter(LocalDateTime date);
+  long countByClosingDateAfter(LocalDateTime date);
+
+  long countByClientId(Long clientId);
+
+  // pour la detection des patterns
+  // Trouver les sinistres après une date
+  List<Claim> findByOpeningDateAfter(LocalDateTime date);
+
+  //  oU avec @Query (plus explicite)
+  @Query("SELECT c FROM Claim c WHERE c.openingDate > :date")
+  List<Claim> findClaimsAfterDate(@Param("date") LocalDateTime date);
+
+}

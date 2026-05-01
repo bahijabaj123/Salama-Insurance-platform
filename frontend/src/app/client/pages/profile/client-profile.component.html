@@ -1,0 +1,208 @@
+<div class="profile saas-container">
+  <header class="page-head">
+    <div class="page-head__titles">
+      <p class="page-eyebrow">Account</p>
+      <h2 class="page-title">Profile &amp; security</h2>
+      <p class="page-subtitle">
+        Review your identity details, keep your name up to date, and preview how device trust will appear once backend
+        sync is enabled.
+      </p>
+    </div>
+    @if (profile()) {
+      <div class="page-head__actions">
+        @if (!editMode()) {
+          <button type="button" class="btn btn--primary" (click)="startEdit()">Edit profile</button>
+        } @else {
+          <button type="button" class="btn btn--ghost" (click)="cancelEdit()" [disabled]="saving()">Cancel</button>
+          <button type="button" class="btn btn--primary" (click)="saveProfile()" [disabled]="saving()">
+            @if (saving()) {
+              Saving…
+            } @else {
+              Save changes
+            }
+          </button>
+        }
+      </div>
+    }
+  </header>
+
+  @if (saveSuccess()) {
+    <div class="banner banner--success" role="status">
+      <strong>Changes saved</strong>
+      <span>Your profile has been updated and your session details refreshed.</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <section class="card card--loading" aria-busy="true">
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--line"></div>
+      <div class="skeleton skeleton--line skeleton--short"></div>
+      <div class="skeleton skeleton--grid">
+        <div class="skeleton skeleton--block"></div>
+        <div class="skeleton skeleton--block"></div>
+      </div>
+    </section>
+  } @else {
+    @if (loadError()) {
+      <section class="card banner banner--error" role="alert">
+        <strong>We couldn’t load your profile</strong>
+        <p>{{ loadError() }}</p>
+        <button type="button" class="btn btn--primary btn--compact" (click)="loadProfile()">Try again</button>
+      </section>
+    } @else {
+      @if (profile(); as user) {
+    <form class="profile__grid" [formGroup]="form" (ngSubmit)="$event.preventDefault()">
+      <section class="card profile__card saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">Personal information</h3>
+            <p class="card__sub">Identity fields from Salama. Only your full name can be edited as a client.</p>
+          </div>
+        </div>
+
+        @if (saveError()) {
+          <div class="inline-error" role="alert">{{ saveError() }}</div>
+        }
+
+        <dl class="fields">
+          <div class="field-row">
+            <dt>Full name</dt>
+            <dd>
+              @if (editMode()) {
+                <div class="field-edit">
+                  <input
+                    class="input"
+                    type="text"
+                    formControlName="fullName"
+                    autocomplete="name"
+                    [disabled]="saving()"
+                  />
+                  @if (form.controls.fullName.touched && form.controls.fullName.invalid) {
+                    <span class="field-hint field-hint--error">Full name is required.</span>
+                  }
+                </div>
+              } @else {
+                <span class="field-value">{{ user.fullName }}</span>
+              }
+            </dd>
+          </div>
+
+          <div class="field-row">
+            <dt>Email</dt>
+            <dd><span class="field-value field-value--muted">{{ user.email }}</span></dd>
+          </div>
+
+          <div class="field-row">
+            <dt>Active role</dt>
+            <dd><span class="badge badge--solid">{{ user.role }}</span></dd>
+          </div>
+
+          <div class="field-row">
+            <dt>Requested role</dt>
+            <dd>
+              @if (user.requestedRole) {
+                <span class="badge">{{ user.requestedRole }}</span>
+              } @else {
+                <span class="field-value field-value--muted">—</span>
+              }
+            </dd>
+          </div>
+
+          <div class="field-row">
+            <dt>Approval status</dt>
+            <dd><span class="badge badge--soft">{{ user.approvalStatus }}</span></dd>
+          </div>
+        </dl>
+      </section>
+
+      <div class="profile__stack">
+        <section class="card profile__card saas-card">
+          <div class="card__head">
+            <div>
+              <h3 class="card__title">Account summary</h3>
+              <p class="card__sub">High-signal status for underwriting and access control teams.</p>
+            </div>
+          </div>
+
+          <div class="chips">
+            <div class="chip">
+              <span class="chip__label">Role</span>
+              <span class="chip__value">{{ user.role }}</span>
+            </div>
+            <div class="chip">
+              <span class="chip__label">Approval</span>
+              <span class="chip__value">{{ user.approvalStatus }}</span>
+            </div>
+            <div class="chip">
+              <span class="chip__label">Enabled</span>
+              <span class="chip__value" [class.chip__value--ok]="user.enabled" [class.chip__value--bad]="!user.enabled">
+                {{ user.enabled ? 'Yes' : 'No' }}
+              </span>
+            </div>
+            <div class="chip">
+              <span class="chip__label">Locked</span>
+              <span class="chip__value" [class.chip__value--ok]="!user.locked" [class.chip__value--bad]="user.locked">
+                {{ user.locked ? 'Yes' : 'No' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta">
+              <span class="meta__label">Member since</span>
+              <span class="meta__value">{{ user.createdAt | date: 'mediumDate' }}</span>
+            </div>
+            <div class="meta">
+              <span class="meta__label">Last updated</span>
+              <span class="meta__value">{{ user.updatedAt | date: 'medium' }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card profile__card profile__card--devices saas-card">
+          <div class="card__head">
+            <div>
+              <h3 class="card__title">Connected devices</h3>
+              <p class="card__sub">
+                Security-focused view of where your account is active. This section is UI-only until device APIs are
+                connected.
+              </p>
+            </div>
+          </div>
+
+          <ul class="device-list" aria-label="Preview device list">
+            @for (device of mockDevices; track device.name) {
+              <li class="device">
+                <div class="device__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M4 6h16v10H4V6zm2 2v6h12V8H6zm8 10h2v2H6v-2h8z"
+                    />
+                  </svg>
+                </div>
+                <div class="device__body">
+                  <div class="device__top">
+                    <span class="device__name">{{ device.name }}</span>
+                    <span class="device__badge" [class.device__badge--accent]="device.badge === 'Current session'">
+                      {{ device.badge }}
+                    </span>
+                  </div>
+                  <p class="device__detail">{{ device.detail }}</p>
+                </div>
+              </li>
+            }
+          </ul>
+
+          <div class="device-footnote">
+            <strong>Coming next:</strong> register, rename, and revoke devices from a secured endpoint—without leaving
+            this profile experience.
+          </div>
+        </section>
+      </div>
+    </form>
+      }
+    }
+  }
+</div>

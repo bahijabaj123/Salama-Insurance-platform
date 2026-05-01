@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔴 CRITICAL FRAUD ALERT - Salama Insurance</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border-top: 5px solid #dc3545;
+    }
+    .header {
+      background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .header .badge {
+      background: rgba(255,255,255,0.2);
+      padding: 8px 20px;
+      border-radius: 50px;
+      display: inline-block;
+      margin-top: 15px;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    .content {
+      padding: 30px;
+    }
+    .score-box {
+      background: #fff3f3;
+      border-left: 4px solid #dc3545;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .score {
+      font-size: 48px;
+      font-weight: 700;
+      color: #dc3545;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 14px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .info-box {
+      background: #f8f9fa;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 5px;
+      border-left: 4px solid #dc3545;
+    }
+    .info-box p {
+      margin: 10px 0;
+    }
+    .info-box strong {
+      color: #dc3545;
+      min-width: 120px;
+      display: inline-block;
+    }
+    .rules-box {
+      background: #f8f9fa;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 5px;
+    }
+    .rule-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 5px;
+      border-left: 3px solid #dc3545;
+    }
+    .rule-item .rule-code {
+      font-weight: 700;
+      color: #dc3545;
+      margin-right: 10px;
+    }
+    .action-box {
+      background: #dc3545;
+      color: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .action-box h3 {
+      margin: 0 0 10px 0;
+      font-size: 20px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background: white;
+      color: #dc3545;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: 600;
+      margin-top: 15px;
+      transition: all 0.3s;
+    }
+    .button:hover {
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .footer {
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+    .urgent {
+      color: #dc3545;
+      font-weight: 700;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🔴 CRITICAL FRAUD ALERT</h1>
+    <div class="badge" th:text="${riskLevel}">HIGH RISK</div>
+  </div>
+
+  <div class="content">
+    <div class="score-box">
+      <div class="score-label">FRAUD SCORE</div>
+      <div class="score" th:text="${fraudScore}">85</div>
+      <div class="score-label">/100</div>
+    </div>
+
+    <div class="info-box">
+      <p><strong>Reference:</strong> <span th:text="${claimReference}">CLM-20240227-1234</span></p>
+      <p><strong>Analysis Date:</strong> <span th:text="${analysisDate}">27/02/2026 15:30</span></p>
+      <p><strong>Region:</strong> <span th:text="${region}">Casablanca</span></p>
+      <p><strong>Accident Type:</strong> <span th:text="${accidentType}">Night Accident</span></p>
+    </div>
+
+    <h3>📋 Triggered Rules</h3>
+    <div class="rules-box">
+      <div class="rule-item" th:each="rule : ${triggeredRules}">
+        <span class="rule-code" th:text="'[' + ${rule.code} + ']'">[R1]</span>
+        <span th:text="${rule.description}">Rule description</span>
+        <br>
+        <small style="color: #666;" th:text="${rule.details}">Details</small>
+      </div>
+    </div>
+
+    <div class="action-box">
+      <h3>⛔ ACTION REQUIRED</h3>
+      <p th:text="${actionRequired}">This claim is BLOCKED for thorough investigation</p>
+      <a href="#" class="button" th:href="${dashboardLink}">🔍 VIEW FILE</a>
+    </div>
+
+    <p class="urgent" style="text-align: center; font-size: 18px;">
+      ⚠️ IMMEDIATE INVESTIGATION REQUIRED ⚠️
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>This email was sent automatically by the Salama Insurance anti-fraud system.</p>
+    <p>© 2026 Salama Insurance. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>
