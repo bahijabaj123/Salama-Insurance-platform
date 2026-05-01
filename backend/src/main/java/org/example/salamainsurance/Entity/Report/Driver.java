@@ -2,9 +2,6 @@ package org.example.salamainsurance.Entity.Report;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import org.example.salamainsurance.Entity.ClaimManagement.Claim;
-
-import java.time.LocalDate;
 
 import java.util.List;
 
@@ -29,16 +26,13 @@ public class Driver {
   private String policyNumber; // NumContrat
   private String licensePlate; // Immatriculation
   private String carMake; // MarqueVoiture
+
+  @Column(columnDefinition = "LONGTEXT")
   private String signature;
-
-  @Column(name = "date_of_birth")
-  private LocalDate dateOfBirth;
-
   @ManyToOne
   @JoinColumn(name = "accident_id")
   @JsonBackReference
   private Accident accident;
-  private String email;
 
   @ElementCollection(targetClass = Circumstances.class)
   @CollectionTable(
@@ -162,27 +156,4 @@ public class Driver {
   public void setAccident(Accident accident) {
     this.accident = accident;
   }
-
-  //ajout bahija
-  public String getRegion() {
-    return "";
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public LocalDate getDateOfBirth() {
-    return dateOfBirth;
-  }
-
-  public void setDateOfBirth(LocalDate dateOfBirth) {
-    this.dateOfBirth = dateOfBirth;
-  }
 }
-
-
