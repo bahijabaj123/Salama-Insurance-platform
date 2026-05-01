@@ -1,17 +1,25 @@
 package org.example.salamainsurance.Controller.Report;
 
 import lombok.RequiredArgsConstructor;
-import org.example.salamainsurance.DTO.ResponsibilityResult;
+import org.example.salamainsurance.DTO.*;
 import org.example.salamainsurance.Entity.Report.Accident;
 import org.example.salamainsurance.Entity.Report.AccidentStatus;
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
 import org.example.salamainsurance.Service.Report.AccidentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/accidents")
 @RequiredArgsConstructor
@@ -52,6 +60,16 @@ public class AccidentController {
   public ResponseEntity<Void> deleteAccident(@PathVariable Long id) {
     accidentService.deleteAccident(id);
     return ResponseEntity.noContent().build();
+  }
+  @GetMapping("/recent")
+  public ResponseEntity<List<ConstatSummaryDTO>> getRecentConstats() {
+    return ResponseEntity.ok(accidentService.getRecentConstats());
+  }
+
+  @PutMapping("/{id}/rejeter")
+  public ResponseEntity<String> rejeter(@PathVariable Long id) {
+    accidentService.changeStatus(id, AccidentStatus.REJETE);
+    return ResponseEntity.ok("Accident rejeté");
   }
 
   // LISTE ADMIN : TOUS LES ACCIDENTS
@@ -109,6 +127,40 @@ public class AccidentController {
     return ResponseEntity.ok("Accident validé + PDF généré");
   }
 
+  @GetMapping("/{id}/pdf")
+  public ResponseEntity<Resource> downloadPdf(@PathVariable Long id) {
+    try {
+      Path filePath = Paths.get("pdf_reports/accident_" + id + ".pdf");
+      Resource resource = new UrlResource(filePath.toUri());
+      if (resource.exists() || resource.isReadable()) {
+        return ResponseEntity.ok()
+          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"accident_" + id + ".pdf\"")
+          .body(resource);
+      } else {
+        return ResponseEntity.notFound().build();
+      }
+    } catch (MalformedURLException e) {
+      return ResponseEntity.badRequest().build();
+    }
+  }
+
+  @PostMapping("/constats")
+  public ResponseEntity<Accident> createConstat(@RequestBody ConstatRequest request) {
+    Accident saved = accidentService.createConstatFromRequest(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+  }
+
+  @PostMapping("/damages")
+  public ResponseEntity<?> saveDamages(@RequestBody List<DamageRequest> damages,
+                                       @RequestParam Long accidentId) {
+    accidentService.saveDamages(accidentId, damages);
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping("/stats")
+  public ResponseEntity<StatsDTO> getStats() {
+    return ResponseEntity.ok(accidentService.getStats());
+  }
 
 
 }
