@@ -138,6 +138,8 @@ public class SecurityConfig {
         .requestMatchers("/api/chatbot/**", "/chatbot-test", "/chatbot-test.html").permitAll()
 
         .requestMatchers("/api/rapports-expertise/**").permitAll()
+        .requestMatchers("/api/tow-trucks/**").permitAll()
+        .requestMatchers("/api/sos-requests/**").permitAll()
 
         .requestMatchers("/api/main-oeuvre/**").permitAll()
         .requestMatchers("/api/rapports-expertise/**").permitAll()

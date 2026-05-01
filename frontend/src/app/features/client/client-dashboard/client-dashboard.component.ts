@@ -87,7 +87,7 @@ navItems: NavItem[] = [
   { icon: 'dashboard', label: 'Tableau de bord', route: '/client', active: true },
   { icon: 'folder_open', label: 'Mes sinistres', route: '/client/sinistres' },
   { icon: 'add_circle', label: 'Nouveau constat', route: '/client/constat' },
-  { icon: 'local_car_wash', label: 'Garages disponibles', route: '/client/garages' },
+  { icon: 'emergency', label: 'SOS disponible', route: '/client/sos' },
   { icon: 'description', label: 'Mon contrat', route: '/client/contrat' },
   { icon: 'folder', label: 'Documents', route: '/client/documents' },
   { icon: 'notifications', label: 'Notifications', route: '/client/notifications', badge: 3 },

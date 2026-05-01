@@ -11,7 +11,12 @@ import { AdminUsersComponent } from './admin/pages/users/admin-users.component';
 import { clientAuthGuard } from './client/guards/client-auth.guard';
 import { ClientProfileComponent } from './client/pages/profile/client-profile.component';
 import { ClientSimplePageComponent } from './client/pages/simple/client-simple-page.component';
+import { CreateExpertComponent } from './expert/pages/create-expert/create-expert.component';
 import { ExpertDashboardComponent } from './expert/pages/dashboard/expert-dashboard.component';
+import { RapportExpertiseChatComponent } from './expert/pages/rapport-expertise-chat/rapport-expertise-chat.component';
+import { RapportExpertiseFormComponent } from './expert/pages/rapport-expertise-form/rapport-expertise-form.component';
+import { RapportStatistiquesDashboardComponent } from './expert/pages/rapport-statistiques-dashboard/rapport-statistiques-dashboard.component';
+import { ConsulterMessagesComponent } from './expert/pages/consulter-messages/consulter-messages.component';
 import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
@@ -32,6 +37,7 @@ import { ClaimsListComponent } from './features/claims/claims-list/claims-list.c
 import { ClaimDetailComponent } from './features/claims/claim-detail/claim-detail.component';
 import { FraudDashboardComponent } from './features/assureur/fraud-dashboard/fraud-dashboard.component';
 import { TunisiaMapComponent } from './features/assureur/tunisia-map/tunisia-map.component';
+import { GaragesComponent } from './features/assureur/garages/garages.component';
 import { assureurAuthGuard } from './features/assureur/guards/assureur-auth.guard';
 
 // ============================================================
@@ -43,6 +49,7 @@ import { ClientAssistantComponent } from './features/client/client-assistant/cli
 import { ClientNotificationsComponent } from './features/client/client-notifications/client-notifications.component';
 import { ClientDocumentsComponent } from './features/client/client-documents/client-documents.component';
 import { ClientDashboardHomeComponent } from './features/client/client-dashboard/client-dashboard-home.component';
+import { ClientSosComponent } from './features/client/client-sos/client-sos.component';
 
 // ============================================================
 // COMPOSANT DE DÉCONNEXION SIMPLE (temporaire)
@@ -107,6 +114,7 @@ component: MainLayoutComponent,
     { path: 'map', component: TunisiaMapComponent },
     { path: 'fraud', component: FraudDashboardComponent },
     { path: 'statistiques',  component: DashboardComponent },
+    { path: 'garages', component: GaragesComponent },
     { path: 'logout', component: LogoutComponent }
   ]
 },
@@ -122,6 +130,8 @@ component: MainLayoutComponent,
     { path: 'sinistres/:id', component: ClientSinistreDetailComponent },
     { path: 'documents', component: ClientDocumentsComponent },
     { path: 'notifications', component: ClientNotificationsComponent },
+    { path: 'sos', component: ClientSosComponent },
+    { path: 'garages', redirectTo: 'sos', pathMatch: 'full' },
     { path: 'assistant', component: ClientAssistantComponent },
     { path: 'profile', component: ClientProfileComponent },
     { path: 'create-contract', component: ClientSimplePageComponent },
@@ -133,7 +143,15 @@ component: MainLayoutComponent,
   // ============================================================
   // ROUTES EXPERT
   // ============================================================
+  { path: 'expert', pathMatch: 'full', redirectTo: 'expert/dashboard' },
   { path: 'expert/dashboard', component: ExpertDashboardComponent },
+  { path: 'expert/create', component: CreateExpertComponent },
+  { path: 'expert/edit/:id', component: CreateExpertComponent },
+  { path: 'expert/chat', component: RapportExpertiseChatComponent },
+  { path: 'expert/consulter/thread/:expertKey', component: ConsulterMessagesComponent },
+  { path: 'expert/consulter', component: ConsulterMessagesComponent },
+  { path: 'expert/reports/new', component: RapportExpertiseFormComponent },
+  { path: 'expert/reports/stats', component: RapportStatistiquesDashboardComponent },
 
   // ============================================================
   // REDIRECTION PAR DÉFAUT

@@ -2,6 +2,8 @@ package org.example.salamainsurance.Entity.Expert;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 
 import java.math.BigDecimal;
@@ -144,15 +146,14 @@ public class ExpertReportHassen {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statut_rapport", length = 20)
-    private ExpertiseStatus  statutRapport;
+    private ExpertiseStatus statutRapport;
 
-  // Dans ExpertReportHassen.java
-  @ManyToOne
-  @JoinColumn(name = "claim_id", nullable = false)
-  private Claim claim;
+    @ManyToOne
+    @JoinColumn(name = "claim_id", nullable = false)
+    @JsonIgnore
+    private Claim claim;
 
-
-  // =====  PROPRIÉTÉS de bahija =====
+    // ===== Champs complémentaires (expertise / validation) =====
   @Column(name = "expertise_date")
   private LocalDateTime expertiseDate;
 
@@ -196,15 +197,19 @@ public class ExpertReportHassen {
     // ===== Relations =====
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_expert", nullable = false)
+    @JsonIgnoreProperties({"claims", "expertReports", "hibernateLazyInitializer", "handler"})
     private ExpertHassen expert;
 
     @OneToMany(mappedBy = "rapportExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"rapportExpertise"})
     private List<DommageHassen> dommages;
 
     @OneToMany(mappedBy = "rapportExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"rapportExpertise"})
     private List<MainOeuvreHassen> mainsOeuvre;
 
     @OneToMany(mappedBy = "rapportExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"rapportExpertise"})
     private List<PieceJointeHassen> piecesJointes;
 
     // ===== ENUMS =====
