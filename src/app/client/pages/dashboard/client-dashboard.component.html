@@ -1,0 +1,73 @@
+<div class="dash saas-container">
+  <section class="dash__welcome card saas-card saas-card--hero">
+    <div>
+      <p class="dash__eyebrow">Welcome back</p>
+      <h2 class="dash__title">
+        {{ user()?.fullName || 'Client' }}
+      </h2>
+      <p class="dash__lede">
+        Your workspace is ready. Use the quick actions below to continue where you left off, or open a module from the
+        sidebar.
+      </p>
+    </div>
+    <div class="dash__welcome-meta">
+      <div class="pill">Client portal</div>
+      <p class="dash__hint">Modules can be integrated independently by your team.</p>
+    </div>
+  </section>
+
+  <section class="dash__section">
+    <div class="dash__section-head">
+      <h3 class="dash__section-title">Quick actions</h3>
+      <p class="dash__section-sub">Jump into the most common tasks</p>
+    </div>
+
+    <div class="dash__grid">
+      @for (link of quickLinks; track link.path) {
+        <a class="action-card" [routerLink]="link.path">
+          <div class="action-card__top">
+            <span class="action-card__label">{{ link.label }}</span>
+            <span class="action-card__chevron" aria-hidden="true">→</span>
+          </div>
+          <p class="action-card__desc">{{ link.description }}</p>
+        </a>
+      }
+    </div>
+  </section>
+
+  <div class="dash__split">
+    <section class="card dash__panel saas-card">
+      <h3 class="dash__panel-title">Account summary</h3>
+      <dl class="summary">
+        <div class="summary__row">
+          <dt>Role</dt>
+          <dd>{{ user()?.role ?? '—' }}</dd>
+        </div>
+        <div class="summary__row">
+          <dt>Account status</dt>
+          <dd>
+            <span class="badge" [class.badge--ok]="user()?.enabled !== false">
+              {{ user()?.enabled === false ? 'Disabled' : 'Active' }}
+            </span>
+          </dd>
+        </div>
+        <div class="summary__row">
+          <dt>Approval</dt>
+          <dd>{{ user()?.approvalStatus ?? '—' }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="card dash__panel saas-card">
+      <h3 class="dash__panel-title">Recent activity</h3>
+      <p class="dash__muted">
+        No recent events yet. As your teammates connect modules (contracts, claims, devices), this area will summarize
+        important updates.
+      </p>
+      <div class="dash__callout">
+        <strong>Workspace ready</strong>
+        <span>Integration placeholders are live — swap in real screens when APIs are ready.</span>
+      </div>
+    </section>
+  </div>
+</div>

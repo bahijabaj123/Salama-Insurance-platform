@@ -1,0 +1,333 @@
+<div class="detail-container" *ngIf="!loading && claim">
+  <!-- Header -->
+  <div class="detail-header">
+    <button mat-icon-button (click)="goBack()" matTooltip="Back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-title">
+      <h1>Claim {{ claim.reference }}</h1>
+      <span class="status-badge" [style.background]="getStatusColor(claim.status)">
+        {{ STATUS_LABELS[claim.status] }}
+      </span>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="openEmailModal()" matTooltip="Notify client">
+        <mat-icon>email</mat-icon> Notify
+      </button>
+      <button mat-raised-button (click)="saveChanges()" [disabled]="saving" matTooltip="Save">
+        <mat-spinner *ngIf="saving" diameter="20"></mat-spinner>
+        <span *ngIf="!saving"><mat-icon>save</mat-icon> Save</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group animationDuration="0ms">
+    
+    <!-- Tab 1: General Information -->
+    <mat-tab label="📋 Information">
+      <div class="tab-content">
+        <div class="edit-section">
+          <h3>Edit Claim</h3>
+          <form [formGroup]="editForm" class="edit-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option *ngFor="let s of statusOptions" [value]="s">
+                  {{ STATUS_LABELS[s] }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Urgency Score (0-100)</mat-label>
+              <input matInput type="number" formControlName="urgencyScore" min="0" max="100">
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Notes</mat-label>
+              <textarea matInput formControlName="notes" rows="3" placeholder="Observations..."></textarea>
+            </mat-form-field>
+          </form>
+        </div>
+
+        <div class="info-section">
+          <h3>General Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Reference:</span>
+              <span class="value">{{ claim.reference }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Region:</span>
+              <span class="value">{{ claim.region || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Opening Date:</span>
+              <span class="value">{{ claim.openingDate | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Last Modified:</span>
+              <span class="value">{{ claim.lastModifiedDate | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Urgency:</span>
+              <div class="urgency-container">
+                <div class="urgency-bar">
+                  <div class="urgency-fill" [class]="getUrgencyClass(claim.urgencyScore)" 
+                       [style.width.%]="claim.urgencyScore"></div>
+                </div>
+                <span class="urgency-value">{{ claim.urgencyScore }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 2: Accident Details -->
+    <mat-tab label="🚗 Accident" *ngIf="claim.accident">
+      <div class="tab-content">
+        <div class="info-section">
+          <h3>Accident Details</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Location:</span>
+              <span class="value">{{ claim.accident.location }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Date:</span>
+              <span class="value">{{ claim.accident.accidentDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Time:</span>
+              <span class="value">{{ claim.accident.time }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Injuries:</span>
+              <mat-chip [color]="claim.accident.injuries ? 'warn' : 'primary'">
+                {{ claim.accident.injuries ? 'Yes' : 'No' }}
+              </mat-chip>
+            </div>
+            <div class="info-item">
+              <span class="label">Property Damage:</span>
+              <mat-chip [color]="claim.accident.propertyDamage ? 'warn' : 'primary'">
+                {{ claim.accident.propertyDamage ? 'Yes' : 'No' }}
+              </mat-chip>
+            </div>
+            <div class="info-item full-width">
+              <span class="label">Observations:</span>
+              <span class="value">{{ claim.accident.observations || '—' }}</span>
+            </div>
+            <div class="info-item full-width" *ngIf="claim.accident.damagedZones && claim.accident.damagedZones.length">
+              <span class="label">Damaged Zones:</span>
+              <div class="zones-container">
+                <mat-chip *ngFor="let zone of claim.accident.damagedZones" color="warn">
+                  Zone {{ zone }}
+                </mat-chip>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drivers -->
+        <div class="info-section" *ngIf="claim.accident.drivers && claim.accident.drivers.length">
+          <h3>Drivers Involved</h3>
+          <div class="drivers-grid">
+            <mat-card *ngFor="let driver of claim.accident.drivers" class="driver-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>person</mat-icon>
+                <mat-card-title>{{ driver.name }}</mat-card-title>
+                <mat-card-subtitle>{{ driver.driverType === 'DRIVER_A' ? 'Driver A' : 'Driver B' }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p><strong>CIN:</strong> {{ driver.cin }}</p>
+                <p><strong>Phone:</strong> {{ driver.phoneNumber }}</p>
+                <p><strong>License:</strong> {{ driver.licenseNumber }}</p>
+                <p><strong>Email:</strong> {{ driver.email }}</p>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 3: Assigned Expert -->
+    <mat-tab label="👨‍🔧 Expert">
+      <div class="tab-content">
+        <div *ngIf="claim.expert; else noExpert">
+          <div class="expert-header">
+            <div class="expert-avatar">
+              {{ claim.expert.firstName[0] }}{{ claim.expert.lastName[0] }}
+            </div>
+            <div class="expert-info">
+              <h2>{{ claim.expert.firstName }} {{ claim.expert.lastName }}</h2>
+              <p class="expert-specialty">{{ claim.expert.specialty }}</p>
+            </div>
+          </div>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Email:</span>
+              <span class="value">{{ claim.expert.email }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Phone:</span>
+              <span class="value">{{ claim.expert.phone }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Intervention Zone:</span>
+              <span class="value">{{ claim.expert.interventionZone }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Status:</span>
+              <mat-chip [color]="claim.expert.available ? 'primary' : 'warn'">
+                {{ claim.expert.available ? 'Available' : 'Busy' }}
+              </mat-chip>
+            </div>
+            <div class="info-item">
+              <span class="label">Performance Score:</span>
+              <span class="value">{{ claim.expert.performanceScore }}%</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Active Claims:</span>
+              <span class="value">{{ claim.expert.activeClaims }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Experience:</span>
+              <span class="value">{{ claim.expert.yearsOfExperience }} years</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Assignment Date:</span>
+              <span class="value">{{ (claim.assignedDate | date:'dd/MM/yyyy') || '—' }}</span>
+            </div>
+          </div>
+        </div>
+        <ng-template #noExpert>
+          <div class="empty-state">
+            <mat-icon>person_off</mat-icon>
+            <p>No expert assigned to this claim</p>
+            <button mat-raised-button color="primary" (click)="goBack()">
+              Assign Expert
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 4: History -->
+    <mat-tab label="📜 History">
+      <div class="tab-content">
+        <div *ngIf="claim.actionHistory && claim.actionHistory.length; else noHistory">
+          <div *ngFor="let action of claim.actionHistory; let i = index" class="history-item">
+            <div class="history-icon">
+              <mat-icon>history</mat-icon>
+              <div class="history-line" *ngIf="i < claim.actionHistory.length - 1"></div>
+            </div>
+            <div class="history-content">
+              <p>{{ action }}</p>
+            </div>
+          </div>
+        </div>
+        <ng-template #noHistory>
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <p>No history available</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 5: Documents/Photos -->
+    <mat-tab label="📎 Documents">
+      <div class="tab-content">
+        <div class="documents-section">
+          <h3>Claim Documents</h3>
+          <div class="documents-grid">
+            <mat-card class="document-card" *ngIf="claim.accident && claim.accident.sketch">
+              <mat-icon>image</mat-icon>
+              <p>Sketch</p>
+              <button mat-stroked-button color="primary">View</button>
+            </mat-card>
+            <mat-card class="document-card" *ngFor="let photo of claim.accident?.photos || []">
+              <mat-icon>photo</mat-icon>
+              <p>Photo</p>
+              <button mat-stroked-button color="primary">View</button>
+            </mat-card>
+            <mat-card class="document-card" *ngIf="!claim.accident?.sketch && (!claim.accident?.photos || claim.accident?.photos?.length === 0)">
+              <mat-icon>folder_open</mat-icon>
+              <p>No documents</p>
+            </mat-card>
+          </div>
+          
+          <div class="upload-section">
+            <h3>Add Documents</h3>
+            <button mat-stroked-button color="primary">
+              <mat-icon>upload</mat-icon> Upload File
+            </button>
+          </div>
+        </div>
+
+        <!-- ⭐ FINAL INVOICE UPLOAD SECTION ⭐ -->
+        <div class="upload-invoice-section" *ngIf="claim && claim.status !== 'CLOSED'">
+          <mat-divider></mat-divider>
+          <h3>📄 Close Claim</h3>
+          <div class="invoice-upload-area" (dragover)="$event.preventDefault()" (drop)="onFileDrop($event)">
+            <mat-icon>cloud_upload</mat-icon>
+            <p>Drag and drop the final invoice here</p>
+            <p class="small">or</p>
+            <button mat-stroked-button color="primary" (click)="fileInput.click()">
+              <mat-icon>attach_file</mat-icon> Select PDF File
+            </button>
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf" style="display: none" />
+            <p class="warning">⚠️ This action will permanently close the claim</p>
+          </div>
+          
+          <!-- Progress bar -->
+          <div class="upload-progress" *ngIf="uploading">
+            <mat-progress-bar mode="determinate" [value]="uploadProgress"></mat-progress-bar>
+            <p>Uploading... {{ uploadProgress }}%</p>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<!-- Loading -->
+<div class="loading-state" *ngIf="loading">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Loading claim...</p>
+</div>
+
+<!-- Email Modal with improved button -->
+<div class="modal-overlay" *ngIf="showEmailModal" (click)="showEmailModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Notify Client</h2>
+      <button mat-icon-button (click)="showEmailModal = false">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Claim:</strong> {{ claim?.reference }}</p>
+      <p><strong>Client:</strong> {{ claim?.client?.fullName || 'Not specified' }} ({{ claim?.client?.email || 'Email not available' }})</p>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Custom Message</mat-label>
+        <textarea matInput rows="5" [(ngModel)]="emailMessage" 
+                  placeholder="Hello, your claim has been updated..."></textarea>
+      </mat-form-field>
+    </div>
+    <div class="modal-footer">
+      <button mat-button (click)="showEmailModal = false">Cancel</button>
+      <button mat-flat-button 
+              color="primary" 
+              (click)="sendNotificationToClient(emailMessage)" 
+              [disabled]="!emailMessage || sendingNotification">
+        <mat-spinner *ngIf="sendingNotification" diameter="20"></mat-spinner>
+        <span *ngIf="!sendingNotification"><mat-icon>send</mat-icon> Send</span>
+        <span *ngIf="sendingNotification">Sending...</span>
+      </button>
+    </div>
+  </div>
+</div>
