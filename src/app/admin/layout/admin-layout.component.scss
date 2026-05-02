@@ -1,0 +1,36 @@
+:host {
+  --admin-bg: #f4f7fb;
+  display: block;
+  min-height: 100vh;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.admin-layout {
+  min-height: 100vh;
+  background: var(--admin-bg);
+}
+
+.admin-layout__sidenav {
+  width: 15.25rem;
+  border-right: none;
+  background: transparent;
+}
+
+.admin-layout__shell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-layout__content {
+  padding: 1.25rem 1.25rem 1.75rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 960px) {
+  .admin-layout__content {
+    padding: 1.5rem 1.75rem 2rem;
+  }
+}
+

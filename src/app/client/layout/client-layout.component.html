@@ -1,0 +1,20 @@
+<div class="client-layout" [class.client-layout--collapsed]="sidebarCollapsed()">
+  <app-client-sidebar
+    [collapsed]="sidebarCollapsed()"
+    (logout)="onLogout()"
+  />
+
+  <div class="client-layout__shell">
+    <app-client-topbar
+      [collapsed]="sidebarCollapsed()"
+      [pageTitle]="pageTitle()"
+      (toggleSidebar)="toggleSidebar()"
+      (notificationsClick)="onNotificationsStub()"
+      (settingsClick)="onSettingsStub()"
+    />
+
+    <main class="client-layout__content saas">
+      <router-outlet />
+    </main>
+  </div>
+</div>
