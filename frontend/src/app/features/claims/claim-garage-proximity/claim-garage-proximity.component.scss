@@ -1,0 +1,346 @@
+@use 'sass:color';
+
+// Aligné sur la liste sinistres / dashboard assureur
+$primary: #185fa5;
+$primary-dark: #0e3d6b;
+$accent: #ff8c00;
+$surface: #f8f9fb;
+$page-bg: #eef1f5;
+$card: #fff;
+$text: #1a2332;
+$muted: #6b7a8e;
+$border: #e2e6ea;
+$danger: #a32d2d;
+
+:host {
+  display: block;
+}
+
+.garage-page {
+  min-height: calc(100vh - 64px);
+  background: $page-bg;
+  padding: 24px 28px 40px;
+  box-sizing: border-box;
+}
+
+.garage-page-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 0 14px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid $border;
+  background: $card;
+  color: $primary;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: rgba($primary, 0.45);
+    background: rgba($primary, 0.04);
+    box-shadow: 0 1px 4px rgba(24, 95, 165, 0.08);
+  }
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.garage-card {
+  background: $card;
+  border-radius: 12px;
+  padding: 0;
+  border: 1px solid $border;
+  box-shadow: 0 2px 12px rgba(26, 35, 50, 0.06);
+  overflow: hidden;
+}
+
+.error-card {
+  padding: 24px 28px;
+
+  p {
+    margin: 0 0 16px;
+    color: $danger;
+  }
+}
+
+.garage-card-banner {
+  padding: 18px 28px 16px;
+  background: linear-gradient(135deg, rgba($primary, 0.1) 0%, rgba($primary, 0.02) 55%, $surface 100%);
+  border-bottom: 1px solid $border;
+}
+
+.garage-card-header h1 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: -0.02em;
+}
+
+.ref-pill {
+  display: inline-block;
+  font-family: ui-monospace, 'Courier New', monospace;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba($primary, 0.1);
+  color: $primary;
+  font-weight: 500;
+}
+
+.garage-card-body {
+  padding: 22px 28px 8px;
+}
+
+// Bandeaux retour API (même composition que la maquette : icône ronde + texte + Fermer)
+.garage-feedback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 28px 18px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+
+  &--error {
+    border-color: #e8a0a0;
+    background: #fdecec;
+    color: #5c1f1f;
+
+    .garage-feedback__close {
+      color: #a32d2d;
+    }
+  }
+
+  &--success {
+    border-color: #9dc79a;
+    background: #ecf6eb;
+    color: #1f3d1c;
+
+    .garage-feedback__close {
+      color: $primary;
+    }
+  }
+}
+
+.garage-feedback__iconWrap {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #fff;
+    font-weight: 800;
+    line-height: 18px;
+  }
+
+  &--error {
+    background: #d93030;
+    box-shadow: 0 0 0 2px rgba(217, 48, 48, 0.2);
+  }
+
+  &--success {
+    background: #2e7d32;
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+  }
+}
+
+.garage-feedback__text {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.garage-feedback__close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 4px 2px;
+  font-family: inherit;
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+.garage-lead {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 8px;
+  line-height: 1.45;
+}
+
+.garage-hint {
+  font-size: 13px;
+  color: $muted;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+.garage-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.garage-map {
+  height: 380px;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid $border;
+  margin-bottom: 10px;
+  z-index: 0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+:host ::ng-deep .claim-garage-pin-wrap {
+  background: transparent;
+  border: none;
+}
+
+.garage-address {
+  font-size: 12px;
+  color: $muted;
+  line-height: 1.45;
+  margin-bottom: 6px;
+}
+
+.garage-nominatim {
+  font-size: 11px;
+  color: color.adjust($muted, $lightness: -4%);
+  margin: 0 0 18px;
+}
+
+.nearby-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, $accent, color.adjust($accent, $lightness: -12%));
+  }
+}
+
+.garage-loading {
+  font-size: 13px;
+  color: $muted;
+  padding: 8px 0;
+}
+
+.garage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+}
+
+.garage-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid $border;
+  background: $surface;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: rgba($primary, 0.35);
+    background: $card;
+    box-shadow: 0 2px 8px rgba(24, 95, 165, 0.06);
+  }
+
+  &.active {
+    border-color: $primary;
+    background: rgba($primary, 0.06);
+    box-shadow: 0 0 0 1px rgba($primary, 0.12);
+  }
+
+  .g-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text;
+  }
+
+  .g-meta {
+    font-size: 12px;
+    color: $muted;
+    margin-top: 2px;
+
+    strong {
+      color: $primary-dark;
+    }
+  }
+}
+
+.garage-empty {
+  font-size: 13px;
+  color: $muted;
+  margin: 8px 0 16px;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: $surface;
+  border: 1px dashed $border;
+}
+
+.garage-actions-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 28px 22px;
+  border-top: 1px solid $border;
+  background: $surface;
+}
+
+.muted {
+  color: $muted;
+  margin: 0;
+  padding: 24px 28px;
+}

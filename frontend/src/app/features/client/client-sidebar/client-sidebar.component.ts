@@ -1,0 +1,133 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-client-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <aside class="client-sidebar">
+      <div class="logo">
+        <i class="fas fa-shield-alt"></i>
+        <span>Salama</span>
+      </div>
+
+      <nav>
+        <a routerLink="/client/dashboard" routerLinkActive="active">
+          <i class="fas fa-chart-line"></i> Tableau de bord
+        </a>
+        <a routerLink="/client/sinistres" routerLinkActive="active">
+          <i class="fas fa-file-alt"></i> Mes sinistres
+        </a>
+        <a routerLink="/client/consultation-expert" routerLinkActive="active">
+          <i class="fas fa-user-tie"></i> Consultation d'expert
+        </a>
+        <a routerLink="/client/constat" routerLinkActive="active">
+          <i class="fas fa-plus-circle"></i> Nouveau constat
+        </a>
+        <a routerLink="/client/sos" routerLinkActive="active">
+          <i class="fas fa-life-ring"></i> SOS disponible
+        </a>
+        <a routerLink="/client/contract" routerLinkActive="active">
+          <i class="fas fa-file-signature"></i> Mon contrat
+        </a>
+        <a routerLink="/client/documents" routerLinkActive="active">
+          <i class="fas fa-folder-open"></i> Documents
+        </a>
+        <a routerLink="/client/notifications" routerLinkActive="active">
+          <i class="fas fa-bell"></i> Notifications
+        </a>
+
+        <div class="support-title">SUPPORT</div>
+        <a routerLink="/client/assistant" routerLinkActive="active">
+          <i class="fas fa-robot"></i> Assistant IA
+        </a>
+        <a routerLink="/client/faq" routerLinkActive="active">
+          <i class="fas fa-question-circle"></i> FAQ
+        </a>
+      </nav>
+
+      <div class="user-info">
+        <div class="user-avatar">AB</div>
+        <div>
+          <div class="user-name">Ahmed Ben Ali</div>
+          <div class="user-role">Client actif</div>
+        </div>
+      </div>
+    </aside>
+  `,
+  styles: [`
+    .client-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: linear-gradient(180deg, #0a2b44 0%, #0e3d6b 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      z-index: 1000;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 32px;
+    }
+    .logo i { font-size: 28px; }
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      margin: 4px 0;
+      border-radius: 12px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    nav a:hover, nav a.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .support-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 24px 0 8px 12px;
+      color: rgba(255,255,255,0.5);
+    }
+    .user-info {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #185FA5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .user-role {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+  `]
+})
+export class ClientSidebarComponent {}

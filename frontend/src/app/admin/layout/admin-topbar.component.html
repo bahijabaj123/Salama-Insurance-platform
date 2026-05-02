@@ -1,0 +1,70 @@
+<header class="entry__nav" aria-label="Admin primary">
+  <div class="entry__nav-inner">
+    <div class="home-nav" role="navigation" aria-label="Admin primary navigation">
+      <a class="brand" routerLink="/admin/dashboard" aria-label="Salama admin home">
+        <span class="brand__mark" aria-hidden="true">S</span>
+        <span class="brand__text">
+          <span class="brand__title">SalamaInsurance</span>
+          <span class="brand__sub">Admin Console</span>
+        </span>
+      </a>
+
+      <div class="topbar__title-block" aria-live="polite">
+        <span class="topbar__title">{{ pageTitle() }}</span>
+      </div>
+
+      <div class="home-nav__right">
+        <div class="topbar__search" role="search" aria-label="Global search (UI only)">
+          <span class="topbar__search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path
+                fill="currentColor"
+                d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"
+              />
+            </svg>
+          </span>
+          <input class="topbar__search-input" type="search" placeholder="Search…" />
+          <span class="topbar__search-kbd" aria-hidden="true">Ctrl K</span>
+        </div>
+
+        <button
+          type="button"
+          class="nav-icon-btn"
+          aria-label="Notifications"
+          (click)="onNotifications()"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path
+              fill="currentColor"
+              d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="nav-icon-btn"
+          aria-label="Settings"
+          (click)="onSettings()"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path
+              fill="currentColor"
+              d="M19.14 12.94a7.49 7.49 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.55-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.66 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.49 7.49 0 0 0 0 1.88L2.78 14.16a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.42.34.66.22l2.39-.96c.5.39 1.03.7 1.62.94l.36 2.54c.05.24.27.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.55 1.62-.94l2.39.96c.24.12.52.02.66-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"
+            />
+          </svg>
+        </button>
+
+        @if (identity(); as id) {
+          <div class="topbar__identity" [attr.title]="id.name">
+            <div class="avatar" aria-hidden="true">{{ id.initials }}</div>
+            <div class="identity">
+              <span class="identity__name">{{ id.name }}</span>
+              <span class="identity__role">Administrator</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</header>

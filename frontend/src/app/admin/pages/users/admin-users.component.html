@@ -1,0 +1,239 @@
+<div class="users saas-container">
+  <header class="page-head">
+    <div class="page-head__titles">
+      <p class="page-eyebrow">Management</p>
+      <h2 class="page-title">Users</h2>
+      <p class="page-subtitle">Search, filter, and review account status and role approval information.</p>
+    </div>
+  </header>
+
+  <mat-card class="card saas-card">
+    <div class="filters">
+      <div class="filters__row">
+        <mat-form-field appearance="outline" class="field">
+          <mat-label>Search</mat-label>
+          <input
+            matInput
+            type="search"
+            placeholder="Search by name or email…"
+            [formControl]="filters.controls.search"
+            (keydown.enter)="$event.preventDefault(); load(true)"
+          />
+          <button mat-icon-button matSuffix type="button" aria-label="Apply search" (click)="load(true)">
+            <mat-icon>search</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="field">
+          <mat-label>Role</mat-label>
+          <mat-select [formControl]="filters.controls.role" (selectionChange)="load(true)">
+            <mat-option value="">All</mat-option>
+            <mat-option value="CLIENT">CLIENT</mat-option>
+            <mat-option value="ASSUREUR">ASSUREUR</mat-option>
+            <mat-option value="EXPERT">EXPERT</mat-option>
+            <mat-option value="ADMIN">ADMIN</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="field">
+          <mat-label>Approval status</mat-label>
+          <mat-select [formControl]="filters.controls.approvalStatus" (selectionChange)="load(true)">
+            <mat-option value="">All</mat-option>
+            <mat-option value="PENDING">PENDING</mat-option>
+            <mat-option value="APPROVED">APPROVED</mat-option>
+            <mat-option value="REJECTED">REJECTED</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filters__row">
+        <mat-form-field appearance="outline" class="field field--small">
+          <mat-label>Enabled</mat-label>
+          <mat-select [formControl]="filters.controls.enabled" (selectionChange)="load(true)">
+            <mat-option value="">All</mat-option>
+            <mat-option value="true">Enabled</mat-option>
+            <mat-option value="false">Disabled</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="field field--small">
+          <mat-label>Locked</mat-label>
+          <mat-select [formControl]="filters.controls.locked" (selectionChange)="load(true)">
+            <mat-option value="">All</mat-option>
+            <mat-option value="true">Locked</mat-option>
+            <mat-option value="false">Not locked</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filters__actions">
+          <button mat-stroked-button color="primary" type="button" (click)="clearFilters()">Clear</button>
+          <button mat-flat-button color="primary" type="button" (click)="load(true)">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    @if (notice()) {
+      <div class="banner banner--success" role="status">
+        <mat-icon aria-hidden="true">check_circle</mat-icon>
+        <span>{{ notice() }}</span>
+        <button
+          mat-icon-button
+          type="button"
+          class="banner__dismiss"
+          aria-label="Dismiss notice"
+          (click)="dismissNotice()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="banner banner--error" role="alert">
+        <strong>Something went wrong</strong>
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <div class="table-wrap" [attr.aria-busy]="state() === 'loading'">
+      <table mat-table [dataSource]="rows()" class="table" aria-label="Users table">
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef>Full name</th>
+          <td mat-cell *matCellDef="let u" class="cell-strong">{{ u.fullName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let u" class="cell-muted">{{ u.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let u"><mat-chip class="chip">{{ u.role }}</mat-chip></td>
+        </ng-container>
+
+        <ng-container matColumnDef="requestedRole">
+          <th mat-header-cell *matHeaderCellDef>Requested role</th>
+          <td mat-cell *matCellDef="let u">
+            @if (u.requestedRole) {
+              <mat-chip class="chip chip--accent">{{ u.requestedRole }}</mat-chip>
+            } @else {
+              <span class="cell-muted">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="approvalStatus">
+          <th mat-header-cell *matHeaderCellDef>Approval</th>
+          <td mat-cell *matCellDef="let u"><mat-chip class="chip chip--soft">{{ u.approvalStatus }}</mat-chip></td>
+        </ng-container>
+
+        <ng-container matColumnDef="enabled">
+          <th mat-header-cell *matHeaderCellDef>Enabled</th>
+          <td mat-cell *matCellDef="let u">
+            <mat-chip class="chip" [class.chip--ok]="u.enabled" [class.chip--bad]="!u.enabled">
+              {{ u.enabled ? 'Yes' : 'No' }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="locked">
+          <th mat-header-cell *matHeaderCellDef>Locked</th>
+          <td mat-cell *matCellDef="let u">
+            @if (u.locked) {
+              <span
+                class="lock-badge"
+                matTooltip="Account locked after repeated failed login attempts"
+              >
+                <mat-icon aria-hidden="true">lock</mat-icon>
+                Locked
+              </span>
+            } @else {
+              <span class="lock-badge lock-badge--ok" aria-label="Account is not locked">
+                <mat-icon aria-hidden="true">lock_open</mat-icon>
+                Active
+              </span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef>Created</th>
+          <td mat-cell *matCellDef="let u" class="cell-muted">{{ u.createdAt | date: 'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="cell-actions">Actions</th>
+          <td mat-cell *matCellDef="let u" class="cell-actions">
+            @if (u.locked) {
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                class="action-unlock"
+                [disabled]="unlockingId() !== null"
+                (click)="unlock(u)"
+                [attr.aria-label]="'Unlock account for ' + u.email"
+              >
+                @if (unlockingId() === u.id) {
+                  <mat-spinner diameter="16" class="action-unlock__spinner"></mat-spinner>
+                } @else {
+                  <mat-icon>lock_open</mat-icon>
+                }
+                <span>{{ unlockingId() === u.id ? 'Unlocking…' : 'Unlock' }}</span>
+              </button>
+            } @else {
+              <span class="cell-muted">—</span>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+        @if (state() === 'loading') {
+          @for (_ of [1, 2, 3, 4, 5, 6, 7]; track _) {
+            <tr class="row-skeleton">
+              <td [attr.colspan]="displayedColumns.length">
+                <div class="skeleton"></div>
+              </td>
+            </tr>
+          }
+        } @else if (rows().length === 0) {
+          <tr>
+            <td [attr.colspan]="displayedColumns.length">
+              <div class="empty">
+                <strong>No users found</strong>
+                <span>Try changing your search or filters.</span>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            [class.row-locked]="row.locked"
+          ></tr>
+        }
+      </table>
+    </div>
+
+    <footer class="pager">
+      <span class="pager__range">{{ showingRange() }}</span>
+      <div class="pager__buttons">
+        <button mat-stroked-button color="primary" type="button" (click)="goPrev()" [disabled]="pageIndex() <= 0">
+          Previous
+        </button>
+        <button
+          mat-stroked-button
+          color="primary"
+          type="button"
+          (click)="goNext()"
+          [disabled]="pageIndex() + 1 >= totalPages()"
+        >
+          Next
+        </button>
+      </div>
+    </footer>
+  </mat-card>
+</div>
+

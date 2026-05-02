@@ -1,0 +1,190 @@
+<div class="dash-page">
+  <header class="dash-hero">
+    <a routerLink="/expert/chat" class="dash-back">Retour au chat</a>
+    <div class="dash-hero-inner">
+      <div class="dash-hero-copy">
+        <h1 class="dash-title">Statistiques globales</h1>
+        @if (!loading() && !error()) {
+          <p class="dash-sub">{{ titre() }}</p>
+          <p class="dash-date">Donnees au {{ date() || '—' }}</p>
+          <div class="dash-live-bar">
+            <span class="live-chip">{{ autoRefresh() ? 'Live' : 'Pause' }}</span>
+            <span class="live-meta">Derniere mise a jour: {{ lastUpdatedAt() || '—' }}</span>
+            @if (autoRefresh()) {
+              <span class="live-meta">Prochaine sync: {{ nextRefreshInSec() }}s</span>
+            }
+            <button type="button" class="live-btn" (click)="refreshNow()" [disabled]="refreshing()">{{ refreshing() ? 'Actualisation...' : 'Actualiser' }}</button>
+            <button type="button" class="live-btn live-btn-ghost" (click)="toggleLiveMode()">{{ autoRefresh() ? 'Desactiver live' : 'Activer live' }}</button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="dash-state">Chargement des indicateurs...</div>
+  } @else if (hasBlockingError()) {
+    <div class="dash-state dash-err">{{ error() }}</div>
+  } @else {
+    @if (warning()) {
+      <div class="dash-state dash-warn">{{ warning() }}</div>
+    }
+
+    <section class="dash-section">
+      <h2>Statistiques financieres</h2>
+      <div class="dash-kpi-grid">
+        @for (f of financialCards(); track f.label) {
+          <article class="dash-kpi">
+            <div class="dash-kpi-label">{{ f.label }}</div>
+            <div class="dash-kpi-value">{{ f.value }}</div>
+            <div class="dash-kpi-desc">{{ f.hint }}</div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section">
+      <h2>Statistiques en temps reel</h2>
+      <div class="dash-kpi-grid">
+        @for (rt of realtimeCards(); track rt.label) {
+          <article class="dash-kpi">
+            <div class="dash-kpi-label">{{ rt.label }}</div>
+            <div class="dash-kpi-value">{{ rt.value }}</div>
+            <div class="dash-kpi-desc">Mis a jour automatiquement en mode live</div>
+          </article>
+        }
+      </div>
+      <div class="dash-timeline">
+        <h3>Activite recente</h3>
+        @if (recentTimeline().length === 0) {
+          <p class="dash-timeline-empty">Aucune activite recente.</p>
+        } @else {
+          <ul>
+            @for (rep of recentTimeline(); track rep.numeroReference) {
+              <li>
+                <span class="timeline-ref">{{ rep.numeroReference || 'REF-N/A' }}</span>
+                <span class="timeline-meta">{{ rep.assureNom || 'Client inconnu' }} · {{ rep.statutRapport || rep.expertiseStatus || '—' }}</span>
+                <span class="timeline-time">{{ timelineDate(rep) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section">
+      <h2>Graphiques financiers</h2>
+      <div class="dash-finance-grid">
+        <article class="dash-chart-card">
+          <h3>Courbe montant net / jour</h3>
+          @if (montantParJour().length === 0) {
+            <p class="dash-chart-empty">Pas assez de donnees pour afficher la courbe.</p>
+          } @else {
+            <div class="line-chart">
+              @for (p of montantParJour(); track p.day) {
+                <div class="line-col">
+                  <div class="line-bar-wrap">
+                    <div class="line-bar" [style.height.%]="barPercent(p.amount, montantParJourMax())"></div>
+                  </div>
+                  <span class="line-day">{{ p.day }}</span>
+                  <span class="line-val">{{ fmt(p.amount) }} DT</span>
+                </div>
+              }
+            </div>
+          }
+        </article>
+
+        <article class="dash-chart-card">
+          <h3>Pie rapports par statut</h3>
+          @if (statutsPie().length === 0) {
+            <p class="dash-chart-empty">Pas de statuts disponibles.</p>
+          } @else {
+            <div class="pie-wrap">
+              <div class="pie" [style.background]="pieConic()"></div>
+              <ul class="pie-legend">
+                @for (s of statutsPie(); track s.label) {
+                  <li>
+                    <span class="dot" [style.background]="s.color"></span>
+                    <span>{{ s.label }}</span>
+                    <strong>{{ s.value }}</strong>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </article>
+      </div>
+    </section>
+
+    <section class="dash-section">
+      <h2>Indicateurs cles</h2>
+      <div class="dash-kpi-grid">
+        @for (c of cards(); track c['id']) {
+          <article class="dash-kpi">
+            <div class="dash-kpi-label">{{ c['label'] }}</div>
+            <div class="dash-kpi-value">{{ fmt(c['value']) }} <span>{{ c['unite'] }}</span></div>
+            <div class="dash-kpi-desc">{{ c['description'] }}</div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section">
+      <h2>Jauges de performance</h2>
+      <div class="dash-gauge-grid">
+        @for (g of gauges(); track g['id']) {
+          <div class="dash-gauge">
+            <div class="dash-gauge-head">
+              <span>{{ g['label'] }}</span>
+              <strong>{{ fmt(g['value']) }}{{ g['unite'] }}</strong>
+            </div>
+            <div class="dash-gauge-track">
+              <div class="dash-gauge-fill" [style.width.%]="barPercent(g['value'], g['max'])"></div>
+            </div>
+            <p class="dash-gauge-desc">{{ g['description'] }}</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section">
+      <h2>Graphiques</h2>
+      <div class="dash-charts">
+        @for (entry of chartEntries(); track entry.key) {
+          <div class="dash-chart-card">
+            <h3>{{ entry.chart['titre'] }}</h3>
+            <div class="dash-bar-list">
+              @for (row of chartData(entry.chart); track row['label']) {
+                <div class="dash-bar-row">
+                  <span class="dash-bar-label">{{ row['label'] }}</span>
+                  <div class="dash-bar-track">
+                    <div class="dash-bar-fill" [style.width.%]="barPercent(row['value'], chartMax(chartData(entry.chart)))"></div>
+                  </div>
+                  <span class="dash-bar-val">{{ fmt(row['value']) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section">
+      <h2>Scorecards par expert</h2>
+      <div class="dash-score-grid">
+        @for (sc of scorecards(); track sc['idExpert']) {
+          <article class="dash-score">
+            <header class="dash-score-head">
+              <strong>{{ sc['nomComplet'] }}</strong>
+              <span class="dash-score-badge">{{ fmt(sc['specialite']) }}</span>
+            </header>
+            <div class="dash-score-meta">
+              <span>Zone : {{ fmt(sc['zone']) }}</span>
+              <span>Statut : {{ fmt(sc['statut']) }}</span>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</div>

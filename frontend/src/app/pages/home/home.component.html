@@ -1,0 +1,82 @@
+<div class="entry entry--home">
+  <app-home-navbar></app-home-navbar>
+
+  <main id="top" class="entry__main">
+    <section class="hero hero--home" aria-label="Home">
+      <div class="hero__bg" aria-hidden="true">
+        <app-silk-background
+          [speed]="5"
+          [scale]="1"
+          color="#6E57FF"
+          [noiseIntensity]="1.7"
+          [rotation]="0"
+        ></app-silk-background>
+      </div>
+
+      <div class="hero__brands" aria-label="Marques de véhicules couvertes">
+        <app-logo-loop
+          [logos]="carBrands"
+          [speed]="60"
+          direction="left"
+          [logoHeight]="44"
+          [gap]="72"
+          [scaleOnHover]="true"
+          [fadeOut]="true"
+          fadeOutColor="#0a0720"
+          ariaLabel="Marques de véhicules couvertes"
+        ></app-logo-loop>
+      </div>
+
+      <div class="hero__inner hero__inner--home">
+        <h1 class="home-title">Silk touch is a good enhancement.</h1>
+
+        <div class="home-cta">
+          <a class="btn btn--primary btn--inline" routerLink="/signup">Get started</a>
+          <a class="btn btn--ghost btn--inline" href="#features">Learn more</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section section--home" aria-label="Features">
+      <div class="section__inner">
+        <div class="section__head">
+          <h2 class="section__title">Features</h2>
+          <p class="section__sub">Modern insurance workflows with clarity, security, and auditability.</p>
+        </div>
+
+        <app-magic-bento
+          [items]="features"
+          [textAutoHide]="true"
+          [enableStars]="true"
+          [enableSpotlight]="true"
+          [enableBorderGlow]="true"
+          [enableTilt]="false"
+          [enableMagnetism]="false"
+          [clickEffect]="true"
+          [spotlightRadius]="400"
+          [particleCount]="12"
+          glowColor="132, 0, 255"
+        ></app-magic-bento>
+      </div>
+    </section>
+
+    <section id="about" class="section section--home-alt" aria-label="About">
+      <div class="section__inner">
+        <div class="section__head">
+          <h2 class="section__title">About</h2>
+          <p class="section__sub">
+            Salama is built for insurance teams who need a calm, controlled workspace—where every action is traceable.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="entry__footer entry__footer--home" aria-label="Footer">
+    <div class="footer__bottom footer__bottom--home">
+      <span>© {{ currentYear }} SalamaInsurance</span>
+      <span class="footer__muted">All rights reserved.</span>
+    </div>
+  </footer>
+</div>
+

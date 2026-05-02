@@ -1,0 +1,400 @@
+<div class="dash saas-container">
+  <header class="page-head">
+    <div class="page-head__titles">
+      <p class="page-eyebrow">Overview</p>
+      <h2 class="page-title">Administration dashboard</h2>
+      <p class="page-subtitle">User operations, approvals, and key health signals at a glance.</p>
+    </div>
+    <div class="page-head__actions">
+      <a mat-stroked-button color="primary" routerLink="/admin/users">Manage users</a>
+      <a mat-flat-button color="primary" routerLink="/admin/role-requests">Review requests</a>
+    </div>
+  </header>
+
+  @if (error()) {
+    <mat-card class="banner banner--error" role="alert">
+      <strong>Some data couldn’t be loaded</strong>
+      <span>{{ error() }}</span>
+    </mat-card>
+  }
+
+  <section class="kpis">
+    @if (loading()) {
+      @for (_ of [1, 2, 3, 4]; track _) {
+        <mat-card class="kpi kpi--skeleton" aria-busy="true"></mat-card>
+      }
+    } @else {
+      <mat-card class="kpi saas-card">
+        <div class="kpi__top">
+          <span class="kpi__label">Total users</span>
+          <mat-icon class="kpi__icon">groups</mat-icon>
+        </div>
+        <span class="kpi__value">{{ summary()?.totalUsers ?? '—' }}</span>
+        <span class="kpi__hint">All accounts in the platform</span>
+      </mat-card>
+      <mat-card class="kpi kpi--accent saas-card">
+        <div class="kpi__top">
+          <span class="kpi__label">Pending approvals</span>
+          <mat-icon class="kpi__icon">pending_actions</mat-icon>
+        </div>
+        <span class="kpi__value">{{ summary()?.pendingApprovals ?? '—' }}</span>
+        <span class="kpi__hint">Awaiting admin decision</span>
+      </mat-card>
+      <mat-card class="kpi kpi--soft saas-card">
+        <div class="kpi__top">
+          <span class="kpi__label">Rejected requests</span>
+          <mat-icon class="kpi__icon">cancel</mat-icon>
+        </div>
+        <span class="kpi__value">{{ summary()?.rejectedRequests ?? '—' }}</span>
+        <span class="kpi__hint">Role changes declined</span>
+      </mat-card>
+      <a
+        class="kpi kpi--danger kpi--link saas-card mat-mdc-card"
+        routerLink="/admin/users"
+        [queryParams]="{ locked: 'true' }"
+        aria-label="View all locked users"
+      >
+        <div class="kpi__top">
+          <span class="kpi__label">Locked users</span>
+          <mat-icon class="kpi__icon">lock</mat-icon>
+        </div>
+        <span class="kpi__value">{{ summary()?.lockedUsers ?? '—' }}</span>
+        <span class="kpi__hint">Security / operations hold · click to review</span>
+      </a>
+    }
+  </section>
+
+  <section class="charts">
+    <mat-card class="card saas-card">
+      <div class="card__head">
+        <div>
+          <h3 class="card__title">Role distribution</h3>
+          <p class="card__sub">Breakdown of accounts by effective role</p>
+        </div>
+        <mat-chip-set>
+          <mat-chip>{{ roleChart()?.total ?? 0 }} total</mat-chip>
+        </mat-chip-set>
+      </div>
+
+      @if (roleChart(); as chart) {
+        <div class="chart">
+          <div class="donut" [style.background]="donutBackground(chart.points)">
+            <div class="donut__hole">
+              <span class="donut__value">{{ chart.total }}</span>
+              <span class="donut__label">users</span>
+            </div>
+          </div>
+          <div class="legend">
+            @for (p of chart.points; track p.label) {
+              <div class="legend__row">
+                <span class="legend__name">{{ p.label }}</span>
+                <span class="legend__val">{{ p.value }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="chart__empty">No chart data yet.</div>
+      }
+    </mat-card>
+
+    <mat-card class="card saas-card">
+      <div class="card__head">
+        <div>
+          <h3 class="card__title">Approval status</h3>
+          <p class="card__sub">Where role requests stand right now</p>
+        </div>
+        <mat-chip-set>
+          <mat-chip>{{ approvalChart()?.total ?? 0 }} total</mat-chip>
+        </mat-chip-set>
+      </div>
+    
+      @if (approvalChart(); as chart2) {
+        <div class="chart">
+          <div class="donut donut--alt" [style.background]="donutBackground(chart2.points)">
+            <div class="donut__hole">
+              <span class="donut__value">{{ chart2.total }}</span>
+              <span class="donut__label">users</span>
+            </div>
+          </div>
+    
+          <div class="legend">
+            @for (p of chart2.points; track p.label) {
+              <div class="legend__row">
+                <span class="legend__name">{{ p.label  }}</span>
+                <span class="legend__val">{{ p.value }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="empty-state">
+          No approval data available.
+        </div>
+      }
+    </mat-card>
+  </section>
+
+  <section class="business" aria-label="Business Insights">
+    <header class="business__head">
+      <p class="business__eyebrow">Business Insights</p>
+      <h2 class="business__title">Adoption, activation and operational risk</h2>
+      <p class="business__sub">
+        User growth measures platform adoption over time, while activation and rejection
+        rates help evaluate acquisition quality and operational risk.
+      </p>
+    </header>
+
+    @if (businessError()) {
+      <mat-card class="banner banner--error" role="alert">
+        <strong>Some business insights couldn't be loaded</strong>
+        <span>{{ businessError() }}</span>
+      </mat-card>
+    }
+
+    <div class="business__grid">
+      <mat-card class="card card--growth saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">User growth</h3>
+            <p class="card__sub">Monthly registrations over the last 6 months</p>
+          </div>
+          @if (userGrowth(); as g) {
+            <span
+              class="growth__rate"
+              [class.growth__rate--up]="growthState() === 'up'"
+              [class.growth__rate--down]="growthState() === 'down'"
+              [class.growth__rate--neutral]="growthState() === 'neutral'"
+              [attr.aria-label]="'Growth rate ' + formatPercent(g.growthRate, true)"
+            >
+              <mat-icon class="growth__icon" aria-hidden="true">
+                @switch (growthState()) {
+                  @case ('up') { trending_up }
+                  @case ('down') { trending_down }
+                  @default { trending_flat }
+                }
+              </mat-icon>
+              {{ formatPercent(g.growthRate, true) }}
+            </span>
+          }
+        </div>
+
+        @if (businessLoading() && !userGrowth()) {
+          <div class="growth-skeleton" aria-busy="true"></div>
+        } @else {
+          @if (userGrowth(); as g) {
+            <div class="growth-summary">
+              <div class="growth-summary__cell">
+                <span class="growth-summary__label">{{ formatPeriod(g.currentMonth?.period) }}</span>
+                <span class="growth-summary__value">{{ g.currentMonth?.count ?? '—' }}</span>
+                <span class="growth-summary__hint">Current month registrations</span>
+              </div>
+              <div class="growth-summary__cell">
+                <span class="growth-summary__label">{{ formatPeriod(g.previousMonth?.period) }}</span>
+                <span class="growth-summary__value">{{ g.previousMonth?.count ?? '—' }}</span>
+                <span class="growth-summary__hint">Previous month registrations</span>
+              </div>
+              <div class="growth-summary__cell growth-summary__cell--accent">
+                <span class="growth-summary__label">vs. last month</span>
+                <span class="growth-summary__value">{{ formatPercent(g.currentVsPreviousPercent) }}</span>
+                <span class="growth-summary__hint">
+                  This month reached {{ formatPercent(g.currentVsPreviousPercent) }} of last month's
+                  registrations · Growth rate {{ formatPercent(g.growthRate, true) }}
+                </span>
+              </div>
+            </div>
+
+            @if (chartBars().length > 0) {
+              <div class="bars" role="img" aria-label="Monthly registrations chart">
+                @for (bar of chartBars(); track bar.period) {
+                  <div class="bar-col" [attr.title]="bar.label + ': ' + bar.count + ' users'">
+                    <span class="bar-col__count">{{ bar.count }}</span>
+                    <div class="bar-col__track">
+                      <div class="bar-col__fill" [style.height.%]="bar.heightPct"></div>
+                    </div>
+                    <span class="bar-col__label">{{ bar.label }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty">No growth data available.</div>
+            }
+          } @else {
+            <div class="empty">No growth data available.</div>
+          }
+        }
+      </mat-card>
+
+      <mat-card class="card card--rate saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">Activation rate</h3>
+            <p class="card__sub">
+              Activated users reflect accounts that completed verification and became usable.
+            </p>
+          </div>
+        </div>
+
+        @if (businessLoading() && !accountRates()) {
+          <div class="rate-skeleton" aria-busy="true"></div>
+        } @else {
+          @if (accountRates(); as r) {
+            <div class="rate">
+              <div class="rate__value rate__value--positive">{{ formatPercent(r.activationRate) }}</div>
+              <div class="rate__bar" aria-hidden="true">
+                <div
+                  class="rate__bar-fill rate__bar-fill--positive"
+                  [style.width.%]="clampPercent(r.activationRate)"
+                ></div>
+              </div>
+              <p class="rate__hint">Share of accounts successfully activated</p>
+            </div>
+          } @else {
+            <div class="empty">No data.</div>
+          }
+        }
+      </mat-card>
+
+      <mat-card class="card card--rate saas-card">
+        <div class="card__head">
+          <div>
+            <h3 class="card__title">Rejection rate</h3>
+            <p class="card__sub">
+              Rejected requests indicate the proportion of users refused during approval.
+            </p>
+          </div>
+        </div>
+
+        @if (businessLoading() && !accountRates()) {
+          <div class="rate-skeleton" aria-busy="true"></div>
+        } @else {
+          @if (accountRates(); as r) {
+            <div class="rate">
+              <div class="rate__value rate__value--negative">{{ formatPercent(r.rejectionRate) }}</div>
+              <div class="rate__bar" aria-hidden="true">
+                <div
+                  class="rate__bar-fill rate__bar-fill--negative"
+                  [style.width.%]="clampPercent(r.rejectionRate)"
+                ></div>
+              </div>
+              <p class="rate__hint">Share of role requests refused</p>
+            </div>
+          } @else {
+            <div class="empty">No data.</div>
+          }
+        }
+      </mat-card>
+    </div>
+  </section>
+
+  <section class="previews">
+    <mat-card class="card saas-card">
+      <div class="card__head">
+        <div>
+          <h3 class="card__title">Recent users</h3>
+          <p class="card__sub">Latest created accounts</p>
+        </div>
+        <a class="link" routerLink="/admin/users">Open users</a>
+      </div>
+
+      @if (recentUsers().length === 0) {
+        <div class="empty">No users to preview yet.</div>
+      } @else {
+        <ul class="list">
+          @for (u of recentUsers().slice(0, 6); track u.id) {
+            <li class="list__row">
+              <div class="list__main">
+                <span class="list__name">{{ u.fullName }}</span>
+                <span class="list__meta">{{ u.email }}</span>
+              </div>
+              <div class="list__tags">
+                <span class="pill">{{ u.role }}</span>
+                <span class="pill pill--soft">{{ u.approvalStatus }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </mat-card>
+
+    <mat-card class="card saas-card">
+      <div class="card__head">
+        <div>
+          <h3 class="card__title">Pending requests</h3>
+          <p class="card__sub">Quick preview of approvals queue</p>
+        </div>
+        <a class="link" routerLink="/admin/role-requests">Review</a>
+      </div>
+
+      @if (pendingPreview().length === 0) {
+        <div class="empty">No pending requests detected in the preview.</div>
+      } @else {
+        <ul class="list">
+          @for (u of pendingPreview(); track u.id) {
+            <li class="list__row">
+              <div class="list__main">
+                <span class="list__name">{{ u.fullName }}</span>
+                <span class="list__meta">{{ u.email }}</span>
+              </div>
+              <div class="list__tags">
+                <span class="pill pill--accent">{{ u.requestedRole }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </mat-card>
+  </section>
+
+  <section class="previews previews--security">
+    <mat-card class="card card--security saas-card">
+      <div class="card__head">
+        <div>
+          <h3 class="card__title">
+            <mat-icon class="card__title-icon" aria-hidden="true">lock</mat-icon>
+            Locked users
+          </h3>
+          <p class="card__sub">
+            Accounts locked after repeated failed sign-in attempts. Unlock them from the users page.
+          </p>
+        </div>
+        <a class="link" routerLink="/admin/users" [queryParams]="{ locked: 'true' }">View all locked users</a>
+      </div>
+
+      @if (loading()) {
+        <div class="list-skeleton">
+          @for (_ of [1, 2, 3]; track _) {
+            <div class="list-skeleton__row"></div>
+          }
+        </div>
+      } @else if (lockedUsers().length === 0) {
+        <div class="empty empty--ok" role="status">
+          <mat-icon aria-hidden="true">verified_user</mat-icon>
+          <div>
+            <strong>No locked accounts</strong>
+            <span>No security holds right now.</span>
+          </div>
+        </div>
+      } @else {
+        <ul class="list">
+          @for (u of lockedUsers(); track u.id) {
+            <li class="list__row list__row--locked">
+              <div class="list__main">
+                <span class="list__name">{{ u.fullName }}</span>
+                <span class="list__meta">{{ u.email }}</span>
+              </div>
+              <div class="list__tags">
+                <span class="pill">{{ u.role }}</span>
+                <span class="pill pill--locked">
+                  <mat-icon aria-hidden="true">lock</mat-icon>
+                  Locked
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </mat-card>
+  </section>
+</div>
+
