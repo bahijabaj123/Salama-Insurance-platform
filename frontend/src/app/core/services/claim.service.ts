@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import {
   Claim, ClaimResponseDTO, ClaimStatus,
   Expert, FraudAnalysis, FraudDashboard,
@@ -51,6 +52,21 @@ export class ClaimService {
 
   updateClaim(id: number, payload: Partial<Claim>): Observable<Claim> {
     return this.http.put<Claim>(`${this.BASE}/claims/${id}`, payload);
+  }
+
+  /**
+   * Mise à jour des notes. Utilise PATCH si le backend est à jour ;
+   * si l’API répond 404 (ancien JAR sans route), retombe sur PUT { notes }.
+   */
+  patchClaimNotes(id: number, notes: string): Observable<Claim> {
+    return this.http.patch<Claim>(`${this.BASE}/claims/${id}/notes`, { notes }).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) {
+          return this.updateClaim(id, { notes });
+        }
+        return throwError(() => err);
+      }),
+    );
   }
 
   deleteClaim(id: number): Observable<string> {

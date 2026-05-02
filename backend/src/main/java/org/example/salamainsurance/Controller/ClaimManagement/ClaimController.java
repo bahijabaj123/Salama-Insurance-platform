@@ -153,6 +153,22 @@ public class ClaimController {
     }
   }
 
+  /** Corps minimal pour éviter les erreurs de désérialisation sur un {@link Claim} incomplet. */
+  public record ClaimNotesPatch(String notes) {}
+
+  @PatchMapping("/{id}/notes")
+  public ResponseEntity<?> patchClaimNotes(@PathVariable Long id, @RequestBody ClaimNotesPatch body) {
+    try {
+      if (body == null || body.notes() == null) {
+        return new ResponseEntity<>("notes is required", HttpStatus.BAD_REQUEST);
+      }
+      Claim updated = claimService.updateClaimNotes(id, body.notes());
+      return ResponseEntity.ok(updated);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
   // ========== DELETE ==========
 
   @DeleteMapping("/{id}")

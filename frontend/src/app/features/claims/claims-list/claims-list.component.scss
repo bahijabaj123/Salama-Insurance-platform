@@ -173,7 +173,14 @@ table.claims-table {
   td { padding: 12px 14px; font-size: 13px; color: $text; border-bottom: 1px solid rgba($border,.6); vertical-align: middle; }
 }
 .col-check   { width: 44px; }
-.col-actions { width: 200px; text-align: right; }
+.col-actions {
+  width: 228px;
+  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0;
+}
 
 .claim-row {
   cursor: pointer; transition: background .1s;

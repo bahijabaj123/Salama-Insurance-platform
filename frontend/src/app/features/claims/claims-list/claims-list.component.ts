@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil, finalize, tap } from 'rxjs/operators';
+import { takeUntil, finalize } from 'rxjs/operators';
 // Services
 import { ClaimService } from '../../../core/services/claim.service';
 
@@ -131,6 +131,16 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       if (params['status']) this.activeStatus = params['status'] as ClaimStatus;
       if (params['region']) this.activeRegion = params['region'];
+      if (params['garageOk'] === '1') {
+        const ref = params['ref'] ? String(params['ref']) : '';
+        this.showSuccess(ref ? `Garage enregistré sur le sinistre ${ref}` : 'Garage enregistré sur le sinistre');
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { garageOk: null, ref: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
       if (this.claims.length) this.applyFilters();
     });
   }
@@ -404,6 +414,11 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
         this.showError(`Assignation impossible : ${err.error || err.message}`);
       },
     });
+  }
+
+  goAssignGarage(claimId: number, event: Event): void {
+    event.stopPropagation();
+    void this.router.navigate(['/assureur/claims', claimId, 'garage']);
   }
 
   autoAssign(claim: Claim, event: Event): void {

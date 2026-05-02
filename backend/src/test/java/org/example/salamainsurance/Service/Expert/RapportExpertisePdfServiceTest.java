@@ -54,7 +54,6 @@ class RapportExpertisePdfServiceTest {
         rapport.setObservation("Collision laterale");
         rapport.setAssureNom("Mehdi Bouzid");
         rapport.setAssureContrat("CT-98765");
-        rapport.setAssureDossier("DOS-SFAX-2026-042");
         rapport.setMandantAssurance("GAT Assurances");
         rapport.setMandantAgence("Agence Sfax");
         rapport.setVehiculeMarque("Renault");
