@@ -2,8 +2,9 @@ package org.example.salamainsurance.Entity.Expert;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.example.salamainsurance.Entity.ClaimManagement.Claim;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,9 +47,6 @@ public class ExpertReportHassen {
 
     @Column(name = "assure_contrat", length = 50)
     private String assureContrat;
-
-    @Column(name = "assure_dossier", length = 50)
-    private String assureDossier;
 
     // ===== Informations Assurance (Mandant) =====
     @Column(name = "mandant_assurance", length = 100)
@@ -144,15 +142,13 @@ public class ExpertReportHassen {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statut_rapport", length = 20)
-    private ExpertiseStatus  statutRapport;
+    private ExpertiseStatus statutRapport;
 
-  // Dans ExpertReportHassen.java
-  @ManyToOne
-  @JoinColumn(name = "claim_id", nullable = false)
-  private Claim claim;
+    /** Signature expert (data URL PNG) — saisie depuis le formulaire web. */
+    @Column(name = "expert_signature", columnDefinition = "LONGTEXT")
+    private String expertSignature;
 
-
-  // =====  PROPRIÉTÉS de bahija =====
+    // ===== Champs complémentaires (expertise / validation) =====
   @Column(name = "expertise_date")
   private LocalDateTime expertiseDate;
 
@@ -177,9 +173,6 @@ public class ExpertReportHassen {
   @Column(name = "validation_comments")
   private String validationComments;
 
-  @Column(name = "claim_valid")
-  private Boolean claimValid;
-
   @Column(name = "rejection_reason")
   private String rejectionReason;
 
@@ -196,15 +189,19 @@ public class ExpertReportHassen {
     // ===== Relations =====
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_expert", nullable = false)
+    @JsonIgnoreProperties({"claims", "expertReports", "hibernateLazyInitializer", "handler"})
     private ExpertHassen expert;
 
     @OneToMany(mappedBy = "rapportExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"rapportExpertise"})
     private List<DommageHassen> dommages;
 
     @OneToMany(mappedBy = "rapportExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"rapportExpertise"})
     private List<MainOeuvreHassen> mainsOeuvre;
 
     @OneToMany(mappedBy = "rapportExpertise", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"rapportExpertise"})
     private List<PieceJointeHassen> piecesJointes;
 
     // ===== ENUMS =====
@@ -250,9 +247,6 @@ public class ExpertReportHassen {
 
     public String getAssureContrat() { return assureContrat; }
     public void setAssureContrat(String assureContrat) { this.assureContrat = assureContrat; }
-
-    public String getAssureDossier() { return assureDossier; }
-    public void setAssureDossier(String assureDossier) { this.assureDossier = assureDossier; }
 
     public String getMandantAssurance() { return mandantAssurance; }
     public void setMandantAssurance(String mandantAssurance) { this.mandantAssurance = mandantAssurance; }
@@ -341,6 +335,12 @@ public class ExpertReportHassen {
     public ExpertiseStatus  getStatutRapport() { return statutRapport; }
     public void setStatutRapport(ExpertiseStatus  statutRapport) { this.statutRapport = statutRapport; }
 
+    public String getExpertSignature() { return expertSignature; }
+
+    /** Entrée JSON uniquement (POST) : pas de sérialisation sur GET /all (signatures très volumineuses). */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public void setExpertSignature(String expertSignature) { this.expertSignature = expertSignature; }
+
     public ExpertHassen getExpert() { return expert; }
     public void setExpert(ExpertHassen expert) { this.expert = expert; }
 
@@ -374,9 +374,6 @@ public class ExpertReportHassen {
 
   public String getValidationComments() { return validationComments; }
   public void setValidationComments(String validationComments) { this.validationComments = validationComments; }
-
-  public Boolean getClaimValid() { return claimValid; }
-  public void setClaimValid(Boolean claimValid) { this.claimValid = claimValid; }
 
   public String getRejectionReason() { return rejectionReason; }
   public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }

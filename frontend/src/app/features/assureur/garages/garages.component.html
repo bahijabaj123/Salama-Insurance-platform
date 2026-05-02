@@ -1,0 +1,115 @@
+<section class="garages-page">
+  <div class="title-row">
+    <h1>Gerer les garages partenaires</h1>
+    <p>Ajoutez, modifiez et supprimez les garages partenaires en un seul endroit.</p>
+  </div>
+
+  <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
+  <div class="alert error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <div class="content-grid">
+    <article class="panel list-panel">
+      <div class="panel-head">
+        <h2>Liste des garages</h2>
+        <input
+          type="text"
+          [(ngModel)]="search"
+          (input)="applyFilter()"
+          placeholder="Rechercher par nom, ville, email..."
+        />
+      </div>
+
+      <div class="loading" *ngIf="loading">Chargement...</div>
+
+      <div class="garage-list" *ngIf="!loading">
+        <div class="garage-card" *ngFor="let garage of filteredGarages">
+          <div>
+            <h3>{{ garage.name }}</h3>
+            <p>{{ garage.city }} - {{ garage.phone }}</p>
+            <small>{{ garage.email }}</small>
+          </div>
+          <div class="tags">
+            <span [class.partner]="garage.partner">
+              {{ garage.partner ? 'Partenaire' : 'Non partenaire' }}
+            </span>
+          </div>
+          <div class="actions">
+            <button type="button" (click)="startEdit(garage)">Modifier</button>
+            <button type="button" class="danger" [disabled]="deletingId === garage.id" (click)="remove(garage)">
+              Supprimer
+            </button>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!filteredGarages.length">Aucun garage trouve.</p>
+      </div>
+    </article>
+
+    <article class="panel form-panel">
+      <div class="panel-head">
+        <h2>{{ selectedGarageId ? 'Modifier le garage' : 'Nouveau garage' }}</h2>
+        <button type="button" *ngIf="selectedGarageId" (click)="startCreate()">Nouveau</button>
+      </div>
+
+      <form [formGroup]="garageForm" (ngSubmit)="submit()" class="garage-form">
+        <label>
+          Nom *
+          <input type="text" formControlName="name" />
+        </label>
+
+        <label>
+          Telephone *
+          <input type="text" formControlName="phone" />
+        </label>
+
+        <label>
+          Email *
+          <input type="email" formControlName="email" />
+        </label>
+
+        <div class="split">
+          <label>
+            Ville *
+            <input type="text" formControlName="city" />
+          </label>
+          <label>
+            Partenaire
+            <select formControlName="partner">
+              <option [ngValue]="true">Oui</option>
+              <option [ngValue]="false">Non</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Adresse *
+          <input type="text" formControlName="address" />
+        </label>
+
+        <div class="map-hint">
+          Cliquez sur la carte pour placer le garage, ou deplacez le marqueur.
+          <button type="button" (click)="clearPoint()">Effacer le point</button>
+        </div>
+        <div id="garage-map"></div>
+        <div class="detected" *ngIf="detectedAddress">
+          Adresse detectee: {{ detectedAddress }}
+        </div>
+
+        <div class="split">
+          <label>
+            Latitude *
+            <input type="number" formControlName="latitude" step="0.000001" />
+          </label>
+          <label>
+            Longitude *
+            <input type="number" formControlName="longitude" step="0.000001" />
+          </label>
+        </div>
+
+        <button type="submit" [disabled]="saving">
+          {{ saving ? 'Enregistrement...' : (selectedGarageId ? 'Mettre a jour' : 'Ajouter garage') }}
+        </button>
+      </form>
+    </article>
+  </div>
+</section>

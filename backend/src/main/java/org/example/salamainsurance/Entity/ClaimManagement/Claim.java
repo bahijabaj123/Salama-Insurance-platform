@@ -3,7 +3,6 @@ package org.example.salamainsurance.Entity.ClaimManagement;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
-import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
 import org.example.salamainsurance.Entity.Report.Accident;
 import jakarta.persistence.*;
 import org.example.salamainsurance.Entity.User;
@@ -53,11 +52,6 @@ public class Claim {
   @JoinColumn(name = "insurer_id")
   @JsonIgnore  // ← AJOUTE CECI
   private Insurer insurer;
-
-  // Expertise reports
-  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL)
-  @JsonIgnore
-  private List<ExpertReportHassen> expertiseReports = new ArrayList<>();
 
   // Region extracted from accident location
   private String region;
@@ -255,14 +249,6 @@ public class Claim {
     this.insurer = insurer;
   }
 
-  public List<ExpertReportHassen> getExpertiseReports() {
-    return expertiseReports;
-  }
-
-  public void setExpertiseReports(List<ExpertReportHassen> expertiseReports) {
-    this.expertiseReports = expertiseReports;
-  }
-
   public String getRegion() {
     return region;
   }
@@ -285,13 +271,6 @@ public class Claim {
 
   public void setActionHistory(List<String> actionHistory) {
     this.actionHistory = actionHistory;
-  }
-
-  public ExpertReportHassen getLatestExpertiseReport() {
-    if (expertiseReports == null || expertiseReports.isEmpty()) {
-      return null;
-    }
-    return expertiseReports.get(expertiseReports.size() - 1);
   }
 
   public int getEstimatedAmount() {

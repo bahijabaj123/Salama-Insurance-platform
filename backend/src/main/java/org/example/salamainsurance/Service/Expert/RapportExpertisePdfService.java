@@ -28,6 +28,7 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -208,12 +209,11 @@ public class RapportExpertisePdfService {
     private void addAssureSection(Document document, ExpertReportHassen rapport) {
         document.add(createSectionTitle("ASSURE & ASSURANCE"));
 
-        Table table = new Table(UnitValue.createPercentArray(new float[]{25, 25, 25, 25}))
+        Table table = new Table(UnitValue.createPercentArray(new float[]{33.34f, 33.33f, 33.33f}))
                 .useAllAvailableWidth().setMarginBottom(10);
 
         addInfoCell(table, "Nom Assure", safe(rapport.getAssureNom()));
         addInfoCell(table, "No Contrat", safe(rapport.getAssureContrat()));
-        addInfoCell(table, "No Dossier", safe(rapport.getAssureDossier()));
         addInfoCell(table, "Assurance", safe(rapport.getMandantAssurance()));
 
         document.add(table);
@@ -438,7 +438,10 @@ public class RapportExpertisePdfService {
 
         Cell sigLeft = new Cell().setBorder(Border.NO_BORDER);
         sigLeft.add(new Paragraph("Signature Expert").setFontSize(9).setBold());
-        sigLeft.add(new Paragraph("\n\n\n_________________________").setFontSize(9));
+        boolean hasSigImage = addExpertSignatureImageIfPresent(sigLeft, rapport);
+        if (!hasSigImage) {
+            sigLeft.add(new Paragraph("\n\n\n_________________________").setFontSize(9));
+        }
         if (rapport.getExpert() != null) {
             sigLeft.add(new Paragraph(safe(rapport.getExpert().getLastName()) + " " + safe(rapport.getExpert().getFirstName()))
                     .setFontSize(8).setItalic());
@@ -457,6 +460,33 @@ public class RapportExpertisePdfService {
         document.add(new Paragraph("Document genere automatiquement par SALAMA INSURANCE PLATFORM - " + java.time.LocalDate.now().format(dateFormatter))
                 .setFontSize(7).setFontColor(ColorConstants.GRAY)
                 .setTextAlignment(TextAlignment.CENTER).setMarginTop(15));
+    }
+
+    /** Décode une data URL PNG (ou base64 pur) et l'ajoute au pied de page. */
+    private boolean addExpertSignatureImageIfPresent(Cell cell, ExpertReportHassen rapport) {
+        String sig = rapport.getExpertSignature();
+        if (sig == null || sig.isBlank()) {
+            return false;
+        }
+        try {
+            String b64 = sig.trim();
+            if (b64.startsWith("data:")) {
+                int comma = b64.indexOf(',');
+                if (comma < 0) {
+                    return false;
+                }
+                b64 = b64.substring(comma + 1);
+            }
+            byte[] bytes = Base64.getDecoder().decode(b64);
+            Image img = new Image(ImageDataFactory.create(bytes))
+                    .setWidth(UnitValue.createPointValue(180))
+                    .setAutoScale(true)
+                    .setMarginTop(4);
+            cell.add(img);
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private Paragraph createSectionTitle(String title) {

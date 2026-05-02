@@ -207,6 +207,10 @@
                     (click)="openAssignModal(c, $event)">
               <mat-icon>person_add</mat-icon>
             </button>
+            <button mat-icon-button matTooltip="Assigner un garage (carte)"
+                    (click)="goAssignGarage(c.id, $event)">
+              <mat-icon>directions_car</mat-icon>
+            </button>
             <button mat-icon-button matTooltip="Télécharger PDF"
                     (click)="claimService.downloadPdf(c.id)">
               <mat-icon>picture_as_pdf</mat-icon>
@@ -474,3 +478,4 @@
     </div>
   </div>
 </div>
+

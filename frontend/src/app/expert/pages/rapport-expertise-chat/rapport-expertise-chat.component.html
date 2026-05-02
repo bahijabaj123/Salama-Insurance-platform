@@ -1,0 +1,64 @@
+<div class="rec-page">
+  <aside class="dash-side">
+    <div class="brand"><span>Salama Expert</span></div>
+    <nav class="dash-nav">
+      <button type="button" class="nav-item" [class.active]="activeNav() === 'dashboard'" (click)="onNavAction('dashboard')">Dashboard IA</button>
+      <button type="button" class="nav-item" [class.active]="activeNav() === 'reports'" (click)="onNavAction('reports')">Rapports</button>
+      <button type="button" class="nav-item" [class.active]="activeNav() === 'experts'" (click)="onNavAction('experts')">Experts</button>
+      <button type="button" class="nav-item" [class.active]="activeNav() === 'stats'" (click)="onNavAction('stats')">Statistiques</button>
+      <button type="button" class="nav-item" [class.active]="activeNav() === 'settings'" (click)="onNavAction('settings')">Parametres</button>
+    </nav>
+    <div class="side-status">
+      <p class="side-label">Connexion API</p>
+      <button type="button" class="rec-status" (click)="verifyChatbotConnection()">{{ apiStatusLabel() }}</button>
+      <button type="button" class="ghost-btn" (click)="clearChat()" [disabled]="sending()">Vider le chat</button>
+    </div>
+  </aside>
+
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <div>
+        <h1>Rapport Expertise Chat</h1>
+        <p>Assistant expert pour rapports et suivi.</p>
+      </div>
+      <a routerLink="/expert/reports/new" class="btn-main">Nouveau rapport</a>
+    </header>
+
+    <section class="chat-shell">
+      <div class="quick-actions">
+        @for (s of suggestions; track s.label) {
+          <button type="button" class="rec-chip" (click)="onSuggestion(s)" [disabled]="sending()">{{ s.label }}</button>
+        }
+      </div>
+
+      <div class="rec-messages">
+        @for (line of messages(); track $index) {
+          <div class="rec-msg" [class.rec-msg-user]="line.isUser">
+            <div class="rec-bubble-wrap">
+              <div class="rec-bubble">{{ line.text }}</div>
+              <div class="rec-time">{{ line.time }}</div>
+            </div>
+          </div>
+        }
+        @if (typing()) {
+          <div class="rec-msg">
+            <div class="rec-bubble-wrap"><div class="rec-bubble">...</div></div>
+          </div>
+        }
+        <div #messagesEnd></div>
+      </div>
+
+      <div class="rec-input-row">
+        <input
+          type="text"
+          class="rec-input"
+          [(ngModel)]="inputText"
+          (keydown.enter)="onSend()"
+          placeholder="ex. ajoute un rapport - expert:1 assure:Nom"
+          [disabled]="sending()"
+        />
+        <button type="button" class="rec-send" (click)="onSend()" [disabled]="sending() || !inputText.trim()">Envoyer</button>
+      </div>
+    </section>
+  </main>
+</div>

@@ -1,0 +1,156 @@
+<div class="cem-page" [class.cem-page--embedded]="embedded()">
+  <header class="cem-header">
+    <div>
+      @if (!embedded()) {
+        <button type="button" class="cem-back" (click)="goBack()">
+          <mat-icon aria-hidden="true">arrow_back</mat-icon>
+          Retour
+        </button>
+      }
+      <h1 class="cem-title">Messages avec votre expert</h1>
+      <p class="cem-sub">
+        @if (embedded()) {
+          Échangez avec votre expert sur vos dossiers ; les messages sont partagés via le stockage local du navigateur
+          (démo).
+        } @else {
+          Même fil que sur le tableau de bord expert (<strong>Gestion des Experts</strong> → bloc
+          « Messages déjà envoyés par l'utilisateur ») : chaque message est partagé via le stockage local du navigateur.
+        }
+      </p>
+    </div>
+    <button type="button" class="cem-refresh" (click)="refreshAll()">
+      <mat-icon aria-hidden="true">refresh</mat-icon>
+      Actualiser
+    </button>
+  </header>
+
+  @if (sendSuccess()) {
+    <div class="cem-alert cem-alert--ok">{{ sendSuccess() }}</div>
+  }
+  @if (sendError()) {
+    <div class="cem-alert cem-alert--err">{{ sendError() }}</div>
+  }
+
+  <section class="cem-card cem-card--compose">
+    <h2 class="cem-card-title">Nouveau message</h2>
+    <p class="cem-card-hint">
+      Choisissez le sinistre concerné (ou les champs manuels si aucun sinistre n’est lié à votre compte), puis envoyez.
+      <strong>Important :</strong> les messages sont enregistrés dans le navigateur (localStorage) — pour la démo, ouvrez
+      l’espace client et la vue coordinateur <strong>sur le même navigateur</strong> pour voir le fil côté expert.
+    </p>
+
+    @if (loadingClaims()) {
+      <p class="cem-muted">Chargement de vos dossiers…</p>
+    } @else if (myClaims().length > 0) {
+      <div class="cem-form-row">
+        <label class="cem-label" for="cem-claim">Dossier (sinistre)</label>
+        <select id="cem-claim" class="cem-select" [(ngModel)]="selectedClaimId">
+          @for (c of myClaims(); track c.id) {
+            <option [ngValue]="c.id">{{ c.reference }} — {{ c.status }}</option>
+          }
+        </select>
+      </div>
+    } @else {
+      <p class="cem-muted">
+        Aucun sinistre associé à votre compte pour le moment. Indiquez la référence de dossier et l’expert : la
+        conversation reste locale au navigateur (même principe que l’espace coordinateur).
+      </p>
+      <div class="cem-form-row">
+        <label class="cem-label" for="cem-mref">Référence dossier</label>
+        <input
+          id="cem-mref"
+          type="text"
+          class="cem-input"
+          [(ngModel)]="manualReference"
+          placeholder="ex. RAP-2026-RMZ-001"
+        />
+      </div>
+      <div class="cem-form-row">
+        <label class="cem-label" for="cem-mexp">Expert</label>
+        <input
+          id="cem-mexp"
+          class="cem-input"
+          [(ngModel)]="manualExpertName"
+          [attr.list]="expertDatalistId"
+          placeholder="Choisir une suggestion ou saisir le nom (ex. Mohamed Salah)"
+          autocomplete="off"
+        />
+        <datalist [id]="expertDatalistId">
+          @for (name of manualExpertOptions(); track name) {
+            <option [value]="name"></option>
+          }
+        </datalist>
+        <p class="cem-field-hint">
+          Les suggestions viennent de l’API et des messages déjà présents. Le nom doit correspondre à celui affiché côté
+          expert pour filtrer la conversation.
+        </p>
+      </div>
+    }
+
+    <div class="cem-form-row">
+      <label class="cem-label" for="cem-body">Message</label>
+      <textarea
+        id="cem-body"
+        class="cem-textarea"
+        rows="4"
+        [(ngModel)]="newMessageText"
+        placeholder="Ex. : Bonjour, pouvez-vous confirmer l'avancement de mon dossier ?"
+      ></textarea>
+    </div>
+
+    <button type="button" class="cem-btn-primary" (click)="sendNewMessage()" [disabled]="loadingClaims()">
+      <mat-icon aria-hidden="true">send</mat-icon>
+      Envoyer le message
+    </button>
+  </section>
+
+  <section class="cem-card cem-messages-card">
+    <div class="cem-messages-head">
+      <div>
+        <h2 class="cem-card-title">Messages déjà envoyés</h2>
+        <p class="cem-card-hint">Même présentation que le dashboard expert : dossier, expert, fil des réponses.</p>
+      </div>
+    </div>
+
+    @if (!anchors().length) {
+      <p class="cem-empty">Aucun message pour l'instant. Envoyez un premier message ci-dessus.</p>
+    } @else {
+      <ul class="cem-messages-list">
+        @for (msg of anchors(); track msg.id) {
+          <li class="cem-message-item">
+            <div class="cem-message-top">
+              <strong>{{ msg.clientName }}</strong>
+              <span>{{ messageTimeLabel(msg.sentAt) }}</span>
+            </div>
+            <p class="cem-message-text">{{ msg.message }}</p>
+            <div class="cem-message-meta">
+              <span>Dossier : {{ msg.dossierReference }}</span>
+              <span>Expert : {{ msg.expertName }}</span>
+            </div>
+            <div class="cem-message-reply">
+              <input
+                type="text"
+                [ngModel]="getThreadDraft(msg.dossierId)"
+                (ngModelChange)="setThreadDraft(msg.dossierId, $event)"
+                placeholder="Écrire à l'expert..."
+              />
+              <button type="button" (click)="sendClientFollowUp(msg)" [disabled]="!getThreadDraft(msg.dossierId).trim()">
+                Envoyer
+              </button>
+            </div>
+            @if (expertRepliesFor(msg).length > 0) {
+              <div class="cem-message-thread">
+                @for (rep of expertRepliesFor(msg); track rep.id) {
+                  <p>
+                    <strong>Expert :</strong> {{ rep.message }}
+                    <span>{{ messageTimeLabel(rep.sentAt) }}</span>
+                  </p>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

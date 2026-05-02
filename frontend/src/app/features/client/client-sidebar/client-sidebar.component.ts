@@ -20,11 +20,14 @@ import { RouterModule } from '@angular/router';
         <a routerLink="/client/sinistres" routerLinkActive="active">
           <i class="fas fa-file-alt"></i> Mes sinistres
         </a>
+        <a routerLink="/client/consultation-expert" routerLinkActive="active">
+          <i class="fas fa-user-tie"></i> Consultation d'expert
+        </a>
         <a routerLink="/client/constat" routerLinkActive="active">
           <i class="fas fa-plus-circle"></i> Nouveau constat
         </a>
-        <a routerLink="/client/garages" routerLinkActive="active">
-          <i class="fas fa-tools"></i> Garages disponibles
+        <a routerLink="/client/sos" routerLinkActive="active">
+          <i class="fas fa-life-ring"></i> SOS disponible
         </a>
         <a routerLink="/client/contract" routerLinkActive="active">
           <i class="fas fa-file-signature"></i> Mon contrat

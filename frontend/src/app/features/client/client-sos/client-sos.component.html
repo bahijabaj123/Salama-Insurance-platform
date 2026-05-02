@@ -1,0 +1,93 @@
+<section class="sos-page">
+  <header class="hero">
+    <h1>SOS Disponible</h1>
+    <p>Selectionnez la position d'accident et choisissez le remorqueur le plus proche.</p>
+  </header>
+
+  <article class="card">
+    <div class="card-title">1) Position de l'accident</div>
+    <div class="address" *ngIf="accidentAddress">{{ accidentAddress }}</div>
+    <div class="map-toolbar">
+      <span>Cliquez sur la carte pour placer le lieu d'accident. Vous pouvez deplacer le marqueur.</span>
+      <button type="button" (click)="clearPoint()">Effacer le point</button>
+    </div>
+    <div id="sos-map"></div>
+
+    <div
+      class="tracking-panel"
+      *ngIf="(trackingActive || trackingArrived) && !trackingPanelDismissed"
+    >
+      <div class="tracking-title">Suivi en direct du remorquage</div>
+      <p class="tracking-text" *ngIf="trackingActive && !trackingArrived">
+        Le remorqueur se dirige vers votre position d’accident. La position est rafraîchie automatiquement
+        (démonstration : avancement simulé si le serveur ne reçoit pas encore le GPS du chauffeur).
+      </p>
+      <p class="tracking-text arrived" *ngIf="trackingArrived">
+        Remorqueur arrivé à proximité de votre position.
+      </p>
+      <div class="tracking-meta" *ngIf="trackingDistanceLabel">{{ trackingDistanceLabel }}</div>
+      <div class="tracking-meta warn" *ngIf="trackingPollError">{{ trackingPollError }}</div>
+      <button type="button" class="tracking-close" (click)="closeTrackingPanel()">Fermer le suivi</button>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-title">2) Remorqueurs disponibles proches</div>
+    <div class="loading" *ngIf="loadingTowTrucks">Chargement...</div>
+    <div class="garage-grid" *ngIf="!loadingTowTrucks">
+      <button
+        class="garage"
+        *ngFor="let tow of nearbyTowTrucks"
+        [class.active]="selectedTowTruckId === tow.id"
+        (click)="chooseTowTruck(tow.id)"
+      >
+        <div class="name">{{ tow.name }}</div>
+        <div class="meta">
+          <span class="status">Disponible</span>
+          <strong>{{ tow.distanceKm }} km</strong>
+        </div>
+      </button>
+      <div class="empty" *ngIf="!nearbyTowTrucks.length">Aucun remorqueur trouve pour cette position.</div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-title">3) Confirmation SOS</div>
+    <p>Validez la demande pour transmettre la localisation au remorqueur choisi.</p>
+    <button class="confirm" type="button" (click)="openSosForm()">Envoyer demande SOS</button>
+    <div class="ok" *ngIf="sosStatus">{{ sosStatus }}</div>
+    <div class="err" *ngIf="sosError">{{ sosError }}</div>
+  </article>
+</section>
+
+<div class="modal-backdrop" *ngIf="showRequestForm">
+  <div class="modal-card">
+    <h3>Formulaire demande SOS</h3>
+    <p>Les informations client sont remplies automatiquement.</p>
+
+    <form [formGroup]="sosForm" (ngSubmit)="submitSosRequest()">
+      <label>
+        Nom client
+        <input type="text" formControlName="clientName" />
+      </label>
+      <label>
+        Telephone client
+        <input type="text" formControlName="clientPhone" placeholder="Ex: 22334455" />
+      </label>
+      <div class="hint" *ngIf="phoneHint">{{ phoneHint }}</div>
+      <label>
+        Description (optionnel)
+        <textarea rows="3" formControlName="description" placeholder="Ex: Panne moteur, voiture immobilisee"></textarea>
+      </label>
+
+      <div class="summary-line">Adresse accident: {{ accidentAddress || '-' }}</div>
+
+      <div class="actions">
+        <button type="button" class="cancel" (click)="closeSosForm()">Annuler</button>
+        <button type="submit" [disabled]="submittingRequest">
+          {{ submittingRequest ? 'Envoi...' : 'Confirmer la demande' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

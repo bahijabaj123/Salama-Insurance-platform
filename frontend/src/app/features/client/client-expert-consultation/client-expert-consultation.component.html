@@ -1,0 +1,30 @@
+<section class="expert-page">
+  <header class="expert-page__header">
+    <h1 class="expert-page__title">Consultation d'expert</h1>
+    <p class="expert-page__lead">
+      Choisissez une action pour échanger avec votre expert ou suivre l'avancement de vos dossiers.
+    </p>
+  </header>
+
+  <div class="expert-page__actions">
+    <button
+      mat-flat-button
+      type="button"
+      class="expert-page__btn expert-page__btn--primary"
+      (click)="goCommunicateWithExpert()"
+    >
+      <mat-icon aria-hidden="true">forum</mat-icon>
+      <span>Communiquer avec l'expert</span>
+    </button>
+
+    <button
+      mat-stroked-button
+      type="button"
+      class="expert-page__btn expert-page__btn--secondary"
+      (click)="goFollow()"
+    >
+      <mat-icon aria-hidden="true">timeline</mat-icon>
+      <span>Suivre</span>
+    </button>
+  </div>
+</section>

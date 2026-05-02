@@ -1,0 +1,10 @@
+<div class="alp-wrap">
+  <div class="alp-toolbar">
+    <span class="alp-hint">Cliquez sur la carte pour placer le lieu d'accident. Vous pouvez deplacer le marqueur.</span>
+    @if (geocoding) {
+      <span class="alp-geocode">Adresse...</span>
+    }
+    <button type="button" class="alp-clear" (click)="clearPoint()">Effacer le point</button>
+  </div>
+  <div class="alp-map" #mapEl role="application" aria-label="Carte du lieu d'accident"></div>
+</div>
