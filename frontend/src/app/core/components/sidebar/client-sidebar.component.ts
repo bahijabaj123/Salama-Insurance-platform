@@ -21,8 +21,8 @@ import { RouterModule } from '@angular/router';
           <i class="fas fa-file-alt"></i> Mes sinistres
           <span class="badge">3</span>
         </a>
-        <a routerLink="/client/constat" routerLinkActive="active">
-          <i class="fas fa-plus-circle"></i> Nouveau constat
+        <a routerLink="/accident" routerLinkActive="active">
+         <i class="fas fa-plus-circle"></i> Nouveau constat
         </a>
         <a routerLink="/client/garages" routerLinkActive="active">
           <i class="fas fa-tools"></i> Garages disponibles

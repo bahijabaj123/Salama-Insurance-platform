@@ -40,6 +40,7 @@ function confirmPasswordMatches(passwordControlName: string): ValidatorFn {
 
 @Component({
   selector: 'app-signup',
+    standalone: true,
   imports: [ReactiveFormsModule, RouterLink, HomeNavbarComponent, SilkBackgroundComponent],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.scss'

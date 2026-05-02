@@ -24,6 +24,7 @@ type LoadState = 'idle' | 'loading' | 'error' | 'ready';
 
 @Component({
   selector: 'app-admin-users',
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     DatePipe,

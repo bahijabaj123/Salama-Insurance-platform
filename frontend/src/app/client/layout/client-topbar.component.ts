@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-client-topbar',
+    standalone: true,
   imports: [],
   templateUrl: './client-topbar.component.html',
   styleUrl: './client-topbar.component.scss'

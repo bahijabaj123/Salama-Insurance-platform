@@ -19,6 +19,10 @@ import { OAuth2SuccessComponent } from './pages/oauth2-success/oauth2-success.co
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { SignupComponent } from './pages/signup/signup.component';
 
+
+// IMPORTS ACCIDENT
+import { AccidentComponent } from './features/accident/accident.component';
+
 // ============================================================
 // IMPORTS LAYOUTS (ton projet)
 // ============================================================
@@ -77,6 +81,9 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'oauth2/success', component: OAuth2SuccessComponent },
 
+  { path: 'accident', component: AccidentComponent },
+
+ 
   // ============================================================
   // ROUTES ADMIN
   // ============================================================
