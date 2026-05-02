@@ -1,4 +1,13 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  afterNextRender,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -31,8 +40,12 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
   createdReportId = signal<number | null>(null);
   aiAnalysisLoading = signal(false);
   aiAnalysisError = signal('');
+  /** Message informatif (ex. texte généré localement quand l’IA ne répond pas). */
+  aiAnalysisInfo = signal('');
   aiAnalysisText = signal('');
   aiAnalysisSource = signal('');
+  /** True si le bloc d’analyse affiché provient du repli local (pas du backend). */
+  aiAnalysisOfflineFallback = signal(false);
   aiImagePreviewUrl = signal<string | null>(null);
   private aiPreviewObjectUrl: string | null = null;
 
@@ -59,7 +72,8 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
 
   constructor(
     private rapportService: RapportExpertiseChatService,
-    private router: Router
+    private router: Router,
+    private readonly injector: Injector,
   ) {}
 
   ngOnInit(): void {
@@ -134,32 +148,77 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     this.rapportService.createReport(this.expertId, payload).subscribe({
       next: (created) => {
         this.submitLoading.set(false);
-        const reportId = created?.idRapport ?? null;
+        const reportId = this.extractCreatedReportId(created);
         this.createdReportId.set(reportId);
         this.successMessage.set(reportId != null ? `Rapport cree avec succes (ID ${reportId}).` : 'Rapport cree avec succes.');
       },
-      error: () => {
+      error: (err: unknown) => {
         this.submitLoading.set(false);
-        this.error.set('Echec de la creation du rapport.');
+        this.error.set(this.formatHttpApiError(err, 'Echec de la creation du rapport.'));
       }
     });
   }
 
   downloadReportPdf(reportId: number | null): void {
     if (reportId == null) return;
+    this.error.set('');
     this.rapportService.downloadExpertReportPdf(reportId).subscribe({
-      next: (blob) => {
+      next: async (blob) => {
+        if (!(await this.blobLooksLikePdf(blob))) {
+          const hint = await this.tryReadBlobAsErrorMessage(blob);
+          this.error.set(
+            hint || `La reponse du serveur n’est pas un PDF valide pour le rapport ${reportId}.`,
+          );
+          return;
+        }
+        const filename = `rapport-expertise-${reportId}.pdf`;
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
-        anchor.download = `rapport-expertise-${reportId}.pdf`;
+        anchor.download = filename;
+        anchor.rel = 'noopener';
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
         anchor.click();
-        URL.revokeObjectURL(url);
+        document.body.removeChild(anchor);
+        // Laisser le temps au navigateur d’enregistrer le fichier avant de révoquer l’URL
+        setTimeout(() => URL.revokeObjectURL(url), 90_000);
       },
-      error: () => {
-        this.error.set('Rapport cree, mais telechargement PDF impossible pour le moment.');
-      }
+      error: (err: unknown) => {
+        this.error.set(this.formatHttpApiError(err, 'Telechargement PDF impossible.'));
+      },
     });
+  }
+
+  /** ID renvoyé par le backend (idRapport ou id selon sérialisation). */
+  private extractCreatedReportId(created: ExpertiseReport | null | undefined): number | null {
+    if (!created || typeof created !== 'object') return null;
+    const any = created as ExpertiseReport & { id?: number };
+    const v = any.idRapport ?? any.id;
+    if (v == null) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private async blobLooksLikePdf(blob: Blob): Promise<boolean> {
+    const head = await blob.slice(0, 5).arrayBuffer();
+    const sig = new Uint8Array(head);
+    const pdf = [0x25, 0x50, 0x44, 0x46]; // "%PDF"
+    if (sig.length < 4) return false;
+    for (let i = 0; i < 4; i++) {
+      if (sig[i] !== pdf[i]) return false;
+    }
+    return true;
+  }
+
+  private async tryReadBlobAsErrorMessage(blob: Blob): Promise<string | null> {
+    try {
+      const t = await blob.text();
+      const j = JSON.parse(t) as { message?: string; error?: string };
+      return j.message || j.error || null;
+    } catch {
+      return null;
+    }
   }
 
   photoUrls(): string[] {
@@ -169,17 +228,23 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
   analyzePhotoUrl(url: string): void {
     this.aiAnalysisLoading.set(true);
     this.aiAnalysisError.set('');
+    this.aiAnalysisInfo.set('');
     this.aiAnalysisText.set('');
+    this.aiAnalysisOfflineFallback.set(false);
     this.aiAnalysisSource.set(url);
     this.rapportService.analyzeAccidentImageByUrl(url).subscribe({
       next: (r) => {
         this.aiAnalysisLoading.set(false);
-        if (r.success && r.analysis) this.aiAnalysisText.set(r.analysis.trim());
-        else this.aiAnalysisError.set(r.errorMessage || 'Analyse indisponible.');
+        if (r.success && r.analysis) {
+          this.aiAnalysisText.set(r.analysis.trim());
+          this.aiAnalysisOfflineFallback.set(false);
+        } else {
+          this.applyLocalImageAnalysisFallback(url, r.errorMessage || 'Analyse indisponible.');
+        }
       },
       error: (err) => {
         this.aiAnalysisLoading.set(false);
-        this.aiAnalysisError.set(this.formatAiHttpError(err));
+        this.applyLocalImageAnalysisFallback(url, this.formatAiHttpError(err));
       }
     });
   }
@@ -190,34 +255,83 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     if (!file) return;
     this.aiAnalysisLoading.set(true);
     this.aiAnalysisError.set('');
+    this.aiAnalysisInfo.set('');
     this.aiAnalysisText.set('');
+    this.aiAnalysisOfflineFallback.set(false);
     this.aiAnalysisSource.set(file.name);
     this.setAiPreviewFromFile(file);
     this.rapportService.analyzeAccidentImageUpload(file).subscribe({
       next: (r) => {
         this.aiAnalysisLoading.set(false);
-        if (r.success && r.analysis) this.aiAnalysisText.set(r.analysis.trim());
-        else this.aiAnalysisError.set(r.errorMessage || 'Analyse indisponible.');
+        if (r.success && r.analysis) {
+          this.aiAnalysisText.set(r.analysis.trim());
+          this.aiAnalysisOfflineFallback.set(false);
+        } else {
+          this.applyLocalImageAnalysisFallback(file.name, r.errorMessage || 'Analyse indisponible.');
+        }
         input.value = '';
       },
       error: (err) => {
         this.aiAnalysisLoading.set(false);
-        this.aiAnalysisError.set(this.formatAiHttpError(err));
+        this.applyLocalImageAnalysisFallback(file.name, this.formatAiHttpError(err));
         input.value = '';
       }
     });
   }
 
-  aiDiagnosticComment(): string {
-    return this.aiAnalysisError() ? this.aiAnalysisError() : 'Choisissez une image ou une URL pour lancer l’analyse IA.';
+  /** Texte d’aide sous la zone IA (pas de doublon avec les bandeaux erreur / info). */
+  aiIdleHint(): string {
+    if (
+      this.aiAnalysisLoading() ||
+      this.aiAnalysisError() ||
+      this.aiAnalysisInfo() ||
+      this.aiAnalysisText()
+    ) {
+      return '';
+    }
+    return 'Choisissez une image ou une URL pour lancer l’analyse IA.';
   }
 
   insertAiIntoNatureDegats(): void {
     const block = this.aiAnalysisText();
     if (!block) return;
     const existing = this.report.natureDegats?.trim();
-    const sep = existing ? '\n\n--- Analyse automatique (IA) ---\n' : '';
+    const tag = this.aiAnalysisOfflineFallback()
+      ? '--- Proposition locale (IA indisponible) ---'
+      : '--- Analyse automatique (IA) ---';
+    const sep = existing ? `\n\n${tag}\n` : '';
     this.report.natureDegats = (existing ?? '') + sep + block;
+  }
+
+  /**
+   * Quand le backend IA ne répond pas : remplit un texte de secours (style synthèse IA + état véhicule).
+   */
+  private applyLocalImageAnalysisFallback(sourceLabel: string, reason: string): void {
+    this.aiAnalysisError.set('');
+    this.aiAnalysisOfflineFallback.set(true);
+    this.aiAnalysisInfo.set(
+      `Analyse IA indisponible (${reason}). Un commentaire local a été généré — à valider après inspection du véhicule.`,
+    );
+    this.aiAnalysisText.set(this.buildLocalExpertiseCommentary(sourceLabel));
+  }
+
+  private buildLocalExpertiseCommentary(sourceLabel: string): string {
+    const ts = new Date().toLocaleString('fr-FR');
+    return [
+      '--- Synthèse (mode hors ligne, formulation type rapport automatique) ---',
+      `D’après la photographie « ${sourceLabel} », le cliché documente un sinistre avec dommages apparents sur la partie visible du véhicule. Ce type d’image évoque fréquemment un choc à l’avant ou latéral avant : déformation du pare-chocs, du capot, des ailes ou des optiques, avec risque d’impact sur le compartiment moteur ou le train avant selon la cinétique.`,
+      '',
+      'Ce paragraphe est généré localement lorsque le service d’analyse ne répond pas ; il ne remplace pas l’expertise sur place ni les mesures atelier.',
+      '',
+      '--- État du véhicule (observation à confirmer par l’expert) ---',
+      '• Face avant / flanc avant : relever jeux de tôlerie, longerons, supports de radiateur et de phares.',
+      '• Mécanique : vérifier fuites, supports moteur/boîte, courroies et organes périphériques après choc.',
+      '• Train roulant : suspension, bras de liaison, rotules, jantes/pneus — géométrie à contrôler systématiquement.',
+      '• Sécurité passive : ceintures, airbags, connecteurs — relever les défauts calculateur si nécessaire.',
+      '• Peinture / FV : étendue des reprises et retouches à chiffrer au devis.',
+      '',
+      `Document : ${sourceLabel} — généré le ${ts} (repli local).`,
+    ].join('\n');
   }
 
   private formatAiHttpError(err: unknown): string {
@@ -225,6 +339,24 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
       return 'Connexion refusee vers le backend.';
     }
     return 'Erreur reseau ou serveur.';
+  }
+
+  private formatHttpApiError(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      const body = err.error;
+      if (body && typeof body === 'object' && 'message' in body) {
+        const m = (body as { message?: string }).message;
+        if (m) return m;
+      }
+      if (typeof body === 'string' && body.length > 0 && body.length < 800) {
+        return body;
+      }
+      if (err.status === 0) {
+        return 'Impossible de joindre le serveur. Verifiez que le backend tourne (port 8082).';
+      }
+      return `Erreur serveur (${err.status}).`;
+    }
+    return fallback;
   }
 
   private revokeAiPreview(): void {
@@ -255,12 +387,53 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     if (mainsOeuvre.length) base['mainsOeuvre'] = mainsOeuvre;
     const piecesJointes = this.piecesJointes.filter((p) => (p.nombre ?? 0) > 0);
     if (piecesJointes.length) base['piecesJointes'] = piecesJointes;
+    const sig = this.exportSignatureFromCanvas();
+    if (sig) base['expertSignature'] = sig;
     return base;
   }
 
+  private exportSignatureFromCanvas(): string | null {
+    const canvas = this.sigCanvasRef?.nativeElement;
+    if (!canvas || !this.sigCtx) return null;
+    try {
+      if (this.isSignatureCanvasBlank(canvas)) return null;
+      return canvas.toDataURL('image/png');
+    } catch {
+      return null;
+    }
+  }
+
+  private isSignatureCanvasBlank(canvas: HTMLCanvasElement): boolean {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return true;
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
+      if (a < 10) continue;
+      if (r < 250 || g < 250 || b < 250) return false;
+    }
+    return true;
+  }
+
+  private sigCanvasInitAttempts = 0;
+
   private initSignatureCanvas(): void {
     const canvas = this.sigCanvasRef?.nativeElement;
-    if (!canvas) return;
+    if (!canvas) {
+      if (this.sigCanvasInitAttempts < 10) {
+        this.sigCanvasInitAttempts++;
+        setTimeout(() => this.initSignatureCanvas(), 50);
+      }
+      return;
+    }
+    this.sigCanvasInitAttempts = 0;
+    // Éviter de réinitialiser si déjà prêt (ne pas effacer une signature en cours)
+    if (this.sigCtx && canvas.width === 600 && canvas.height === 180) {
+      return;
+    }
     canvas.width = 600;
     canvas.height = 180;
     const ctx = canvas.getContext('2d');

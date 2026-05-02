@@ -31,11 +31,19 @@
 .doc-ai-url-btn { font-size: 0.78rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 8px; border: none; cursor: pointer; background: #7c3aed; color: #fff; text-align: left; }
 .doc-ai-status { font-size: 0.82rem; padding: 0.55rem 0.75rem; border-radius: 8px; margin-bottom: 0.65rem; background: #eff6ff; color: #1e3a8a; }
 .doc-ai-err { background: #fee2e2; color: #991b1b; }
+.doc-ai-info { background: #e0f2fe; color: #0c4a6e; border: 1px solid #7dd3fc; }
 .doc-ai-result { border: 1px solid #ddd6fe; border-radius: 10px; overflow: hidden; background: #fff; }
 .doc-ai-insert-btn { font-size: 0.72rem; font-weight: 700; margin: 0.5rem; padding: 0.35rem 0.65rem; border-radius: 6px; border: 1px solid #c4b5fd; background: #fff; color: #5b21b6; cursor: pointer; }
 .doc-ai-pre { margin: 0; padding: 0.85rem 1rem; font-size: 0.8rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; color: #334155; max-height: 320px; overflow-y: auto; }
 .doc-signature-wrap { max-width: 520px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; overflow: hidden; touch-action: none; }
-.doc-signature-canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+.doc-signature-canvas {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  height: 180px;
+  cursor: crosshair;
+  touch-action: none;
+}
 .doc-signature-actions { margin-top: 0.65rem; }
 .doc-footer-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
 .doc-btn-primary { padding: 0.65rem 1.5rem; border-radius: 8px; border: none; font-weight: 700; font-size: 0.875rem; cursor: pointer; background: linear-gradient(135deg, #1e3a5f, #2d4a6f); color: #fff; }

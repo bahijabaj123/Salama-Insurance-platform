@@ -109,9 +109,9 @@ public class ClaimServiceImpl implements ClaimService {
     Claim claim = claimRepository.findById(id)
       .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
 
-    // ⭐ Charger l'historique
+    // ⭐ Charger l'historique (copie mutable : addHistory / persistNewClaimHistory font un .add())
     List<ClaimHistory> history = claimHistoryRepository.findByClaimIdOrderByTimestampDesc(id);
-    claim.setHistory(history);
+    claim.setHistory(history == null || history.isEmpty() ? new ArrayList<>() : new ArrayList<>(history));
 
     return claim;
   }
@@ -123,9 +123,9 @@ public class ClaimServiceImpl implements ClaimService {
       throw new ResourceNotFoundException("Claim not found with reference: " + reference);
     }
 
-    // ⭐ Charger l'historique
+    // ⭐ Charger l'historique (liste mutable)
     List<ClaimHistory> history = claimHistoryRepository.findByClaimIdOrderByTimestampDesc(claim.getId());
-    claim.setHistory(history);
+    claim.setHistory(history == null || history.isEmpty() ? new ArrayList<>() : new ArrayList<>(history));
 
     return claim;
   }
@@ -137,7 +137,7 @@ public class ClaimServiceImpl implements ClaimService {
     // ⭐ Charger l'historique pour chaque claim
     for (Claim claim : claims) {
       List<ClaimHistory> history = claimHistoryRepository.findByClaimIdOrderByTimestampDesc(claim.getId());
-      claim.setHistory(history);
+      claim.setHistory(history == null || history.isEmpty() ? new ArrayList<>() : new ArrayList<>(history));
     }
 
     return claims;
@@ -156,17 +156,14 @@ public class ClaimServiceImpl implements ClaimService {
 
     if (claimDetails.getStatus() != null) {
       claim.setStatus(claimDetails.getStatus());
-      // ⭐ Ajouter l'historique de changement de statut
-      claim.addHistory("STATUS_UPDATED",
+      persistNewClaimHistory(claim, "STATUS_UPDATED",
         "Statut changé de " + oldStatus + " à " + claimDetails.getStatus(),
         "INSUREUR");
-      claimHistoryRepository.saveAll(claim.getHistory());
     }
 
     if (claimDetails.getNotes() != null) {
       claim.setNotes(claimDetails.getNotes());
-      claim.addHistory("NOTES_UPDATED", "Notes mises à jour", "INSUREUR");
-      claimHistoryRepository.saveAll(claim.getHistory());
+      persistNewClaimHistory(claim, "NOTES_UPDATED", "Notes mises à jour", "INSUREUR");
     }
 
     if (claimDetails.getExpert() != null) {
@@ -177,6 +174,20 @@ public class ClaimServiceImpl implements ClaimService {
       claim.setRegion(claim.getAccident().getLocation());
     }
 
+    return claimRepository.save(claim);
+  }
+
+  @Override
+  public Claim updateClaimNotes(Long id, String notes) {
+    if (notes == null) {
+      throw new IllegalArgumentException("notes is required");
+    }
+    Claim claim = getClaimById(id);
+    claim.setNotes(notes);
+    persistNewClaimHistory(claim, "NOTES_UPDATED", "Notes mises à jour", "INSUREUR");
+    if (claim.getAccident() != null) {
+      claim.setRegion(claim.getAccident().getLocation());
+    }
     return claimRepository.save(claim);
   }
 
@@ -579,6 +590,19 @@ public class ClaimServiceImpl implements ClaimService {
     if (current == ClaimStatus.CANCELLED) {
       throw new IllegalStateException("Cannot change status of a cancelled claim");
     }
+  }
+
+  /**
+   * Enregistre une seule ligne d'historique. Évite {@code saveAll(claim.getHistory())} qui peut
+   * ré-écrire des entrées déjà persistées et provoquer des erreurs JPA à la mise à jour partielle (ex. notes).
+   */
+  private void persistNewClaimHistory(Claim claim, String action, String description, String performedBy) {
+    if (claim.getHistory() == null) {
+      claim.setHistory(new ArrayList<>());
+    }
+    ClaimHistory entry = new ClaimHistory(claim, action, description, performedBy);
+    claim.getHistory().add(entry);
+    claimHistoryRepository.save(entry);
   }
 
   private void updateExpertPerformance(Claim claim) {

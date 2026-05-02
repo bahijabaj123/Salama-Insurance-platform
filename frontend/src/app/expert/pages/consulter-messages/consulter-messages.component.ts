@@ -89,7 +89,7 @@ export class ConsulterMessagesComponent implements OnInit, OnDestroy {
     const text = this.getReplyDraft(message.id).trim();
     if (!text) return;
 
-    this.userMessageFeed.appendExpertMessage({
+    const ok = this.userMessageFeed.appendExpertMessage({
       dossierId: message.dossierId,
       dossierReference: message.dossierReference,
       expertName: message.expertName,
@@ -97,6 +97,12 @@ export class ConsulterMessagesComponent implements OnInit, OnDestroy {
       message: text,
       sentAt: new Date().toISOString()
     });
+
+    if (!ok) {
+      this.successMessage.set('Impossible d’enregistrer la réponse (stockage navigateur indisponible).');
+      setTimeout(() => this.successMessage.set(''), 4000);
+      return;
+    }
 
     this.replyDrafts.update((d) => ({ ...d, [message.id]: '' }));
     this.successMessage.set(`Réponse envoyée pour le dossier ${message.dossierReference}.`);

@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { catchError, finalize, switchMap, timeout } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { catchError, finalize, timeout } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
 
 import { ExpertiseReport } from '../../models/expertise-report.model';
 import { RapportExpertiseChatService } from '../../services/rapport-expertise-chat.service';
@@ -27,7 +27,8 @@ export class RapportStatistiquesDashboardComponent implements OnInit, OnDestroy 
   private refreshTimerId: ReturnType<typeof setInterval> | null = null;
   private countdownTimerId: ReturnType<typeof setInterval> | null = null;
   reports = signal<ExpertiseReport[]>([]);
-  private readonly httpTimeoutMs = 15000;
+  /** Liste + dashboard peuvent être lourds (nombreux rapports) ; éviter les faux timeouts. */
+  private readonly httpTimeoutMs = 45000;
 
   titre = computed(() => (this.raw()?.['titre'] as string) ?? 'Statistiques');
   date = computed(() => (this.raw()?.['date'] as string) ?? '');
@@ -157,28 +158,27 @@ export class RapportStatistiquesDashboardComponent implements OnInit, OnDestroy 
     else this.refreshing.set(true);
     this.error.set('');
     this.warning.set('');
-    this.rapportService
-      .getAllReports()
-      .pipe(
+    forkJoin({
+      reports: this.rapportService.getAllReports().pipe(
         timeout(this.httpTimeoutMs),
         catchError(() => {
-          this.reports.set([]);
           this.warning.set('Impossible de charger les rapports depuis la base (timeout ou erreur). Affichage fallback.');
           return of([] as ExpertiseReport[]);
         }),
-        switchMap((reports) => {
-          this.reports.set(Array.isArray(reports) ? reports : []);
-          return this.rapportService.getExpertDashboardComplet().pipe(
-            timeout(this.httpTimeoutMs),
-            catchError(() => {
-              this.warning.set(
-                (this.warning() ? this.warning() + ' ' : '') +
-                  'Dashboard API indisponible ou trop lent: utilisation des stats calculees localement.',
-              );
-              return of(this.buildFallbackDashboard());
-            }),
+      ),
+      dashboard: this.rapportService.getExpertDashboardComplet().pipe(
+        timeout(this.httpTimeoutMs),
+        catchError(() => {
+          this.warning.update((w) =>
+            w
+              ? `${w} Dashboard API indisponible ou trop lent: utilisation des stats calculees localement.`
+              : 'Dashboard API indisponible ou trop lent: utilisation des stats calculees localement.',
           );
+          return of(null as Record<string, unknown> | null);
         }),
+      ),
+    })
+      .pipe(
         finalize(() => {
           this.loading.set(false);
           this.refreshing.set(false);
@@ -186,10 +186,16 @@ export class RapportStatistiquesDashboardComponent implements OnInit, OnDestroy 
         }),
       )
       .subscribe({
-        next: (dashboard) => {
-          this.raw.set(dashboard as Record<string, unknown>);
+        next: ({ reports, dashboard }) => {
+          this.reports.set(Array.isArray(reports) ? reports : []);
+          if (dashboard == null) {
+            this.raw.set(this.buildFallbackDashboard());
+          } else {
+            this.raw.set(dashboard);
+          }
         },
         error: () => {
+          this.reports.set([]);
           this.raw.set(this.buildFallbackDashboard());
         },
       });

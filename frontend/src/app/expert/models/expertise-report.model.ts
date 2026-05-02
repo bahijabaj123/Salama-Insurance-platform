@@ -32,7 +32,6 @@ export interface ExpertiseReport {
   observation?: string;
   assureNom?: string;
   assureContrat?: string;
-  assureDossier?: string;
   mandantAssurance?: string;
   mandantAgence?: string;
   tiersNom?: string;
@@ -63,6 +62,8 @@ export interface ExpertiseReport {
   vetuste?: string | number;
   totalNet?: string | number;
   conclusions?: string;
+  /** Data URL PNG de la signature (persistée côté serveur). */
+  expertSignature?: string;
   findings?: string;
   estimatedRepairCost?: number;
   estimatedIndemnity?: number;

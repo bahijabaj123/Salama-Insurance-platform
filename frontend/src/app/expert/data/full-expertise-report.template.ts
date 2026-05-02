@@ -21,7 +21,6 @@ export function buildFullExpertiseReportPayload(overrides?: Partial<ExpertiseRep
     lieuExamen: 'A preciser',
     assureNom: 'A completer',
     assureContrat: `CONT-CHAT-${token}`,
-    assureDossier: `DOS-CHAT-${y}${mo}${da}`,
     mandantAssurance: 'A completer',
     mandantAgence: 'A completer',
     tiersNom: 'A completer',

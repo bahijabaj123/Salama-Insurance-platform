@@ -89,7 +89,6 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
         report.setObservation(newReport.getObservation());
         report.setAssureNom(newReport.getAssureNom());
         report.setAssureContrat(newReport.getAssureContrat());
-        report.setAssureDossier(newReport.getAssureDossier());
         report.setMandantAssurance(newReport.getMandantAssurance());
         report.setMandantAgence(newReport.getMandantAgence());
         report.setTiersNom(newReport.getTiersNom());
@@ -119,6 +118,7 @@ public class ExpertReportHassenService implements IExpertReportHassenService {
         report.setNatureDegats(newReport.getNatureDegats());
         report.setConclusions(newReport.getConclusions());
       report.setStatutRapport(newReport.getStatutRapport());
+        report.setExpertSignature(newReport.getExpertSignature());
 
         return reportRepository.save(report);
     }

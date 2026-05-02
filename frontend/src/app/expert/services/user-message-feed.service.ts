@@ -39,6 +39,20 @@ export class UserMessageFeedService {
       .slice(0, limit);
   }
 
+  /** Tous les messages d'un dossier, ordre chronologique (client + expert). */
+  timelineForDossier(dossierId: number): UserMessageFeedItem[] {
+    return this.list()
+      .filter((m) => m.dossierId === dossierId)
+      .sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+  }
+
+  /** Réponses expert pour un dossier (chronologique). */
+  expertRepliesForDossier(dossierId: number): UserMessageFeedItem[] {
+    return this.list()
+      .filter((m) => m.from === 'EXPERT' && m.dossierId === dossierId)
+      .sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+  }
+
   /**
    * Experts ayant au moins un message **client** (évite les noms issus seulement de réponses expert
    * sans fil client correspondant).
@@ -58,7 +72,7 @@ export class UserMessageFeedService {
     return ordered.sort((a, b) => a.localeCompare(b, 'fr'));
   }
 
-  appendExpertMessage(item: Omit<UserMessageFeedItem, 'id' | 'from'>): void {
+  appendExpertMessage(item: Omit<UserMessageFeedItem, 'id' | 'from'>): boolean {
     const items = this.list();
     items.unshift({
       id: this.nextId(),
@@ -67,8 +81,25 @@ export class UserMessageFeedService {
     });
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(items.slice(0, this.maxItems)));
+      return true;
     } catch {
-      // no-op when storage is unavailable
+      return false;
+    }
+  }
+
+  /** Message envoyé depuis l'espace client (même fil localStorage que la vue expert). */
+  appendClientMessage(item: Omit<UserMessageFeedItem, 'id' | 'from'>): boolean {
+    const items = this.list();
+    items.unshift({
+      id: this.nextId(),
+      from: 'CLIENT',
+      ...item
+    });
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(items.slice(0, this.maxItems)));
+      return true;
+    } catch {
+      return false;
     }
   }
 

@@ -1,10 +1,14 @@
+/* Couleurs template Salama */
+$salama-blue: #185fa5;
+$salama-blue-dark: #124a82;
+
 .sos-page {
   display: grid;
   gap: 1rem;
 }
 
 .hero {
-  background: linear-gradient(90deg, #7d3cff, #6a34de);
+  background: linear-gradient(90deg, $salama-blue, $salama-blue-dark);
   color: #fff;
   border-radius: 16px;
   padding: 1rem 1.25rem;
@@ -53,14 +57,92 @@
   border-radius: 10px;
   padding: 0.5rem 0.85rem;
   cursor: pointer;
-  background: #7d3cff;
+  background: $salama-blue;
   color: #fff;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.map-toolbar button:hover,
+.confirm:hover:not(:disabled) {
+  background: $salama-blue-dark;
+}
+
+.map-toolbar button:focus-visible,
+.confirm:focus-visible {
+  outline: 2px solid $salama-blue;
+  outline-offset: 2px;
 }
 
 #sos-map {
   height: 330px;
   border: 1px solid #dde5f1;
   border-radius: 10px;
+}
+
+:host ::ng-deep .sos-truck-divicon {
+  background: transparent;
+  border: none;
+}
+
+:host ::ng-deep .sos-truck-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.25));
+}
+
+.tracking-panel {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #c5d9ef;
+  background: linear-gradient(180deg, #f0f6fc 0%, #fff 100%);
+}
+
+.tracking-title {
+  font-weight: 700;
+  color: $salama-blue;
+  margin-bottom: 0.35rem;
+}
+
+.tracking-text {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  color: #4a5d78;
+  line-height: 1.45;
+}
+
+.tracking-text.arrived {
+  color: #1f7a43;
+  font-weight: 600;
+}
+
+.tracking-meta {
+  font-size: 0.9rem;
+  color: $salama-blue;
+  margin-bottom: 0.5rem;
+}
+
+.tracking-meta.warn {
+  color: #a63a16;
+}
+
+.tracking-close {
+  border: 1px solid $salama-blue;
+  background: #fff;
+  color: $salama-blue;
+  border-radius: 10px;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tracking-close:hover {
+  background: #e8f2fb;
 }
 
 .garage-grid {
@@ -79,8 +161,8 @@
 }
 
 .garage.active {
-  border-color: #7d3cff;
-  box-shadow: 0 0 0 2px rgb(125 60 255 / 0.2);
+  border-color: $salama-blue;
+  box-shadow: 0 0 0 2px rgb(24 95 165 / 0.22);
 }
 
 .name {
@@ -163,7 +245,7 @@ textarea {
 }
 
 .hint {
-  color: #6a43c6;
+  color: $salama-blue;
   font-size: 0.9rem;
 }
 
@@ -183,4 +265,25 @@ textarea {
 .actions .cancel {
   background: #e5ebf4;
   color: #2e4768;
+}
+
+.actions button[type='submit'] {
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  background: $salama-blue;
+  color: #fff;
+  font-weight: 600;
+  font: inherit;
+  transition: background 0.15s ease;
+}
+
+.actions button[type='submit']:hover:not(:disabled) {
+  background: $salama-blue-dark;
+}
+
+.actions button[type='submit']:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }

@@ -35,6 +35,7 @@ import { MainLayoutComponent } from './core/layouts/main-layout/main-layout.comp
 import { DashboardComponent } from './features/assureur/dashboard/dashboard.component';
 import { ClaimsListComponent } from './features/claims/claims-list/claims-list.component';
 import { ClaimDetailComponent } from './features/claims/claim-detail/claim-detail.component';
+import { ClaimGarageProximityComponent } from './features/claims/claim-garage-proximity/claim-garage-proximity.component';
 import { FraudDashboardComponent } from './features/assureur/fraud-dashboard/fraud-dashboard.component';
 import { TunisiaMapComponent } from './features/assureur/tunisia-map/tunisia-map.component';
 import { GaragesComponent } from './features/assureur/garages/garages.component';
@@ -50,6 +51,8 @@ import { ClientNotificationsComponent } from './features/client/client-notificat
 import { ClientDocumentsComponent } from './features/client/client-documents/client-documents.component';
 import { ClientDashboardHomeComponent } from './features/client/client-dashboard/client-dashboard-home.component';
 import { ClientSosComponent } from './features/client/client-sos/client-sos.component';
+import { ClientExpertConsultationComponent } from './features/client/client-expert-consultation/client-expert-consultation.component';
+import { ClientExpertMessagesComponent } from './features/client/client-expert-messages/client-expert-messages.component';
 
 // ============================================================
 // COMPOSANT DE DÉCONNEXION SIMPLE (temporaire)
@@ -110,6 +113,7 @@ component: MainLayoutComponent,
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     { path: 'dashboard', component: DashboardComponent },
     { path: 'claims', component: ClaimsListComponent },
+    { path: 'claims/:id/garage', component: ClaimGarageProximityComponent },
     { path: 'claims/:id', component: ClaimDetailComponent },
     { path: 'map', component: TunisiaMapComponent },
     { path: 'fraud', component: FraudDashboardComponent },
@@ -133,6 +137,8 @@ component: MainLayoutComponent,
     { path: 'sos', component: ClientSosComponent },
     { path: 'garages', redirectTo: 'sos', pathMatch: 'full' },
     { path: 'assistant', component: ClientAssistantComponent },
+    { path: 'consultation-expert', component: ClientExpertConsultationComponent },
+    { path: 'messages-expert', component: ClientExpertMessagesComponent },
     { path: 'profile', component: ClientProfileComponent },
     { path: 'create-contract', component: ClientSimplePageComponent },
     { path: 'history', component: ClientSimplePageComponent },

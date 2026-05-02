@@ -46,17 +46,76 @@
     </div>
   </div>
 
-  <!-- ── KPI CARDS ─────────────────────────────────────────────── -->
-  <div class="kpi-grid">
-    <div class="kpi-card" *ngFor="let k of kpis" [style.border-left-color]="k.color">
-      <div class="kpi-val" [style.color]="k.color">{{ k.value }}</div>
-      <div class="kpi-lbl">{{ k.label }}</div>
-      <div class="kpi-sub">{{ k.sub }}</div>
+  <!-- ── Durée de traitement & tableau de bord (page Suivre) ───── -->
+  <section class="follow-dash" id="follow-dash" aria-labelledby="follow-dash-title">
+    <h2 id="follow-dash-title" class="follow-dash__title">Durée de traitement &amp; tableau de bord</h2>
+    <p class="follow-dash__lead">
+      Aperçu calculé à partir de vos sinistres (dates d’ouverture et de clôture). Le bouton ci-dessous fait défiler la vue détaillée (sinistres, graphique, assistant).
+    </p>
+
+    <div class="follow-dash__grid">
+      <article class="follow-kpi">
+        <div class="follow-kpi__icon" aria-hidden="true">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div class="follow-kpi__body">
+          <div class="follow-kpi__label">Durée moyenne de traitement</div>
+          <div class="follow-kpi__value">
+            <ng-container *ngIf="avgClosedDurationDays != null; else dashEmpty">
+              {{ avgClosedDurationDays }}&nbsp;<span class="follow-kpi__unit">jours</span>
+            </ng-container>
+            <ng-template #dashEmpty><span class="follow-kpi__na">—</span></ng-template>
+          </div>
+          <div class="follow-kpi__sub">Dossiers clôturés ({{ closedClaims.length }})</div>
+        </div>
+      </article>
+
+      <article class="follow-kpi">
+        <div class="follow-kpi__icon follow-kpi__icon--accent" aria-hidden="true">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="follow-kpi__body">
+          <div class="follow-kpi__label">Dossiers en cours</div>
+          <div class="follow-kpi__value">{{ activeClaims.length }}</div>
+          <div class="follow-kpi__sub">
+            <ng-container *ngIf="avgOpenAgeDays != null; else dashSubEmpty">
+              Âge moyen depuis ouverture : {{ avgOpenAgeDays }}&nbsp;j
+            </ng-container>
+            <ng-template #dashSubEmpty>—</ng-template>
+          </div>
+        </div>
+      </article>
+
+      <article class="follow-kpi">
+        <div class="follow-kpi__icon follow-kpi__icon--neutral" aria-hidden="true">
+          <mat-icon>folder_open</mat-icon>
+        </div>
+        <div class="follow-kpi__body">
+          <div class="follow-kpi__label">Total dossiers</div>
+          <div class="follow-kpi__value">{{ allClaims.length }}</div>
+          <div class="follow-kpi__sub">Vue synthétique — détail ci-dessous</div>
+        </div>
+      </article>
     </div>
-  </div>
+
+    <button type="button" class="follow-dash__cta" mat-flat-button (click)="scrollToDashboardDetails()">
+      <mat-icon aria-hidden="true">dashboard</mat-icon>
+      Ouvrir le tableau de bord complet
+    </button>
+
+    <div class="follow-dash__links">
+      <a mat-button routerLink="/client/consultation-expert">Page consultation</a>
+      <a mat-button routerLink="/client/messages-expert">Messages (plein écran)</a>
+    </div>
+  </section>
+
+  <!-- ── Messages expert (contenu de « Communiquer avec l'expert ») ─ -->
+  <section class="dash-expert-messages" id="expert-comm" aria-label="Messages avec votre expert">
+    <app-client-expert-messages [embedded]="true" />
+  </section>
 
   <!-- ── 2 COLONNES : liste + timeline ────────────────────────── -->
-  <div class="two-col">
+  <div class="two-col" #dashboardDetails>
 
     <!-- Mes sinistres -->
     <div class="card">

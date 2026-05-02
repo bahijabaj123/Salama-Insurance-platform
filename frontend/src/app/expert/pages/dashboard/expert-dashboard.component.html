@@ -104,48 +104,6 @@
     <a routerLink="/expert/chat" class="btn btn-ghost">Rapport expertise chat</a>
   </div>
 
-  <section class="messages-card">
-    <div class="messages-head">
-      <h3>Messages deja envoyes par l'utilisateur</h3>
-      <button type="button" class="btn-messages-refresh" (click)="loadUserMessages()">Actualiser</button>
-    </div>
-    @if (userMessages().length === 0) {
-      <p class="messages-empty">Aucun message utilisateur recu pour le moment.</p>
-    } @else {
-      <ul class="messages-list">
-        @for (msg of userMessages(); track msg.sentAt + msg.message) {
-          <li class="message-item">
-            <div class="message-top">
-              <strong>{{ msg.clientName }}</strong>
-              <span>{{ messageTimeLabel(msg.sentAt) }}</span>
-            </div>
-            <p class="message-text">{{ msg.message }}</p>
-            <div class="message-meta">
-              <span>Dossier: {{ msg.dossierReference }}</span>
-              <span>Expert: {{ msg.expertName }}</span>
-            </div>
-            <div class="message-reply">
-              <input
-                type="text"
-                [ngModel]="getReplyDraft(msg.id)"
-                (ngModelChange)="setReplyDraft(msg.id, $event)"
-                placeholder="Repondre au client..."
-              />
-              <button type="button" (click)="sendReply(msg)" [disabled]="!getReplyDraft(msg.id).trim()">Repondre</button>
-            </div>
-            @if (expertRepliesFor(msg).length > 0) {
-              <div class="message-thread">
-                @for (rep of expertRepliesFor(msg); track rep.id) {
-                  <p><strong>Expert:</strong> {{ rep.message }} <span>{{ messageTimeLabel(rep.sentAt) }}</span></p>
-                }
-              </div>
-            }
-          </li>
-        }
-      </ul>
-    }
-  </section>
-
   @if (loading()) {
     <div class="loading-wrapper" id="loading-spinner">
       <div class="spinner"></div>

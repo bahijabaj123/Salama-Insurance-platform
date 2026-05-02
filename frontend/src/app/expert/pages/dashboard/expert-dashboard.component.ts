@@ -8,7 +8,6 @@ import { of } from 'rxjs';
 import { ExpertService } from '../../services/expert.service';
 import { RapportExpertiseChatService } from '../../services/rapport-expertise-chat.service';
 import { Expert } from '../../models/expert.model';
-import { UserMessageFeedItem, UserMessageFeedService } from '../../services/user-message-feed.service';
 
 @Component({
   selector: 'app-expert-dashboard',
@@ -28,9 +27,6 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
   expertToDelete = signal<Expert | null>(null);
   deleteLoading = signal(false);
   successMessage = signal('');
-  userMessages = signal<UserMessageFeedItem[]>([]);
-  allMessages = signal<UserMessageFeedItem[]>([]);
-  replyDrafts = signal<Record<string, string>>({});
   dashboardByExpert = signal<Map<number, Record<string, unknown>>>(new Map());
   hoveredExpert = signal<Expert | null>(null);
   popoverTop = signal(0);
@@ -44,14 +40,12 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private expertService: ExpertService,
-    private rapportChatService: RapportExpertiseChatService,
-    private userMessageFeed: UserMessageFeedService
+    private rapportChatService: RapportExpertiseChatService
   ) {}
 
   ngOnInit(): void {
     this.loadExperts();
     this.loadDashboardScorecards();
-    this.loadUserMessages();
   }
 
   ngOnDestroy(): void {
@@ -292,53 +286,6 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
       return trimmed;
     }
     return `data:image/jpeg;base64,${trimmed}`;
-  }
-
-  loadUserMessages(): void {
-    this.userMessages.set(this.userMessageFeed.listRecentClientMessages(12));
-    this.allMessages.set(this.userMessageFeed.listAll());
-  }
-
-  messageTimeLabel(sentAt: string): string {
-    const d = new Date(sentAt);
-    if (Number.isNaN(d.getTime())) return '—';
-    return d.toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  getReplyDraft(messageId: string): string {
-    return this.replyDrafts()[messageId] ?? '';
-  }
-
-  setReplyDraft(messageId: string, value: string): void {
-    this.replyDrafts.update((d) => ({ ...d, [messageId]: value }));
-  }
-
-  sendReply(message: UserMessageFeedItem): void {
-    const text = this.getReplyDraft(message.id).trim();
-    if (!text) return;
-    this.userMessageFeed.appendExpertMessage({
-      dossierId: message.dossierId,
-      dossierReference: message.dossierReference,
-      expertName: message.expertName,
-      clientName: message.clientName,
-      message: text,
-      sentAt: new Date().toISOString()
-    });
-    this.replyDrafts.update((d) => ({ ...d, [message.id]: '' }));
-    this.successMessage.set(`Reponse envoyee pour le dossier ${message.dossierReference}.`);
-    setTimeout(() => this.successMessage.set(''), 2500);
-    this.loadUserMessages();
-  }
-
-  expertRepliesFor(message: UserMessageFeedItem): UserMessageFeedItem[] {
-    return this.allMessages()
-      .filter((m) => m.from === 'EXPERT' && m.dossierId === message.dossierId)
-      .slice(0, 3);
   }
 
   get totalExperts(): number {

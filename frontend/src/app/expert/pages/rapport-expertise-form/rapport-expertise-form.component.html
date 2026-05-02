@@ -72,7 +72,6 @@
           <div class="doc-grid">
             <label class="doc-field doc-span-2"><span>Nom / Raison sociale</span><input class="doc-input" name="assureNom" [(ngModel)]="report.assureNom" /></label>
             <label class="doc-field"><span>Contrat</span><input class="doc-input" name="assureContrat" [(ngModel)]="report.assureContrat" /></label>
-            <label class="doc-field"><span>N° dossier</span><input class="doc-input" name="assureDossier" [(ngModel)]="report.assureDossier" /></label>
             <label class="doc-field"><span>Immatriculation</span><input class="doc-input" name="vehiculeImmatriculation" [(ngModel)]="report.vehiculeImmatriculation" /></label>
           </div>
         </section>
@@ -124,7 +123,8 @@
             }
             @if (aiAnalysisLoading()) { <div class="doc-ai-status">Analyse en cours...</div> }
             @if (aiAnalysisError()) { <div class="doc-ai-status doc-ai-err">{{ aiAnalysisError() }}</div> }
-            <div class="doc-ai-status">{{ aiDiagnosticComment() }}</div>
+            @if (aiAnalysisInfo()) { <div class="doc-ai-status doc-ai-info">{{ aiAnalysisInfo() }}</div> }
+            @if (aiIdleHint()) { <div class="doc-ai-status">{{ aiIdleHint() }}</div> }
             @if (aiAnalysisText()) {
               <div class="doc-ai-result">
                 <button type="button" class="doc-ai-insert-btn" (click)="insertAiIntoNatureDegats()">Inserer dans Nature des degats</button>

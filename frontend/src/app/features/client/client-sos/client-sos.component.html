@@ -12,6 +12,23 @@
       <button type="button" (click)="clearPoint()">Effacer le point</button>
     </div>
     <div id="sos-map"></div>
+
+    <div
+      class="tracking-panel"
+      *ngIf="(trackingActive || trackingArrived) && !trackingPanelDismissed"
+    >
+      <div class="tracking-title">Suivi en direct du remorquage</div>
+      <p class="tracking-text" *ngIf="trackingActive && !trackingArrived">
+        Le remorqueur se dirige vers votre position d’accident. La position est rafraîchie automatiquement
+        (démonstration : avancement simulé si le serveur ne reçoit pas encore le GPS du chauffeur).
+      </p>
+      <p class="tracking-text arrived" *ngIf="trackingArrived">
+        Remorqueur arrivé à proximité de votre position.
+      </p>
+      <div class="tracking-meta" *ngIf="trackingDistanceLabel">{{ trackingDistanceLabel }}</div>
+      <div class="tracking-meta warn" *ngIf="trackingPollError">{{ trackingPollError }}</div>
+      <button type="button" class="tracking-close" (click)="closeTrackingPanel()">Fermer le suivi</button>
+    </div>
   </article>
 
   <article class="card">

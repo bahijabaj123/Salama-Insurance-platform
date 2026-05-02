@@ -58,6 +58,15 @@ public class ExpertHassenService implements IExpertHassenService {
         expert.setInterventionZone(newExpert.getInterventionZone());
         expert.setRegistrationDate(newExpert.getRegistrationDate());
         expert.setYearsOfExperience(newExpert.getYearsOfExperience());
+        expert.setPhoto(newExpert.getPhoto());
+        expert.setCurrentWorkload(newExpert.getCurrentWorkload());
+        expert.setAvailable(newExpert.getAvailable());
+        expert.setPerformanceScore(newExpert.getPerformanceScore());
+        expert.setActiveClaims(newExpert.getActiveClaims());
+        expert.setAverageProcessingTime(newExpert.getAverageProcessingTime());
+        expert.setValidationRate(newExpert.getValidationRate());
+        expert.setMaxWorkload(newExpert.getMaxWorkload());
+        expert.setLastAssignmentDate(newExpert.getLastAssignmentDate());
 
         return expertRepository.save(expert);
     }

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import * as L from 'leaflet';
+import { Subscription, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { AuthStorageService } from '../../../core/auth/auth-storage.service';
 import { environment } from '../../../../environments/environment';
 
@@ -21,6 +23,12 @@ interface TowTruckWithDistance extends NearbyTowTruck {
   distanceKm: number;
 }
 
+interface SosRequestCreated {
+  id: number;
+  status?: string;
+  towTruck?: { id: number; name?: string; latitude?: number; longitude?: number };
+}
+
 @Component({
   selector: 'app-client-sos',
   standalone: true,
@@ -31,9 +39,16 @@ interface TowTruckWithDistance extends NearbyTowTruck {
 export class ClientSosComponent implements AfterViewInit, OnDestroy {
   private map?: L.Map;
   private accidentMarker?: L.Marker;
+  private towTruckMarker?: L.Marker;
+  private routePolyline?: L.Polyline;
+  private trackingSub?: Subscription;
   private readonly defaultPosition: [number, number] = [36.8065, 10.1815];
   private readonly defaultZoom = 12;
   private readonly apiBaseUrl = `${environment.apiBaseUrl}/api`;
+  private readonly trackingPollMs = 3500;
+  private readonly apiMoveThresholdKm = 0.08;
+  private readonly arrivalThresholdKm = 0.045;
+  private readonly simStep = 0.036;
   private accidentLat?: number;
   private accidentLng?: number;
 
@@ -46,6 +61,19 @@ export class ClientSosComponent implements AfterViewInit, OnDestroy {
   sosStatus = '';
   sosError = '';
   phoneHint = '';
+
+  /** Après envoi SOS : suivi carte + polling API remorqueur */
+  trackingActive = false;
+  trackingArrived = false;
+  trackingDistanceLabel = '';
+  trackingPollError = '';
+  trackingPanelDismissed = false;
+  activeSosRequestId?: number;
+  private trackingTowTruckId?: number;
+  private trackingInitialized = false;
+  private lastApiTowLat = 0;
+  private lastApiTowLng = 0;
+  private simProgress = 0;
 
   sosForm!: FormGroup;
 
@@ -71,6 +99,7 @@ export class ClientSosComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopLiveTracking(true);
     this.map?.remove();
   }
 
@@ -113,6 +142,7 @@ export class ClientSosComponent implements AfterViewInit, OnDestroy {
   }
 
   clearPoint(): void {
+    this.stopLiveTracking(true);
     if (this.accidentMarker) {
       this.accidentMarker.remove();
       this.accidentMarker = undefined;
@@ -155,6 +185,9 @@ export class ClientSosComponent implements AfterViewInit, OnDestroy {
 
         this.selectedTowTruckId = this.nearbyTowTrucks[0]?.id;
         this.loadingTowTrucks = false;
+        if (!this.trackingActive) {
+          this.refreshTowTruckMapOverlay();
+        }
       },
       error: (err) => {
         this.loadingTowTrucks = false;
@@ -177,6 +210,204 @@ export class ClientSosComponent implements AfterViewInit, OnDestroy {
 
   chooseTowTruck(id: number): void {
     this.selectedTowTruckId = id;
+    if (!this.trackingActive) {
+      this.refreshTowTruckMapOverlay();
+    }
+  }
+
+  stopLiveTracking(removeOverlays: boolean): void {
+    this.trackingSub?.unsubscribe();
+    this.trackingSub = undefined;
+    this.trackingActive = false;
+    this.trackingArrived = false;
+    this.trackingDistanceLabel = '';
+    this.trackingPollError = '';
+    this.trackingPanelDismissed = false;
+    this.activeSosRequestId = undefined;
+    this.trackingTowTruckId = undefined;
+    this.trackingInitialized = false;
+    this.simProgress = 0;
+    if (removeOverlays) {
+      this.removeTowTruckOverlays();
+    }
+  }
+
+  /** Arrête le rafraîchissement et masque le panneau ; la carte garde le dernier tracé. */
+  closeTrackingPanel(): void {
+    this.trackingSub?.unsubscribe();
+    this.trackingSub = undefined;
+    this.trackingPanelDismissed = true;
+    this.trackingActive = false;
+  }
+
+  private removeTowTruckOverlays(): void {
+    if (this.towTruckMarker) {
+      this.towTruckMarker.remove();
+      this.towTruckMarker = undefined;
+    }
+    if (this.routePolyline) {
+      this.routePolyline.remove();
+      this.routePolyline = undefined;
+    }
+  }
+
+  private towTruckDivIcon(): L.DivIcon {
+    return L.divIcon({
+      className: 'sos-truck-divicon',
+      html: '<span class="sos-truck-icon" aria-hidden="true">🚛</span>',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    });
+  }
+
+  private refreshTowTruckMapOverlay(): void {
+    if (!this.map || this.accidentLat == null || this.accidentLng == null) {
+      return;
+    }
+    const tow = this.nearbyTowTrucks.find((t) => t.id === this.selectedTowTruckId);
+    if (!tow || tow.latitude == null || tow.longitude == null) {
+      this.removeTowTruckOverlays();
+      return;
+    }
+    this.setTowTruckMarkerAt(tow.latitude, tow.longitude);
+    this.updateRoutePolyline(tow.latitude, tow.longitude);
+    this.map.fitBounds(
+      [
+        [tow.latitude, tow.longitude],
+        [this.accidentLat, this.accidentLng],
+      ],
+      { padding: [28, 28], maxZoom: 14 },
+    );
+  }
+
+  private setTowTruckMarkerAt(lat: number, lng: number): void {
+    if (!this.map) return;
+    if (this.towTruckMarker) {
+      this.towTruckMarker.setLatLng([lat, lng]);
+    } else {
+      this.towTruckMarker = L.marker([lat, lng], { icon: this.towTruckDivIcon() }).addTo(this.map);
+      this.towTruckMarker.bindTooltip('Remorqueur', { permanent: false });
+    }
+  }
+
+  private updateRoutePolyline(truckLat: number, truckLng: number): void {
+    if (!this.map || this.accidentLat == null || this.accidentLng == null) return;
+    const latlngs: L.LatLngExpression[] = [
+      [truckLat, truckLng],
+      [this.accidentLat, this.accidentLng],
+    ];
+    if (this.routePolyline) {
+      this.routePolyline.setLatLngs(latlngs);
+    } else {
+      this.routePolyline = L.polyline(latlngs, {
+        color: '#185FA5',
+        weight: 3,
+        dashArray: '8 7',
+        opacity: 0.9,
+      }).addTo(this.map);
+    }
+  }
+
+  private lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * t;
+  }
+
+  private beginLiveTracking(sosRequestId: number, towTruckId: number): void {
+    this.stopLiveTracking(true);
+    if (!this.map || this.accidentLat == null || this.accidentLng == null) {
+      return;
+    }
+
+    this.trackingActive = true;
+    this.trackingArrived = false;
+    this.trackingPanelDismissed = false;
+    this.trackingPollError = '';
+    this.activeSosRequestId = sosRequestId;
+    this.trackingTowTruckId = towTruckId;
+    this.trackingInitialized = false;
+    this.simProgress = 0;
+
+    const fromList = this.nearbyTowTrucks.find((t) => t.id === towTruckId);
+    if (fromList?.latitude != null && fromList.longitude != null) {
+      this.lastApiTowLat = fromList.latitude;
+      this.lastApiTowLng = fromList.longitude;
+    }
+
+    this.trackingSub = timer(0, this.trackingPollMs)
+      .pipe(switchMap(() => this.http.get<NearbyTowTruck>(`${this.apiBaseUrl}/tow-trucks/${towTruckId}`)))
+      .subscribe({
+        next: (apiTow) => {
+          this.trackingPollError = '';
+          const alat = apiTow.latitude;
+          const alng = apiTow.longitude;
+          if (alat == null || alng == null || this.accidentLat == null || this.accidentLng == null) {
+            return;
+          }
+
+          if (!this.trackingInitialized) {
+            this.lastApiTowLat = alat;
+            this.lastApiTowLng = alng;
+            this.trackingInitialized = true;
+            this.simProgress = 0;
+            this.applyTrackingFrame(alat, alng);
+            const dist0 = this.computeDistanceKm(alat, alng, this.accidentLat, this.accidentLng);
+            if (dist0 <= this.arrivalThresholdKm) {
+              this.finishTrackingArrived();
+            }
+            return;
+          }
+
+          const apiMoved =
+            this.computeDistanceKm(this.lastApiTowLat, this.lastApiTowLng, alat, alng) > this.apiMoveThresholdKm;
+          let displayLat: number;
+          let displayLng: number;
+          if (apiMoved) {
+            this.lastApiTowLat = alat;
+            this.lastApiTowLng = alng;
+            this.simProgress = 0;
+            displayLat = alat;
+            displayLng = alng;
+          } else {
+            this.simProgress = Math.min(1, this.simProgress + this.simStep);
+            displayLat = this.lerp(this.lastApiTowLat, this.accidentLat, this.simProgress);
+            displayLng = this.lerp(this.lastApiTowLng, this.accidentLng, this.simProgress);
+          }
+
+          this.applyTrackingFrame(displayLat, displayLng);
+
+          const distEnd = this.computeDistanceKm(displayLat, displayLng, this.accidentLat, this.accidentLng);
+          if (distEnd <= this.arrivalThresholdKm || this.simProgress >= 0.995) {
+            this.finishTrackingArrived();
+          }
+        },
+        error: () => {
+          this.trackingPollError = 'Impossible de rafraîchir la position (réseau).';
+        },
+      });
+  }
+
+  private finishTrackingArrived(): void {
+    this.trackingArrived = true;
+    this.trackingActive = false;
+    this.trackingDistanceLabel = '';
+    this.trackingSub?.unsubscribe();
+    this.trackingSub = undefined;
+  }
+
+  private applyTrackingFrame(lat: number, lng: number): void {
+    if (!this.map || this.accidentLat == null || this.accidentLng == null) return;
+    this.setTowTruckMarkerAt(lat, lng);
+    this.updateRoutePolyline(lat, lng);
+    const dist = this.computeDistanceKm(lat, lng, this.accidentLat, this.accidentLng);
+    this.trackingDistanceLabel =
+      dist <= this.arrivalThresholdKm ? '' : `Environ ${dist.toFixed(2)} km jusqu’à vous`;
+    this.map.fitBounds(
+      [
+        [lat, lng],
+        [this.accidentLat, this.accidentLng],
+      ],
+      { padding: [36, 36], maxZoom: 14 },
+    );
   }
 
   openSosForm(): void {
@@ -232,14 +463,18 @@ export class ClientSosComponent implements AfterViewInit, OnDestroy {
       towTruckId: this.selectedTowTruckId,
     };
 
-    this.http.post(`${this.apiBaseUrl}/sos-requests`, payload).subscribe({
-      next: () => {
+    this.http.post<SosRequestCreated>(`${this.apiBaseUrl}/sos-requests`, payload).subscribe({
+      next: (created) => {
         localStorage.setItem('salama.clientPhone', this.sosForm.value.clientPhone || '');
         const selected = this.nearbyTowTrucks.find((t) => t.id === this.selectedTowTruckId);
-        this.sosStatus = `Demande SOS envoyee vers ${selected?.name || 'le remorqueur selectionne'}.`;
+        const towId = created.towTruck?.id ?? this.selectedTowTruckId;
+        this.sosStatus = `Demande SOS envoyée vers ${selected?.name || 'le remorqueur sélectionné'}. Suivi en direct activé sur la carte.`;
         this.sosError = '';
         this.submittingRequest = false;
         this.showRequestForm = false;
+        if (towId != null && created.id != null) {
+          this.beginLiveTracking(created.id, towId);
+        }
       },
       error: (err) => {
         this.submittingRequest = false;

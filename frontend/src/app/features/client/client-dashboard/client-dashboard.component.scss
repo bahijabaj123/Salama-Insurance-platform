@@ -334,6 +334,132 @@ $radius-lg: 12px;
   margin-top: 2px;
 }
 
+// ─── Suivre : durée de traitement & KPIs ─────────────────────────────────────
+.follow-dash {
+  margin-bottom: 20px;
+  padding: 20px 22px;
+  border-radius: $radius-lg;
+  border: 1px solid $border;
+  background: #fff;
+}
+.follow-dash__title {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $dark;
+}
+.follow-dash__lead {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: $muted;
+}
+.follow-dash__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.follow-kpi {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: $radius-lg;
+  border: 1px solid $border;
+  background: linear-gradient(180deg, #fafcff 0%, #fff 100%);
+  box-shadow: 0 1px 2px rgb(15 39 68 / 0.05);
+}
+.follow-kpi__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba($primary, 0.12);
+  color: $primary;
+  flex-shrink: 0;
+}
+.follow-kpi__icon mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+.follow-kpi__icon--accent {
+  background: rgb(14 110 86 / 0.12);
+  color: #0f6e56;
+}
+.follow-kpi__icon--neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+.follow-kpi__body {
+  min-width: 0;
+}
+.follow-kpi__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+.follow-kpi__value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: $dark;
+  line-height: 1.15;
+}
+.follow-kpi__unit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.follow-kpi__na {
+  font-weight: 600;
+  color: #94a3b8;
+}
+.follow-kpi__sub {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+.follow-dash__cta {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  background: $primary !important;
+  color: #fff !important;
+  margin-bottom: 12px;
+}
+.follow-dash__cta mat-icon {
+  margin-right: 6px;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+}
+.follow-dash__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.follow-dash__links a[mat-stroked-button] {
+  border-color: rgba($primary, 0.45) !important;
+  color: $primary !important;
+}
+
+.follow-dash,
+.dash-expert-messages {
+  scroll-margin-top: 16px;
+}
+
+.dash-expert-messages {
+  margin-bottom: 20px;
+}
+
 // ─── 2 COLONNES ───────────────────────────────────────────────────────────────
 .two-col {
   display: grid;

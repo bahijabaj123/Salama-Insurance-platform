@@ -106,12 +106,16 @@ public class ExpertHassen {
   @Column(name = "max_workload")
   private Integer maxWorkload;
 
-  @Column(name = "last_assignment_date")
-  private LocalDateTime lastAssignmentDate;
+    @Column(name = "last_assignment_date")
+    private LocalDateTime lastAssignmentDate;
 
-  @OneToMany(mappedBy = "expert")
-  @JsonIgnore
-  private List<Claim> claims;
+    /** Photo de profil : data URL (ex. data:image/jpeg;base64,...) ou URL ; LONGTEXT pour images encodées. */
+    @Column(name = "photo", columnDefinition = "LONGTEXT")
+    private String photo;
+
+    @OneToMany(mappedBy = "expert")
+    @JsonIgnore
+    private List<Claim> claims;
 
 
   // ===== CONSTRUCTORS =====
@@ -207,6 +211,9 @@ public class ExpertHassen {
 
   public LocalDateTime getLastAssignmentDate() { return lastAssignmentDate; }
   public void setLastAssignmentDate(LocalDateTime lastAssignmentDate) { this.lastAssignmentDate = lastAssignmentDate; }
+
+  public String getPhoto() { return photo; }
+  public void setPhoto(String photo) { this.photo = photo; }
 
   public List<Claim> getClaims() { return claims; }
   public void setClaims(List<Claim> claims) { this.claims = claims; }

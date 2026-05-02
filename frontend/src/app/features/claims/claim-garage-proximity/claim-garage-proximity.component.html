@@ -1,0 +1,89 @@
+<div class="garage-page">
+  <div class="garage-page-inner">
+    <button type="button" class="back-link" (click)="backToClaims()">
+      <mat-icon>arrow_back</mat-icon>
+      Retour aux sinistres
+    </button>
+
+    <div class="garage-card" *ngIf="loadingClaim">
+      <p class="muted">Chargement du sinistre…</p>
+    </div>
+
+    <div class="garage-card error-card" *ngIf="!loadingClaim && claimLoadError">
+      <p>{{ claimLoadError }}</p>
+      <button mat-flat-button color="primary" type="button" (click)="backToClaims()">Retour</button>
+    </div>
+
+    <div class="garage-card" *ngIf="!loadingClaim && claim && !claimLoadError">
+      <div class="garage-card-banner">
+        <div class="garage-card-header">
+          <h1>Choisir Garage le plus proche</h1>
+          <span class="ref-pill">{{ claim.reference }}</span>
+        </div>
+      </div>
+
+      <div class="garage-feedback garage-feedback--error" *ngIf="saveError" role="alert">
+        <span class="garage-feedback__iconWrap garage-feedback__iconWrap--error" aria-hidden="true">
+          <mat-icon>priority_high</mat-icon>
+        </span>
+        <p class="garage-feedback__text">{{ saveError }}</p>
+        <button type="button" class="garage-feedback__close" (click)="dismissSaveError()">Fermer</button>
+      </div>
+
+      <div class="garage-feedback garage-feedback--success" *ngIf="saveSuccessMsg" role="status">
+        <span class="garage-feedback__iconWrap garage-feedback__iconWrap--success" aria-hidden="true">
+          <mat-icon>check</mat-icon>
+        </span>
+        <p class="garage-feedback__text">{{ saveSuccessMsg }}</p>
+        <button type="button" class="garage-feedback__close" (click)="dismissSaveSuccess()">Fermer</button>
+      </div>
+
+      <div class="garage-card-body">
+      <p class="garage-lead">
+        Placez la position d'accident sur la carte : le calcul des garages proches se fait automatiquement.
+      </p>
+      <p class="garage-hint">
+        Cliquez sur la carte pour placer le lieu d'accident. Vous pouvez déplacer le marqueur.
+      </p>
+
+      <div class="garage-toolbar">
+        <button mat-flat-button color="primary" type="button" [disabled]="loadingGarages || !!saveSuccessMsg" (click)="onChooseNearestGarageClick()">
+          Choisir Garage le plus proche
+        </button>
+        <button mat-stroked-button color="primary" type="button" [disabled]="!!saveSuccessMsg" (click)="clearPoint()">Effacer le point</button>
+      </div>
+
+      <div id="claim-garage-map" class="garage-map"></div>
+
+      <div class="garage-address" *ngIf="garageAccidentAddress">{{ garageAccidentAddress }}</div>
+      <p class="garage-nominatim">Géocodage Nominatim (usage modéré).</p>
+
+      <h2 class="nearby-title">Garages à proximité (distance la plus courte en premier)</h2>
+      <div class="garage-loading" *ngIf="loadingGarages">Chargement des garages…</div>
+      <div class="garage-list" *ngIf="!loadingGarages && nearbyGarages.length">
+        <button
+          type="button"
+          class="garage-row"
+          *ngFor="let g of nearbyGarages"
+          [class.active]="selectedGarageId === g.id"
+          (click)="selectGarageRow(g.id)"
+        >
+          <span class="g-name">{{ g.name }}</span>
+          <span class="g-meta">{{ g.city || '—' }} · <strong>{{ g.distanceKm }} km</strong></span>
+        </button>
+      </div>
+      <p class="garage-empty" *ngIf="!loadingGarages && !nearbyGarages.length">
+        Aucun garage proche pour le moment. Placez un point sur la carte ou vérifiez que des garages sont enregistrés.
+      </p>
+      </div>
+
+      <div class="garage-actions-footer">
+        <button mat-button type="button" (click)="backToClaims()">Annuler</button>
+        <button mat-flat-button color="primary" type="button" [disabled]="!selectedGarageId || assigningGarage || !!saveSuccessMsg" (click)="confirmGarageOnClaim()">
+          <mat-spinner *ngIf="assigningGarage" diameter="18" style="display: inline-block; margin-right: 8px"></mat-spinner>
+          Confirmer le garage
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

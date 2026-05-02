@@ -17,6 +17,10 @@ public interface ClaimService {
   List<Claim> getAllClaims();
   Page<Claim> getAllClaimsPaginated(Pageable pageable);
   Claim updateClaim(Long id, Claim claimDetails);
+
+  /** Mise à jour des notes uniquement (évite la désérialisation JSON d’un {@link Claim} partiel). */
+  Claim updateClaimNotes(Long id, String notes);
+
   void deleteClaim(Long id);
   void deleteClaimByReference(String reference);
 

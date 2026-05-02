@@ -86,17 +86,13 @@ currentUserEmail = computed(() => this.currentUser()?.email);
 navItems: NavItem[] = [
   { icon: 'dashboard', label: 'Tableau de bord', route: '/client', active: true },
   { icon: 'folder_open', label: 'Mes sinistres', route: '/client/sinistres' },
+  { icon: 'engineering', label: "Consultation d'expert", route: '/client/consultation-expert' },
   { icon: 'add_circle', label: 'Nouveau constat', route: '/client/constat' },
   { icon: 'emergency', label: 'SOS disponible', route: '/client/sos' },
   { icon: 'description', label: 'Mon contrat', route: '/client/contrat' },
   { icon: 'folder', label: 'Documents', route: '/client/documents' },
   { icon: 'notifications', label: 'Notifications', route: '/client/notifications', badge: 3 },
   { icon: 'smart_toy', label: 'Assistant IA', route: '/client/assistant' },
-  
-  // ========== SÉPARATEUR ==========
-  // Ces liens seront ajoutés après un espace
-  { icon: 'person', label: 'Mon profil', route: '/client/profile' },
-  { icon: 'logout', label: 'Déconnexion', route: '/client/logout' }
 ];
 
   // ── Constantes ────────────────────────────────────────────────────────────
