@@ -1,0 +1,272 @@
+<!-- DEBUG - À mettre en haut du template -->
+<div style="background: yellow; padding: 10px; margin: 10px; position: fixed; top: 0; left: 0; z-index: 9999; font-size: 12px;">
+  loadingClaim={{ loadingClaim }} | error={{ error }} | claim={{ claim ? 'OK' : 'NULL' }} | claim.ref={{ claim?.reference }}
+</div>
+
+<div class="detail-page" *ngIf="!loadingClaim && !error && claim">
+
+  <!-- ── BACK + HEADER ──────────────────────────────────────────────────── -->
+  <div class="detail-page" *ngIf="!loadingClaim && !error && claim">
+    <button class="back-btn" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      <span>My claims</span>
+    </button>
+
+    <div class="header-main">
+      <div class="header-left">
+        <h1 class="claim-ref">{{ claim.reference }}</h1>
+        <div class="header-meta">
+          <span class="status-pill" [style.background]="statusColor + '20'" [style.color]="statusColor">
+            <span class="status-dot" [style.background]="statusColor"></span>
+            {{ STATUS_LABELS[claim.status] }}
+          </span>
+          <span class="meta-item">
+            <mat-icon>location_on</mat-icon>{{ claim.region || '—' }}
+          </span>
+          <span class="meta-item">
+            <mat-icon>calendar_today</mat-icon>{{ claim.openingDate | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GLOBAL PROGRESS BAR ───────────────────────────────────────────── -->
+  <div class="progress-section">
+    <div class="progress-label">
+      <span>File progress</span>
+      <span class="progress-pct">{{ stepProgress() }}%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="stepProgress()"></div>
+    </div>
+  </div>
+
+  <!-- ── TABS ───────────────────────────────────────────────────────────── -->
+  <mat-tab-group animationDuration="200ms" class="detail-tabs">
+
+    <!-- ── TAB 1 : Tracking ─────────────────────────────────────────────── -->
+    <mat-tab label="File tracking">
+      <div class="tab-content">
+
+        <!-- Vertical timeline -->
+        <div class="timeline-card">
+          <h3 class="section-title">Processing steps</h3>
+
+          <div class="timeline">
+            <div *ngFor="let step of TIMELINE_STEPS; let i = index; let last = last"
+                 class="tl-item" [class.tl-last]="last">
+
+              <div class="tl-left">
+                <div class="tl-circle" [ngClass]="'tc-' + stepState(step.key)">
+                  <mat-icon>
+                    {{ stepState(step.key) === 'done' ? 'check'
+                     : stepState(step.key) === 'active' ? 'arrow_forward'
+                     : 'schedule' }}
+                  </mat-icon>
+                </div>
+                <div class="tl-connector" *ngIf="!last"
+                     [class.tl-conn-done]="stepState(step.key) === 'done'">
+                </div>
+              </div>
+
+              <div class="tl-body" [class.tl-body-active]="stepState(step.key) === 'active'">
+                <div class="tl-step-title">{{ step.label }}</div>
+                <div class="tl-step-desc" *ngIf="stepState(step.key) !== 'pending'">
+                  {{ step.desc }}
+                </div>
+                <div class="tl-step-date" *ngIf="stepDate(step.key)">
+                  {{ stepDate(step.key) }}
+                </div>
+                <div class="tl-pending" *ngIf="stepState(step.key) === 'pending'">
+                  Pending
+                </div>
+
+                <!-- Expert card in timeline -->
+                <div class="expert-inline"
+                     *ngIf="step.key === 'assigned' && claim.expert
+                            && stepState(step.key) !== 'pending'">
+                  <div class="exp-av">{{ expertInitials() }}</div>
+                  <div class="exp-info">
+                    <div class="exp-name">{{ expertName() }}</div>
+                    <div class="exp-spec">
+                      {{ claim.expert.specialty || 'Expert' }} ·
+                      {{ claim.expert.interventionZone || claim.region }}
+                    </div>
+                    <div class="exp-perf" *ngIf="claim.expert.performanceScore">
+                      Score: {{ claim.expert.performanceScore }}% · {{ claim.expert.activeClaims ?? 0 }} active files
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Urgency badge if active -->
+                <div class="urgency-badge"
+                     *ngIf="stepState(step.key) === 'active' && claim.urgencyScore">
+                  <span [class]="claim.urgencyScore > 70 ? 'urg-high' : claim.urgencyScore > 40 ? 'urg-mid' : 'urg-low'">
+                    Urgency {{ claim.urgencyScore }}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accident info -->
+        <div class="info-card" *ngIf="claim.accident">
+          <h3 class="section-title">Accident details</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Location</span>
+              <span class="info-val">{{ claim.accident.location }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date</span>
+              <span class="info-val">{{ claim.accident.accidentDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-item full">
+              <span class="info-label">Description</span>
+              <span class="info-val">{{ claim.accident.description || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- ── TAB 2 : Documents ──────────────────────────────────────────── -->
+    <mat-tab label="Documents">
+      <div class="tab-content">
+
+        <!-- Drag & drop zone -->
+        <div class="dropzone"
+             [class.drag-over]="isDragOver"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)"
+             (click)="fileInput.click()">
+          <input #fileInput type="file" multiple
+                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                 (change)="onFileInput($event)"
+                 style="display:none">
+          <div class="dz-icon">
+            <mat-icon>cloud_upload</mat-icon>
+          </div>
+          <div class="dz-title">Drag your files here</div>
+          <div class="dz-sub">or click to browse — PDF, JPG, PNG, DOC · Max {{ MAX_SIZE_MB }}MB</div>
+          <div class="dz-types">
+            <span>PDF</span><span>JPG</span><span>PNG</span><span>DOC</span>
+          </div>
+        </div>
+
+        <!-- Uploaded files list -->
+        <div class="files-list" *ngIf="uploadedFiles.length > 0">
+          <h4 class="files-title">Uploaded files</h4>
+          <div class="file-item" *ngFor="let f of uploadedFiles; let i = index">
+            <div class="file-icon" [class.file-icon-pdf]="f.type === 'PDF'"
+                                   [class.file-icon-img]="f.type === 'JPG' || f.type === 'PNG' || f.type === 'JPEG'">
+              <mat-icon>{{ fileIcon(f.type) }}</mat-icon>
+            </div>
+            <div class="file-info">
+              <div class="file-name">{{ f.name }}</div>
+              <div class="file-meta">{{ f.size }} · {{ f.date }}</div>
+              <!-- Progress bar -->
+              <div class="file-progress" *ngIf="!f.done">
+                <div class="fp-track">
+                  <div class="fp-fill" [style.width.%]="f.progress"></div>
+                </div>
+                <span class="fp-pct">{{ f.progress }}%</span>
+              </div>
+            </div>
+            <div class="file-status">
+              <mat-icon class="done-icon" *ngIf="f.done">check_circle</mat-icon>
+              <mat-icon class="progress-icon" *ngIf="!f.done">hourglass_empty</mat-icon>
+            </div>
+            <button class="file-remove" (click)="removeFile(i)" matTooltip="Remove">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Existing documents (from accident) -->
+        <div class="existing-docs" *ngIf="claim.accident?.photos?.length">
+          <h4 class="files-title">Accident photos</h4>
+          <div class="photo-grid">
+            <div class="photo-thumb" *ngFor="let p of claim.accident!.photos">
+              <mat-icon>photo</mat-icon>
+              <span>Photo</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- ── TAB 3 : Fraud analysis ─────────────────────────────────────── -->
+    <mat-tab label="AI Analysis">
+      <div class="tab-content">
+
+        <div class="fraud-empty" *ngIf="!fraud && !loadingFraud">
+          <mat-icon>shield</mat-icon>
+          <p>Your file has not yet been analyzed by our AI</p>
+        </div>
+
+        <div class="fraud-panel" *ngIf="fraud">
+          <!-- Main score -->
+          <div class="fraud-score-card" [ngClass]="fraudClass">
+            <div class="fraud-num">{{ fraud.fraudScore }}%</div>
+            <div>
+              <div class="fraud-level">{{ fraudLabel }} risk</div>
+              <div class="fraud-desc">
+                <ng-container *ngIf="fraud.riskLevel === 'LOW'">
+                  Your file shows no suspicious indicators. Automatic processing.
+                </ng-container>
+                <ng-container *ngIf="fraud.riskLevel === 'MEDIUM'">
+                  Additional verification is being carried out by our team.
+                </ng-container>
+                <ng-container *ngIf="fraud.riskLevel === 'HIGH'">
+                  Your file requires further investigation.
+                </ng-container>
+              </div>
+              <div class="fraud-date" *ngIf="fraud.analysisDate">
+                Analyzed on {{ fraud.analysisDate | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Gauge -->
+          <div class="fraud-gauge">
+            <div class="fg-track">
+              <div class="fg-low"   style="width:40%">Low</div>
+              <div class="fg-mid"   style="width:30%">Medium</div>
+              <div class="fg-high"  style="width:30%">High</div>
+            </div>
+            <div class="fg-pointer" [style.left.%]="fraud.fraudScore">
+              <div class="fg-needle"></div>
+            </div>
+          </div>
+
+          <!-- Reassuring message if low -->
+          <div class="fraud-ok" *ngIf="fraud.riskLevel === 'LOW'">
+            <mat-icon>verified</mat-icon>
+            Your file is compliant. Compensation will follow the standard process.
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>
+
+<!-- ── LOADING ────────────────────────────────────────────────────────────── -->
+<div class="page-loading" *ngIf="loadingClaim">
+  <mat-spinner diameter="48"></mat-spinner>
+  <p>Loading your file...</p>
+</div>
+
+<!-- ── ERROR ─────────────────────────────────────────────────────────────── -->
+<div class="page-error" *ngIf="error && !loadingClaim">
+  <mat-icon>error_outline</mat-icon>
+  <p>{{ error }}</p>
+  <button (click)="goBack()">Back</button>
+</div>
