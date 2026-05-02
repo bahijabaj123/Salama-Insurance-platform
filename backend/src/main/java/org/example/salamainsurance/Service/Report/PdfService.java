@@ -1,4 +1,4 @@
-package org.example.salamainsurance.Service.Report;
+/*package org.example.salamainsurance.Service.Report;
 
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -642,3 +642,4 @@ public class PdfService {
     }
   }
 }
+*/

@@ -27,8 +27,8 @@ public class AccidentServiceImpl implements AccidentService {
   @Autowired
   private ResponsibilityService responsibilityService;
 
-  @Autowired
-  private PdfService pdfService;
+ // @Autowired
+  //private PdfService pdfService;
 
   private final DamageRepository damageRepository;
 
@@ -147,7 +147,7 @@ public class AccidentServiceImpl implements AccidentService {
     System.out.println("=== freshAccident - sketch: " +
       (freshAccident.getSketch() != null ? "OUI " + freshAccident.getSketch().length() + " chars" : "NON"));
 
-    pdfService.generatePdf(freshAccident, result);
+   // pdfService.generatePdf(freshAccident, result);
   }
 
   @Override
