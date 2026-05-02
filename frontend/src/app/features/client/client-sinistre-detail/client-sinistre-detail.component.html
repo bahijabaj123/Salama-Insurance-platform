@@ -1,31 +1,25 @@
-<!-- DEBUG - À mettre en haut du template -->
-<div style="background: yellow; padding: 10px; margin: 10px; position: fixed; top: 0; left: 0; z-index: 9999; font-size: 12px;">
-  loadingClaim={{ loadingClaim }} | error={{ error }} | claim={{ claim ? 'OK' : 'NULL' }} | claim.ref={{ claim?.reference }}
-</div>
-
 <div class="detail-page" *ngIf="!loadingClaim && !error && claim">
 
   <!-- ── BACK + HEADER ──────────────────────────────────────────────────── -->
-<div class="detail-page" *ngIf="!loadingClaim && !error && claim">    <button class="back-btn" (click)="goBack()">
-      <mat-icon>arrow_back</mat-icon>
-      <span>Mes sinistres</span>
-    </button>
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon>
+    <span>Mes sinistres</span>
+  </button>
 
-    <div class="header-main">
-      <div class="header-left">
-        <h1 class="claim-ref">{{ claim.reference }}</h1>
-        <div class="header-meta">
-          <span class="status-pill" [style.background]="statusColor + '20'" [style.color]="statusColor">
-            <span class="status-dot" [style.background]="statusColor"></span>
-            {{ STATUS_LABELS[claim.status] }}
-          </span>
-          <span class="meta-item">
-            <mat-icon>location_on</mat-icon>{{ claim.region || '—' }}
-          </span>
-          <span class="meta-item">
-            <mat-icon>calendar_today</mat-icon>{{ claim.openingDate | date:'dd/MM/yyyy' }}
-          </span>
-        </div>
+  <div class="header-main">
+    <div class="header-left">
+      <h1 class="claim-ref">{{ claim.reference }}</h1>
+      <div class="header-meta">
+        <span class="status-pill" [style.background]="statusColor + '20'" [style.color]="statusColor">
+          <span class="status-dot" [style.background]="statusColor"></span>
+          {{ STATUS_LABELS[claim.status] }}
+        </span>
+        <span class="meta-item">
+          <mat-icon>location_on</mat-icon>{{ claim.region || '—' }}
+        </span>
+        <span class="meta-item">
+          <mat-icon>calendar_today</mat-icon>{{ claim.openingDate | date:'dd/MM/yyyy' }}
+        </span>
       </div>
     </div>
   </div>
@@ -53,19 +47,18 @@
           <h3 class="section-title">Étapes de traitement</h3>
 
           <div class="timeline">
-            <div *ngFor="let step of TIMELINE_STEPS; let i = index; let last = last"
-                 class="tl-item" [class.tl-last]="last">
+            <div *ngFor="let step of TIMELINE_STEPS; let i = index; let last = last" class="tl-item"
+              [class.tl-last]="last">
 
               <div class="tl-left">
                 <div class="tl-circle" [ngClass]="'tc-' + stepState(step.key)">
                   <mat-icon>
                     {{ stepState(step.key) === 'done' ? 'check'
-                     : stepState(step.key) === 'active' ? 'arrow_forward'
-                     : 'schedule' }}
+                    : stepState(step.key) === 'active' ? 'arrow_forward'
+                    : 'schedule' }}
                   </mat-icon>
                 </div>
-                <div class="tl-connector" *ngIf="!last"
-                     [class.tl-conn-done]="stepState(step.key) === 'done'">
+                <div class="tl-connector" *ngIf="!last" [class.tl-conn-done]="stepState(step.key) === 'done'">
                 </div>
               </div>
 
@@ -82,8 +75,7 @@
                 </div>
 
                 <!-- Expert card dans timeline -->
-                <div class="expert-inline"
-                     *ngIf="step.key === 'assigned' && claim.expert
+                <div class="expert-inline" *ngIf="step.key === 'assigned' && claim.expert
                             && stepState(step.key) !== 'pending'">
                   <div class="exp-av">{{ expertInitials() }}</div>
                   <div class="exp-info">
@@ -93,15 +85,16 @@
                       {{ claim.expert.interventionZone || claim.region }}
                     </div>
                     <div class="exp-perf" *ngIf="claim.expert.performanceScore">
-                      Score : {{ claim.expert.performanceScore }}% · {{ claim.expert.activeClaims ?? 0 }} dossiers en cours
+                      Score : {{ claim.expert.performanceScore }}% · {{ claim.expert.activeClaims ?? 0 }} dossiers en
+                      cours
                     </div>
                   </div>
                 </div>
 
                 <!-- Urgence badge si active -->
-                <div class="urgency-badge"
-                     *ngIf="stepState(step.key) === 'active' && claim.urgencyScore">
-                  <span [class]="claim.urgencyScore > 70 ? 'urg-high' : claim.urgencyScore > 40 ? 'urg-mid' : 'urg-low'">
+                <div class="urgency-badge" *ngIf="stepState(step.key) === 'active' && claim.urgencyScore">
+                  <span
+                    [class]="claim.urgencyScore > 70 ? 'urg-high' : claim.urgencyScore > 40 ? 'urg-mid' : 'urg-low'">
                     Urgence {{ claim.urgencyScore }}%
                   </span>
                 </div>
@@ -124,7 +117,7 @@
             </div>
             <div class="info-item full">
               <span class="info-label">Description</span>
-              <span class="info-val">{{ claim.accident.description || '—' }}</span>
+              <span class="info-val">{{ claim.accident.observations || '—' }}</span>
             </div>
           </div>
         </div>
@@ -137,16 +130,10 @@
       <div class="tab-content">
 
         <!-- Zone drag & drop -->
-        <div class="dropzone"
-             [class.drag-over]="isDragOver"
-             (dragover)="onDragOver($event)"
-             (dragleave)="onDragLeave($event)"
-             (drop)="onDrop($event)"
-             (click)="fileInput.click()">
-          <input #fileInput type="file" multiple
-                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                 (change)="onFileInput($event)"
-                 style="display:none">
+        <div class="dropzone" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
+          <input #fileInput type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" (change)="onFileInput($event)"
+            style="display:none">
           <div class="dz-icon">
             <mat-icon>cloud_upload</mat-icon>
           </div>
@@ -162,7 +149,7 @@
           <h4 class="files-title">Fichiers uploadés</h4>
           <div class="file-item" *ngFor="let f of uploadedFiles; let i = index">
             <div class="file-icon" [class.file-icon-pdf]="f.type === 'PDF'"
-                                   [class.file-icon-img]="f.type === 'JPG' || f.type === 'PNG' || f.type === 'JPEG'">
+              [class.file-icon-img]="f.type === 'JPG' || f.type === 'PNG' || f.type === 'JPEG'">
               <mat-icon>{{ fileIcon(f.type) }}</mat-icon>
             </div>
             <div class="file-info">
@@ -235,9 +222,9 @@
           <!-- Jauge -->
           <div class="fraud-gauge">
             <div class="fg-track">
-              <div class="fg-low"   style="width:40%">Faible</div>
-              <div class="fg-mid"   style="width:30%">Moyen</div>
-              <div class="fg-high"  style="width:30%">Élevé</div>
+              <div class="fg-low" style="width:40%">Faible</div>
+              <div class="fg-mid" style="width:30%">Moyen</div>
+              <div class="fg-high" style="width:30%">Élevé</div>
             </div>
             <div class="fg-pointer" [style.left.%]="fraud.fraudScore">
               <div class="fg-needle"></div>
