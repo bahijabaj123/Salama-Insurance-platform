@@ -2,12 +2,14 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { AppComponent } from './app.component';
+import { AccidentComponent } from './features/accident/accident.component';
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, FormsModule],
+ // declarations: [AccidentComponent],
+ imports: [BrowserModule, FormsModule, AccidentComponent],
   providers: [provideHttpClient(withFetch())],
-  bootstrap: [AppComponent]
+  //bootstrap: [AccidentComponent]
+    bootstrap: []
+
 })
 export class AppModule {}

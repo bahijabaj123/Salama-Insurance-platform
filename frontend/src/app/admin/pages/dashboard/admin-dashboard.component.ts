@@ -64,6 +64,7 @@ const MONTH_LONG = [
 
 @Component({
   selector: 'app-admin-dashboard',
+    standalone: true,
   imports: [RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, MatProgressBarModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
