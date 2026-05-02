@@ -1,7 +1,7 @@
 <section class="garages-page">
   <div class="title-row">
-    <h1>Gerer les garages partenaires</h1>
-    <p>Ajoutez, modifiez et supprimez les garages partenaires en un seul endroit.</p>
+    <h1>Manage partner garages</h1>
+    <p>Add, edit, and remove partner garages in one place.</p>
   </div>
 
   <div class="alert success" *ngIf="successMsg">{{ successMsg }}</div>
@@ -10,16 +10,16 @@
   <div class="content-grid">
     <article class="panel list-panel">
       <div class="panel-head">
-        <h2>Liste des garages</h2>
+        <h2>Garage list</h2>
         <input
           type="text"
           [(ngModel)]="search"
           (input)="applyFilter()"
-          placeholder="Rechercher par nom, ville, email..."
+          placeholder="Search by name, city, email..."
         />
       </div>
 
-      <div class="loading" *ngIf="loading">Chargement...</div>
+      <div class="loading" *ngIf="loading">Loading...</div>
 
       <div class="garage-list" *ngIf="!loading">
         <div class="garage-card" *ngFor="let garage of filteredGarages">
@@ -30,35 +30,35 @@
           </div>
           <div class="tags">
             <span [class.partner]="garage.partner">
-              {{ garage.partner ? 'Partenaire' : 'Non partenaire' }}
+              {{ garage.partner ? 'Partner' : 'Non-partner' }}
             </span>
           </div>
           <div class="actions">
-            <button type="button" (click)="startEdit(garage)">Modifier</button>
+            <button type="button" (click)="startEdit(garage)">Edit</button>
             <button type="button" class="danger" [disabled]="deletingId === garage.id" (click)="remove(garage)">
-              Supprimer
+              Delete
             </button>
           </div>
         </div>
 
-        <p class="empty" *ngIf="!filteredGarages.length">Aucun garage trouve.</p>
+        <p class="empty" *ngIf="!filteredGarages.length">No garages found.</p>
       </div>
     </article>
 
     <article class="panel form-panel">
       <div class="panel-head">
-        <h2>{{ selectedGarageId ? 'Modifier le garage' : 'Nouveau garage' }}</h2>
-        <button type="button" *ngIf="selectedGarageId" (click)="startCreate()">Nouveau</button>
+        <h2>{{ selectedGarageId ? 'Edit garage' : 'New garage' }}</h2>
+        <button type="button" *ngIf="selectedGarageId" (click)="startCreate()">New</button>
       </div>
 
       <form [formGroup]="garageForm" (ngSubmit)="submit()" class="garage-form">
         <label>
-          Nom *
+          Name *
           <input type="text" formControlName="name" />
         </label>
 
         <label>
-          Telephone *
+          Phone *
           <input type="text" formControlName="phone" />
         </label>
 
@@ -69,30 +69,30 @@
 
         <div class="split">
           <label>
-            Ville *
+            City *
             <input type="text" formControlName="city" />
           </label>
           <label>
-            Partenaire
+            Partner
             <select formControlName="partner">
-              <option [ngValue]="true">Oui</option>
-              <option [ngValue]="false">Non</option>
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
             </select>
           </label>
         </div>
 
         <label>
-          Adresse *
+          Address *
           <input type="text" formControlName="address" />
         </label>
 
         <div class="map-hint">
-          Cliquez sur la carte pour placer le garage, ou deplacez le marqueur.
-          <button type="button" (click)="clearPoint()">Effacer le point</button>
+          Click the map to place the garage, or drag the marker.
+          <button type="button" (click)="clearPoint()">Clear point</button>
         </div>
         <div id="garage-map"></div>
         <div class="detected" *ngIf="detectedAddress">
-          Adresse detectee: {{ detectedAddress }}
+          Detected address: {{ detectedAddress }}
         </div>
 
         <div class="split">
@@ -107,7 +107,7 @@
         </div>
 
         <button type="submit" [disabled]="saving">
-          {{ saving ? 'Enregistrement...' : (selectedGarageId ? 'Mettre a jour' : 'Ajouter garage') }}
+          {{ saving ? 'Saving...' : (selectedGarageId ? 'Update garage' : 'Add garage') }}
         </button>
       </form>
     </article>

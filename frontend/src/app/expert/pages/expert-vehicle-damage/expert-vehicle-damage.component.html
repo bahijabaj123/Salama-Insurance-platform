@@ -1,0 +1,145 @@
+<div class="dmg-page">
+  <div class="dmg-page__bg" aria-hidden="true"></div>
+
+  <header class="dmg-hero">
+    <div class="dmg-hero__strip">
+      <span class="dmg-hero__step">Step 2</span>
+      <span class="dmg-hero__sep">·</span>
+      <span class="dmg-hero__label">Body diagram</span>
+    </div>
+    <a routerLink="/expert/expertise/vehicule" class="dmg-back">← Back to vehicle selection</a>
+    <h1 class="dmg-hero__title">Damage location</h1>
+    <p class="dmg-lead">
+      Tap a zone, tick damage types: a <strong>real-time VAT-inclusive estimate</strong> updates live (part base + coefficients). Confirm to save the line and add it to the total.
+    </p>
+    <p class="dmg-pricing-hint">{{ pricingRuleText }}</p>
+    @if (vehicleSummary) {
+      <div class="dmg-vehicle-pill">
+        <span class="dmg-vehicle-pill__k">Vehicle</span>
+        <span class="dmg-vehicle-pill__v">{{ vehicleSummary }}</span>
+      </div>
+    }
+  </header>
+
+  <div class="dmg-grid2">
+    @for (view of views; track view) {
+      <article class="dmg-cell">
+        <h2 class="dmg-cell__title">{{ titles[view] }}</h2>
+        <div class="dmg-canvas" role="presentation">
+          <div class="dmg-svg-wrap">
+            <svg class="dmg-svg" viewBox="0 0 220 200" role="img" [attr.aria-label]="'Diagram ' + titles[view]">
+              <path class="dmg-outline" [attr.d]="outlines[view]" vector-effect="non-scaling-stroke" />
+              @for (p of partsFor(view); track p.id) {
+                <rect
+                  class="dmg-hit"
+                  [class.dmg-hit--enfonce]="highlightTone(view, p.id) === 'enfonce'"
+                  [class.dmg-hit--raye]="highlightTone(view, p.id) === 'raye'"
+                  [class.dmg-hit--both]="highlightTone(view, p.id) === 'both'"
+                  [class.dmg-hit--edit]="isEditing(view, p.id)"
+                  [attr.x]="p.x"
+                  [attr.y]="p.y"
+                  [attr.width]="p.w"
+                  [attr.height]="p.h"
+                  rx="5"
+                  (click)="onPartClick(view, p); $event.stopPropagation()"
+                />
+              }
+            </svg>
+          </div>
+        </div>
+
+        @if (editing; as ed) {
+          @if (ed.view === view) {
+            <div class="dmg-panel" (click)="$event.stopPropagation()">
+              <div class="dmg-panel__chiprow">
+                <span class="dmg-panel__chip">{{ ed.part.label }}</span>
+                <button type="button" class="dmg-panel__x" (click)="clearEditingChip()" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="dmg-panel__checks">
+                <label class="dmg-check">
+                  <input
+                    type="checkbox"
+                    class="dmg-check__input"
+                    [checked]="draftEnfonce"
+                    (change)="toggleDraft('ENFONCE', $any($event.target).checked)"
+                  />
+                  <span class="dmg-check__box" aria-hidden="true"></span>
+                  <span class="dmg-check__text">{{ typeLabels['ENFONCE'] }}</span>
+                </label>
+                <label class="dmg-check">
+                  <input
+                    type="checkbox"
+                    class="dmg-check__input"
+                    [checked]="draftRaye"
+                    (change)="toggleDraft('RAYE', $any($event.target).checked)"
+                  />
+                  <span class="dmg-check__box" aria-hidden="true"></span>
+                  <span class="dmg-check__text">{{ typeLabels['RAYE'] }}</span>
+                </label>
+              </div>
+              <div class="dmg-estimate" aria-live="polite">
+                @if (draftHasTypes()) {
+                  <span class="dmg-estimate__label">Live estimate (incl. VAT)</span>
+                  <strong class="dmg-estimate__value">{{ formatEuro(draftLiveMontant()) }}</strong>
+                } @else {
+                  <span class="dmg-estimate__label">Part base (incl. VAT, indicative)</span>
+                  <span class="dmg-estimate__muted">{{ formatEuro(partBaseEuro(ed.part)) }}</span>
+                  <span class="dmg-estimate__sub">Select a damage type to calculate the total.</span>
+                }
+              </div>
+              <div class="dmg-panel__actions">
+                <button type="button" class="dmg-btn dmg-btn--ghost" (click)="cancelEdit()">Cancel</button>
+                <button type="button" class="dmg-btn dmg-btn--primary" (click)="confirmEdit()">Confirm</button>
+              </div>
+            </div>
+          }
+        }
+
+        <div class="dmg-list-wrap">
+          @if (entriesForView(view).length === 0) {
+            <p class="dmg-list-empty">No zone recorded for this view.</p>
+          } @else {
+            <ul class="dmg-list">
+              @for (e of entriesForView(view); track e.id) {
+                <li class="dmg-list__row">
+                  <div class="dmg-list__text">
+                    <span class="dmg-list__part">{{ e.partLabel }}</span>
+                    <span class="dmg-list__types">{{ typesLabel(e.types) }}</span>
+                  </div>
+                  <div class="dmg-list__amt">
+                    <span class="dmg-list__euro">{{ formatEuro(e.montantTtc) }}</span>
+                    <span class="dmg-list__tva">VAT {{ tvaDommagesPct }}%</span>
+                  </div>
+                  <button type="button" class="dmg-trash" (click)="removeEntry(e.id)" aria-label="Delete this line">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      </article>
+    }
+  </div>
+
+  @if (entries.length > 0) {
+    <section class="dmg-total-bar" aria-label="Estimated total">
+      <div class="dmg-total-bar__inner">
+        <div class="dmg-total-bar__text">
+          <span class="dmg-total-bar__title">Body total (incl. VAT, indicative)</span>
+          <span class="dmg-total-bar__note">Simplified grid — editable in the report.</span>
+        </div>
+        <strong class="dmg-total-bar__sum">{{ formatEuro(entriesTotalTtc()) }}</strong>
+      </div>
+    </section>
+  }
+
+  <footer class="dmg-footer">
+    <p class="dmg-footer__hint">
+      Estimated amounts are carried into the report (damage lines). You can adjust them before submission.
+    </p>
+    <button type="button" class="dmg-continue" (click)="continueToReport()">Continue to report</button>
+  </footer>
+</div>

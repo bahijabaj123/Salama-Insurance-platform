@@ -76,7 +76,7 @@ export class ClaimGarageProximityComponent implements OnInit, OnDestroy {
           setTimeout(() => this.initGarageMapWhenReady(), 0);
         },
         error: () => {
-          this.claimLoadError = 'Sinistre introuvable.';
+          this.claimLoadError = 'Claim not found.';
           this.loadingClaim = false;
         },
       });
@@ -236,7 +236,7 @@ export class ClaimGarageProximityComponent implements OnInit, OnDestroy {
 
     const coord =
       this.accidentLat != null && this.accidentLng != null
-        ? ` — position accident ${this.accidentLat.toFixed(5)}, ${this.accidentLng.toFixed(5)}`
+        ? ` — accident position ${this.accidentLat.toFixed(5)}, ${this.accidentLng.toFixed(5)}`
         : '';
     const line = `[Garage] ${g.name} (${g.city || '—'}) — ${g.distanceKm} km${coord}`;
     let notes = [this.claim.notes, line].filter((s) => !!s && String(s).trim()).join('\n');
@@ -256,7 +256,7 @@ export class ClaimGarageProximityComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           const ref = this.claim!.reference;
-          this.saveSuccessMsg = `Le garage « ${g.name} » est bien enregistré sur le sinistre ${ref}.`;
+          this.saveSuccessMsg = `Garage “${g.name}” has been saved on claim ${ref}.`;
           this.saveError = '';
           this.cdr.markForCheck();
         },
@@ -270,7 +270,7 @@ export class ClaimGarageProximityComponent implements OnInit, OnDestroy {
           this.saveError =
             detail && detail.length < 280
               ? detail
-              : 'Enregistrement impossible. Réessayez.';
+              : 'Could not save. Please try again.';
           this.cdr.markForCheck();
         },
       });

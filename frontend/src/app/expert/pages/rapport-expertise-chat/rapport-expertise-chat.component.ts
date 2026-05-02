@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
 import { RapportExpertiseChatService } from '../../services/rapport-expertise-chat.service';
+import { LocalChatbotService } from '../../services/local-chatbot.service';
+import type { LocalPredictResult } from '../../services/local-chatbot/local-chatbot.types';
 import { ExpertiseReport } from '../../models/expertise-report.model';
 import { Expert } from '../../models/expert.model';
 import { buildFullExpertiseReportPayload } from '../../data/full-expertise-report.template';
@@ -32,20 +34,26 @@ export class RapportExpertiseChatComponent implements OnInit {
   apiLinkState = signal<'checking' | 'ok' | 'error'>('checking');
 
   readonly suggestions = [
-    { label: 'Nouveau rapport', prompt: '__NAV_RAPPORT_FORM__' },
-    { label: 'Lister les rapports', prompt: '__ACTION_LIST_REPORTS__' },
-    { label: 'Statistiques globales', prompt: '__NAV_STATS_DASHBOARD__' },
-    { label: 'Aide redaction conclusions', prompt: 'Comment bien rediger les conclusions d’un rapport d’expertise automobile ?' }
+    { label: 'New report', prompt: '__NAV_RAPPORT_FORM__' },
+    { label: 'List reports', prompt: '__ACTION_LIST_REPORTS__' },
+    { label: 'Global statistics', prompt: '__NAV_STATS_DASHBOARD__' },
+    { label: 'Help drafting conclusions', prompt: 'How should I write strong conclusions for an automotive expertise report?' }
   ];
 
   constructor(
     private rapportChat: RapportExpertiseChatService,
-    private router: Router
+    private router: Router,
+    private localChatbot: LocalChatbotService
   ) {}
 
   ngOnInit(): void {
     this.pushBot(this.welcomeText());
     this.verifyChatbotConnection();
+    this.localChatbot.initFromAssets().subscribe({
+      error: () => {
+        /* fichier JSON optionnel */
+      }
+    });
   }
 
   verifyChatbotConnection(): void {
@@ -61,14 +69,110 @@ export class RapportExpertiseChatComponent implements OnInit {
 
   apiStatusLabel(): string {
     return this.apiLinkState() === 'checking'
-      ? 'Verification...'
+      ? 'Checking...'
       : this.apiLinkState() === 'ok'
-        ? 'API connectee'
-        : 'API indisponible';
+        ? 'API connected'
+        : 'API unavailable';
   }
 
   private welcomeText(): string {
-    return 'Bonjour, espace Rapport expertise chat. Utilisez les actions rapides ou posez votre question.';
+    return (
+      'Hello — Expertise report chat. Use quick actions or ask your question.\n\n' +
+      '— Local assistant (no API): greetings, experts, reports, stats…\n' +
+      '— To teach a phrase: !learn hello | greeting'
+    );
+  }
+
+  /** Sidebar label: local TF-IDF engine ready. */
+  localEngineLabel(): string {
+    return this.localChatbot.isReady() ? 'Local AI active' : 'Loading AI…';
+  }
+
+  private tryHandleLearnCommand(raw: string): boolean {
+    const parsed = this.localChatbot.tryParseLearnCommand(raw);
+    if (!parsed) return false;
+    this.localChatbot.addTrainingExample(parsed.text, parsed.label);
+    this.pushBot(
+      `Example saved locally:\n« ${parsed.text} » → ${parsed.label}\n` +
+        `(${this.localChatbot.customExampleCount()} custom example(s)). Try the phrase again.`,
+    );
+    return true;
+  }
+
+  /**
+   * Domain replies for intents detected by the local chatbot (TF-IDF + Levenshtein).
+   */
+  private handleLocalPrediction(pred: LocalPredictResult): void {
+    const confLine = `\n\n— Local confidence: ${Math.round(pred.confidence * 100)}% (close to « ${pred.matchedText} »)`;
+
+    switch (pred.label) {
+      case 'salutation':
+        this.pushBot(`Hello 👋 I can help with reports, experts, or statistics.${confLine}`);
+        break;
+      case 'experts':
+        this.runExpertsForLocalBot(confLine);
+        break;
+      case 'rapport':
+        void this.router.navigateByUrl('/expert/reports/new');
+        this.pushBot(`Opening the “New report” form.${confLine}`);
+        break;
+      case 'list_reports':
+        this.runListReports();
+        break;
+      case 'stats':
+        void this.router.navigateByUrl('/expert/reports/stats');
+        this.pushBot(`Opening global statistics.${confLine}`);
+        break;
+      case 'help_conclusions':
+        this.pushBot(this.helpConclusionsText() + confLine);
+        break;
+      default:
+        this.pushBot(
+          `I don’t understand this request well enough (score ${Math.round(pred.confidence * 100)}%, threshold ${Math.round(this.localChatbot.minConfidence * 100)}%). ` +
+            `Rephrase or use the quick actions.`,
+        );
+    }
+  }
+
+  private helpConclusionsText(): string {
+    return (
+      'To write solid conclusions:\n' +
+      '• summarize technical findings (vehicle, costing);\n' +
+      '• tie them to documents and photos;\n' +
+      '• state opinion / reservations clearly;\n' +
+      '• propose indemnity or repair when relevant.'
+    );
+  }
+
+  private runExpertsForLocalBot(confLine: string): void {
+    this.sending.set(true);
+    this.typing.set(true);
+    this.rapportChat.getExperts().subscribe({
+      next: (experts) => {
+        this.typing.set(false);
+        this.pushBot(this.formatExpertsList(experts ?? []) + confLine);
+        this.sending.set(false);
+      },
+      error: () => {
+        this.typing.set(false);
+        this.pushBot('Could not load experts (API). Try again later.' + confLine);
+        this.sending.set(false);
+      }
+    });
+  }
+
+  private formatExpertsList(experts: Expert[]): string {
+    if (!experts.length) return 'No experts in the database yet.';
+    return experts
+      .slice(0, 30)
+      .map(
+        (e) =>
+          `• ${e.firstName ?? ''} ${e.lastName ?? ''}`.trim() +
+          (e.specialty ? ` — ${e.specialty}` : '') +
+          (e.city ? ` (${e.city})` : '') +
+          (e.status ? ` [${e.status}]` : ''),
+      )
+      .join('\n');
   }
 
   private nowTime(): string {
@@ -119,14 +223,14 @@ export class RapportExpertiseChatComponent implements OnInit {
       return;
     }
     if (target === 'reports') {
-      this.onSuggestion({ label: 'Lister les rapports', prompt: '__ACTION_LIST_REPORTS__' });
+      this.onSuggestion({ label: 'List reports', prompt: '__ACTION_LIST_REPORTS__' });
       return;
     }
     if (target === 'settings') {
       this.verifyChatbotConnection();
       return;
     }
-    this.pushBot('Dashboard IA pret.');
+    this.pushBot('AI dashboard ready.');
   }
 
   onSend(): void {
@@ -134,6 +238,18 @@ export class RapportExpertiseChatComponent implements OnInit {
     if (!t || this.sending()) return;
     this.inputText = '';
     this.pushUser(t);
+
+    if (this.tryHandleLearnCommand(t)) {
+      return;
+    }
+
+    if (this.localChatbot.isReady()) {
+      const pred = this.localChatbot.predict(t);
+      if (!pred.belowThreshold) {
+        this.handleLocalPrediction(pred);
+        return;
+      }
+    }
 
     const refMatch = t.match(/^(réf|ref)\s*:\s*(.+)$/i);
     if (refMatch) {
@@ -151,8 +267,9 @@ export class RapportExpertiseChatComponent implements OnInit {
 
   private isAddReportIntent(text: string): boolean {
     const s = text.trim().toLowerCase();
-    if (!s.includes('rapport')) return false;
-    return /^(ajoute|ajouter|creer|créer|nouveau)\b/.test(s);
+    const hasReport = s.includes('rapport') || s.includes('report');
+    if (!hasReport) return false;
+    return /^(ajoute|ajouter|creer|créer|nouveau|add|create|new)\b/.test(s);
   }
 
   private parseExpertIdFromMessage(text: string): number | undefined {
@@ -161,7 +278,7 @@ export class RapportExpertiseChatComponent implements OnInit {
   }
 
   private parseAssureFromMessage(text: string): string | undefined {
-    const m = text.match(/\bassur[eé]?\s*:\s*(.+)$/i);
+    const m = text.match(/\b(?:assur[eé]?|insured)\s*:\s*(.+)$/i);
     return m?.[1]?.trim() || undefined;
   }
 
@@ -186,7 +303,7 @@ export class RapportExpertiseChatComponent implements OnInit {
         const expert = this.pickExpertForReport(experts ?? [], expertIdOpt);
         if (!expert?.idExpert) {
           this.typing.set(false);
-          this.pushBot("Aucun expert disponible pour creer un rapport.");
+          this.pushBot('No expert available to create a report.');
           this.sending.set(false);
           return;
         }
@@ -194,19 +311,19 @@ export class RapportExpertiseChatComponent implements OnInit {
         this.rapportChat.createReport(expert.idExpert, payload).subscribe({
           next: (r) => {
             this.typing.set(false);
-            this.pushBot(`Rapport cree.\n\n${this.formatReport(r)}`);
+            this.pushBot(`Report created.\n\n${this.formatReport(r)}`);
             this.sending.set(false);
           },
           error: () => {
             this.typing.set(false);
-            this.pushBot("Echec de creation du rapport.");
+            this.pushBot('Failed to create the report.');
             this.sending.set(false);
           }
         });
       },
       error: () => {
         this.typing.set(false);
-        this.pushBot("Impossible de charger les experts.");
+        this.pushBot('Could not load experts.');
         this.sending.set(false);
       }
     });
@@ -223,7 +340,7 @@ export class RapportExpertiseChatComponent implements OnInit {
       },
       error: () => {
         this.typing.set(false);
-        this.pushBot("Impossible de charger la liste des rapports.");
+        this.pushBot('Could not load the report list.');
         this.sending.set(false);
       }
     });
@@ -240,7 +357,7 @@ export class RapportExpertiseChatComponent implements OnInit {
       },
       error: () => {
         this.typing.set(false);
-        this.pushBot(`Reference "${ref}" introuvable.`);
+        this.pushBot(`Reference "${ref}" not found.`);
         this.sending.set(false);
       }
     });
@@ -252,12 +369,12 @@ export class RapportExpertiseChatComponent implements OnInit {
     this.rapportChat.sendExpertChat(message).subscribe({
       next: (res) => {
         this.typing.set(false);
-        this.pushBot(res?.message?.trim() || 'Reponse vide du serveur.');
+        this.pushBot(res?.message?.trim() || 'Empty response from the server.');
         this.sending.set(false);
       },
       error: () => {
         this.typing.set(false);
-        this.pushBot('Erreur lors de l’appel a l’assistant.');
+        this.pushBot('Error calling the assistant.');
         this.sending.set(false);
       }
     });
@@ -269,18 +386,18 @@ export class RapportExpertiseChatComponent implements OnInit {
   }
 
   private formatReport(r: ExpertiseReport): string {
-    const lines: string[] = ['Rapport d’expertise'];
+    const lines: string[] = ['Expertise report'];
     if (r.numeroReference) lines.push(`Ref.: ${r.numeroReference}`);
-    if (r.assureNom) lines.push(`Assure: ${r.assureNom}`);
+    if (r.assureNom) lines.push(`Insured: ${r.assureNom}`);
     if (r.vehiculeMarque || r.vehiculeImmatriculation) {
-      lines.push(`Vehicule: ${[r.vehiculeMarque, r.vehiculeType].filter(Boolean).join(' ')} ${r.vehiculeImmatriculation ? `(${r.vehiculeImmatriculation})` : ''}`.trim());
+      lines.push(`Vehicle: ${[r.vehiculeMarque, r.vehiculeType].filter(Boolean).join(' ')} ${r.vehiculeImmatriculation ? `(${r.vehiculeImmatriculation})` : ''}`.trim());
     }
     if (r.conclusions) lines.push(`Conclusions: ${r.conclusions}`);
     return lines.join('\n');
   }
 
   private formatReportsList(list: ExpertiseReport[]): string {
-    if (!list.length) return 'Aucun rapport d’expertise en base pour le moment.';
+    if (!list.length) return 'No expertise reports in the database yet.';
     return list.slice(0, 20)
       .map((r, i) => `• ${r.numeroReference ?? `#${r.idRapport ?? i + 1}`} ${r.assureNom ? `— ${r.assureNom}` : ''}`)
       .join('\n');

@@ -78,7 +78,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Erreur dashboard:', err);
+        console.error('Dashboard error:', err);
         this.loading = false;
       },
     });
@@ -178,7 +178,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
           tooltip: {
             callbacks: {
               label: (ctx: TooltipItem<'pie'>) =>
-                `${ctx.label}: ${ctx.raw} sinistres`,
+                `${ctx.label}: ${ctx.raw} claims`,
             },
           },
         },
@@ -200,7 +200,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       ClaimStatus.CLOSED,
       ClaimStatus.REJECTED,
     ];
-    const statusLabels = ['Ouverts','Assignés','En expertise','Clôturés','Rejetés'];
+    const statusLabels = ['Open','Assigned','Under expertise','Closed','Rejected'];
     const statusData   = statusMap.map(s => this.claims.filter(c => c.status === s).length);
 
     this.statusChart = new Chart(this.statusChartRef.nativeElement, {
@@ -208,7 +208,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       data: {
         labels:   statusLabels,
         datasets: [{
-          label:           'Nombre de sinistres',
+          label:           'Number of claims',
           data:            statusData,
           backgroundColor: '#185FA5',
           borderRadius:    8,
@@ -234,7 +234,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       data: {
         labels:   this.monthlyData.map(m => m.month),
         datasets: [{
-          label:              'Sinistres',
+          label:              'Claims',
           data:               this.monthlyData.map(m => m.count),
           borderColor:        '#185FA5',
           backgroundColor:    'rgba(24, 95, 165, 0.1)',
@@ -256,7 +256,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     this.urgencyChart = new Chart(this.urgencyChartRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels:   ['Urgent (>70%)', 'Moyen (40-70%)', 'Normal (<40%)'],
+        labels:   ['Urgent (>70%)', 'Medium (40–70%)', 'Normal (<40%)'],
         datasets: [{
           data:            [this.urgencyDistribution.high, this.urgencyDistribution.medium, this.urgencyDistribution.low],
           backgroundColor: ['#A32D2D','#FF8C00','#3B6D11'],

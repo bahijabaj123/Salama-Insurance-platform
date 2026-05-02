@@ -96,7 +96,7 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Expert introuvable.');
+        this.error.set('Expert not found.');
         this.loading.set(false);
       }
     });
@@ -114,12 +114,12 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
     action.subscribe({
       next: () => {
         this.submitLoading.set(false);
-        this.successMessage.set(this.isEditMode ? 'Expert modifie avec succes !' : 'Expert cree avec succes !');
+        this.successMessage.set(this.isEditMode ? 'Expert updated successfully.' : 'Expert created successfully.');
         setTimeout(() => this.router.navigate(['/expert/dashboard']), 1200);
       },
       error: (err) => {
         this.submitLoading.set(false);
-        this.error.set(err.error?.message || 'Une erreur est survenue. Verifiez les informations saisies.');
+        this.error.set(err.error?.message || 'Something went wrong. Check the information you entered.');
       }
     });
   }
@@ -139,7 +139,7 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      this.error.set('Veuillez selectionner une image valide.');
+      this.error.set('Please select a valid image.');
       return;
     }
 
@@ -149,7 +149,7 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
       this.setPhoto(imageData);
       await this.buildReferenceFromDataUrl(imageData);
     };
-    reader.onerror = () => this.error.set("Impossible de lire l'image selectionnee.");
+    reader.onerror = () => this.error.set('Could not read the selected image.');
     reader.readAsDataURL(file);
     input.value = '';
   }
@@ -179,7 +179,7 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
     } catch {
       this.cameraLoading.set(false);
       this.cameraOpen.set(false);
-      this.error.set('Acces camera refuse ou indisponible.');
+      this.error.set('Camera access denied or unavailable.');
     }
   }
 
@@ -269,7 +269,7 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
       ]);
       this.modelReady.set(true);
     } catch {
-      this.faceError.set('Chargement des modeles IA echoue.');
+      this.faceError.set('Failed to load AI models.');
       this.modelReady.set(false);
     }
   }
@@ -285,14 +285,14 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
       if (!result) {
         this.referenceDescriptor = null;
         this.faceIdentity.set(null);
-        this.faceError.set('Aucun visage detecte dans la photo de reference.');
+        this.faceError.set('No face detected in the reference photo.');
         return;
       }
       this.referenceDescriptor = result.descriptor;
       this.faceIdentity.set(this.generateFaceIdentity(result.descriptor));
       this.faceError.set('');
     } catch {
-      this.faceError.set('Impossible d analyser la photo de reference.');
+      this.faceError.set('Could not analyze the reference photo.');
     }
   }
 

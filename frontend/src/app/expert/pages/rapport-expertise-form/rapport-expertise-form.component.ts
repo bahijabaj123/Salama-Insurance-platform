@@ -17,6 +17,11 @@ import { of } from 'rxjs';
 
 import { AccidentLocationPick, AccidentLocationPickerComponent } from '../../components/accident-location-picker/accident-location-picker';
 import { buildFullExpertiseReportPayload } from '../../data/full-expertise-report.template';
+import {
+  EXPERTISE_PREFILL_NAV_STATE_KEY,
+  VEHICLE_CHOICE_STORAGE_KEY,
+  type ExpertisePrefillPayload,
+} from '../../data/vehicle-selection.catalog';
 import { DommageLine, ExpertiseReport, MainOeuvreLine, PieceJointeLine } from '../../models/expertise-report.model';
 import { Expert } from '../../models/expert.model';
 import { RapportExpertiseChatService } from '../../services/rapport-expertise-chat.service';
@@ -51,7 +56,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
 
   expertId: number | null = null;
   tiersDossier = '';
-  vehiculeExpertiseCible = 'Assure';
+  vehiculeExpertiseCible = 'Insured';
   circonstance = '';
   expertPhotosText = '';
 
@@ -78,7 +83,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.report = { ...buildFullExpertiseReportPayload() } as ExpertiseReport;
-    this.dommages = Array.from({ length: 3 }, () => this.emptyDommage());
+    this.consumePrefillFromSession();
     this.mainsOeuvre = this.typesMainOeuvre.map((typeTravail) => ({ typeTravail, montant: '', tauxTva: '19', description: '' }));
     this.piecesJointes = this.typesPiece.map((typeDocument) => ({ typeDocument, nombre: 0 }));
 
@@ -87,7 +92,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
       .pipe(
         timeout(EXPERTS_HTTP_TIMEOUT_MS),
         catchError(() => {
-          this.error.set('Impossible de charger les experts (timeout ou serveur indisponible).');
+          this.error.set('Could not load experts (timeout or server unavailable).');
           return of([] as Expert[]);
         }),
         finalize(() => {
@@ -106,6 +111,117 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.revokeAiPreview();
+  }
+
+  /**
+   * Préremplit véhicule + lignes Fournitures + nature des dégâts après le parcours
+   * (état de navigation en priorité pour application immédiate au chargement du rapport).
+   */
+  private consumePrefillFromSession(): void {
+    const defaultDommages = (): DommageLine[] => Array.from({ length: 3 }, () => this.emptyDommage());
+    const defaultNature = 'To be completed after on-site inspection.';
+
+    let o: Record<string, unknown> | null = null;
+    let didConsumePrefill = false;
+
+    try {
+      if (typeof history !== 'undefined' && history.state) {
+        const nav = (history.state as Record<string, unknown>)[EXPERTISE_PREFILL_NAV_STATE_KEY];
+        if (nav && typeof nav === 'object' && typeof (nav as ExpertisePrefillPayload).vehiculeType === 'string') {
+          o = nav as Record<string, unknown>;
+        }
+      }
+      if (!o) {
+        const raw = sessionStorage.getItem(VEHICLE_CHOICE_STORAGE_KEY);
+        if (!raw) {
+          this.dommages = defaultDommages();
+          return;
+        }
+        o = JSON.parse(raw) as Record<string, unknown>;
+      }
+
+      if (typeof o['vehiculeType'] !== 'string' || !o['vehiculeType'].trim()) {
+        this.dommages = defaultDommages();
+        return;
+      }
+      didConsumePrefill = true;
+
+      this.report.vehiculeType = o['vehiculeType'].trim();
+      if (typeof o['vehiculeMarque'] === 'string' && o['vehiculeMarque'].trim()) {
+        this.report.vehiculeMarque = o['vehiculeMarque'].trim();
+      }
+      if (typeof o['vehiculeGenre'] === 'string' && o['vehiculeGenre'].trim()) {
+        this.report.vehiculeGenre = o['vehiculeGenre'].trim();
+      }
+
+      const damages = o['damages'];
+      if (Array.isArray(damages) && damages.length > 0) {
+        const viewEn: Record<string, string> = {
+          avant: 'Front',
+          droit: 'Right side',
+          arriere: 'Rear',
+          gauche: 'Left side',
+        };
+        const typeEn: Record<string, string> = { ENFONCE: 'Dented', RAYE: 'Scratched' };
+        const linesNature: string[] = [];
+
+        this.dommages = damages.map((d: unknown) => {
+          const x = d as Record<string, unknown>;
+          const partLabel = typeof x['partLabel'] === 'string' ? x['partLabel'] : '';
+          const view = typeof x['view'] === 'string' ? x['view'] : '';
+          const vLabel = viewEn[view] ?? view;
+          const typesArr = Array.isArray(x['types']) ? (x['types'] as unknown[]) : [];
+          const types = typesArr
+            .map((t) => (typeof t === 'string' ? typeEn[t] ?? t : String(t)))
+            .join(', ');
+          const me = x['montantEstime'];
+          const montantStr =
+            typeof me === 'number' && Number.isFinite(me)
+              ? String(Math.round(me))
+              : typeof me === 'string' && me.trim()
+                ? me.trim()
+                : '';
+          linesNature.push(
+            `- ${vLabel} — ${partLabel}: ${types}${montantStr ? ` (${montantStr} EUR indicative incl. VAT)` : ''}`,
+          );
+          return {
+            /** Colonne « Point » : zone / face */
+            pointChoc: vLabel,
+            /** Colonne « Designation » : pièce + types de dégât */
+            designation: `${partLabel} — ${types}`,
+            montant: montantStr,
+            tauxTva: '19',
+            estOccasion: false,
+            quantite: 1,
+          };
+        });
+
+        const blocNature = `Body diagram finding (guided entry):\n${linesNature.join('\n')}`;
+        const nat = this.report.natureDegats?.trim() ?? '';
+        if (!nat || nat === defaultNature) {
+          this.report.natureDegats = blocNature;
+        } else {
+          this.report.natureDegats = `${nat}\n\n${blocNature}`;
+        }
+      } else {
+        this.dommages = defaultDommages();
+      }
+    } catch {
+      this.dommages = defaultDommages();
+    } finally {
+      if (didConsumePrefill) {
+        try {
+          sessionStorage.removeItem(VEHICLE_CHOICE_STORAGE_KEY);
+        } catch {
+          /* */
+        }
+        if (typeof history !== 'undefined' && history.state && EXPERTISE_PREFILL_NAV_STATE_KEY in history.state) {
+          const st = { ...(history.state as Record<string, unknown>) };
+          delete st[EXPERTISE_PREFILL_NAV_STATE_KEY];
+          history.replaceState(st, '');
+        }
+      }
+    }
   }
 
   private emptyDommage(): DommageLine {
@@ -140,7 +256,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     this.error.set('');
     this.createdReportId.set(null);
     if (this.expertId == null) {
-      this.error.set('Selectionnez un expert responsable du rapport.');
+      this.error.set('Select the expert responsible for the report.');
       return;
     }
     this.submitLoading.set(true);
@@ -150,11 +266,11 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
         this.submitLoading.set(false);
         const reportId = this.extractCreatedReportId(created);
         this.createdReportId.set(reportId);
-        this.successMessage.set(reportId != null ? `Rapport cree avec succes (ID ${reportId}).` : 'Rapport cree avec succes.');
+        this.successMessage.set(reportId != null ? `Report created successfully (ID ${reportId}).` : 'Report created successfully.');
       },
       error: (err: unknown) => {
         this.submitLoading.set(false);
-        this.error.set(this.formatHttpApiError(err, 'Echec de la creation du rapport.'));
+        this.error.set(this.formatHttpApiError(err, 'Failed to create the report.'));
       }
     });
   }
@@ -167,11 +283,11 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
         if (!(await this.blobLooksLikePdf(blob))) {
           const hint = await this.tryReadBlobAsErrorMessage(blob);
           this.error.set(
-            hint || `La reponse du serveur n’est pas un PDF valide pour le rapport ${reportId}.`,
+            hint || `The server response is not a valid PDF for report ${reportId}.`,
           );
           return;
         }
-        const filename = `rapport-expertise-${reportId}.pdf`;
+        const filename = `expertise-report-${reportId}.pdf`;
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
@@ -185,7 +301,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
         setTimeout(() => URL.revokeObjectURL(url), 90_000);
       },
       error: (err: unknown) => {
-        this.error.set(this.formatHttpApiError(err, 'Telechargement PDF impossible.'));
+        this.error.set(this.formatHttpApiError(err, 'PDF download failed.'));
       },
     });
   }
@@ -239,7 +355,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
           this.aiAnalysisText.set(r.analysis.trim());
           this.aiAnalysisOfflineFallback.set(false);
         } else {
-          this.applyLocalImageAnalysisFallback(url, r.errorMessage || 'Analyse indisponible.');
+          this.applyLocalImageAnalysisFallback(url, r.errorMessage || 'Analysis unavailable.');
         }
       },
       error: (err) => {
@@ -267,7 +383,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
           this.aiAnalysisText.set(r.analysis.trim());
           this.aiAnalysisOfflineFallback.set(false);
         } else {
-          this.applyLocalImageAnalysisFallback(file.name, r.errorMessage || 'Analyse indisponible.');
+          this.applyLocalImageAnalysisFallback(file.name, r.errorMessage || 'Analysis unavailable.');
         }
         input.value = '';
       },
@@ -289,7 +405,7 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     ) {
       return '';
     }
-    return 'Choisissez une image ou une URL pour lancer l’analyse IA.';
+    return 'Choose an image or a URL to run AI analysis.';
   }
 
   insertAiIntoNatureDegats(): void {
@@ -297,8 +413,8 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     if (!block) return;
     const existing = this.report.natureDegats?.trim();
     const tag = this.aiAnalysisOfflineFallback()
-      ? '--- Proposition locale (IA indisponible) ---'
-      : '--- Analyse automatique (IA) ---';
+      ? '--- Local draft (AI unavailable) ---'
+      : '--- Automated analysis (AI) ---';
     const sep = existing ? `\n\n${tag}\n` : '';
     this.report.natureDegats = (existing ?? '') + sep + block;
   }
@@ -310,35 +426,35 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
     this.aiAnalysisError.set('');
     this.aiAnalysisOfflineFallback.set(true);
     this.aiAnalysisInfo.set(
-      `Analyse IA indisponible (${reason}). Un commentaire local a été généré — à valider après inspection du véhicule.`,
+      `AI analysis unavailable (${reason}). A local comment was generated — validate after vehicle inspection.`,
     );
     this.aiAnalysisText.set(this.buildLocalExpertiseCommentary(sourceLabel));
   }
 
   private buildLocalExpertiseCommentary(sourceLabel: string): string {
-    const ts = new Date().toLocaleString('fr-FR');
+    const ts = new Date().toLocaleString('en-US');
     return [
-      '--- Synthèse (mode hors ligne, formulation type rapport automatique) ---',
-      `D’après la photographie « ${sourceLabel} », le cliché documente un sinistre avec dommages apparents sur la partie visible du véhicule. Ce type d’image évoque fréquemment un choc à l’avant ou latéral avant : déformation du pare-chocs, du capot, des ailes ou des optiques, avec risque d’impact sur le compartiment moteur ou le train avant selon la cinétique.`,
+      '--- Summary (offline mode, auto-report style wording) ---',
+      `From the photo « ${sourceLabel} », the shot documents a loss with visible damage on the exposed part of the vehicle. Images like this often suggest a front or front-side impact: deformation of bumper, hood, wings or lights, with possible effect on the engine bay or front axle depending on crash dynamics.`,
       '',
-      'Ce paragraphe est généré localement lorsque le service d’analyse ne répond pas ; il ne remplace pas l’expertise sur place ni les mesures atelier.',
+      'This paragraph is generated locally when the analysis service does not respond; it does not replace on-site expertise or workshop measurements.',
       '',
-      '--- État du véhicule (observation à confirmer par l’expert) ---',
-      '• Face avant / flanc avant : relever jeux de tôlerie, longerons, supports de radiateur et de phares.',
-      '• Mécanique : vérifier fuites, supports moteur/boîte, courroies et organes périphériques après choc.',
-      '• Train roulant : suspension, bras de liaison, rotules, jantes/pneus — géométrie à contrôler systématiquement.',
-      '• Sécurité passive : ceintures, airbags, connecteurs — relever les défauts calculateur si nécessaire.',
-      '• Peinture / FV : étendue des reprises et retouches à chiffrer au devis.',
+      '--- Vehicle condition (to be confirmed by the expert) ---',
+      '• Front / front flank: check panel gaps, rails, radiator and lamp supports.',
+      '• Mechanical: check leaks, engine/gearbox mounts, belts and peripheral components after impact.',
+      '• Running gear: suspension, links, ball joints, wheels/tires — alignment should always be checked.',
+      '• Passive safety: belts, airbags, connectors — note ECU faults if any.',
+      '• Paint / body: extent of blend and refinish to quote in the estimate.',
       '',
-      `Document : ${sourceLabel} — généré le ${ts} (repli local).`,
+      `Document: ${sourceLabel} — generated ${ts} (local fallback).`,
     ].join('\n');
   }
 
   private formatAiHttpError(err: unknown): string {
     if (err instanceof HttpErrorResponse && err.status === 0) {
-      return 'Connexion refusee vers le backend.';
+      return 'Connection refused to the backend.';
     }
-    return 'Erreur reseau ou serveur.';
+    return 'Network or server error.';
   }
 
   private formatHttpApiError(err: unknown, fallback: string): string {
@@ -352,9 +468,9 @@ export class RapportExpertiseFormComponent implements OnInit, OnDestroy {
         return body;
       }
       if (err.status === 0) {
-        return 'Impossible de joindre le serveur. Verifiez que le backend tourne (port 8082).';
+        return 'Could not reach the server. Check that the backend is running (port 8082).';
       }
-      return `Erreur serveur (${err.status}).`;
+      return `Server error (${err.status}).`;
     }
     return fallback;
   }

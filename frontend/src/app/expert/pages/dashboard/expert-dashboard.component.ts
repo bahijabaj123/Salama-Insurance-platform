@@ -90,21 +90,21 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
       lines.push({ label: 'Performance', value: `${expert.performanceScore} %`, accent: true });
     }
     if (expert.activeClaims != null) {
-      lines.push({ label: 'Sinistres actifs', value: this.fmtNum(expert.activeClaims) });
+      lines.push({ label: 'Active claims', value: this.fmtNum(expert.activeClaims) });
     }
     if (expert.maxWorkload != null && expert.maxWorkload > 0 && expert.currentWorkload != null) {
       lines.push({
-        label: 'Charge',
+        label: 'Workload',
         value: `${this.fmtNum(expert.currentWorkload)} / ${this.fmtNum(expert.maxWorkload)}`
       });
     } else if (expert.currentWorkload != null) {
-      lines.push({ label: 'Charge courante', value: this.fmtNum(expert.currentWorkload) });
+      lines.push({ label: 'Current load', value: this.fmtNum(expert.currentWorkload) });
     }
     if (expert.available != null) {
-      lines.push({ label: 'Disponibilite', value: expert.available ? 'Oui' : 'Non' });
+      lines.push({ label: 'Available', value: expert.available ? 'Yes' : 'No' });
     }
     if (expert.validationRate != null) {
-      lines.push({ label: 'Taux validation', value: `${this.fmtNum(expert.validationRate)} %` });
+      lines.push({ label: 'Validation rate', value: `${this.fmtNum(expert.validationRate)} %` });
     }
 
     const sc = this.scorecardFor(expert);
@@ -114,7 +114,7 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
         const p = perf as Record<string, unknown>;
         if (p['score'] != null && p['max'] != null) {
           lines.push({
-            label: 'Score BI',
+            label: 'BI score',
             value: `${this.fmtNum(p['score'])} / ${this.fmtNum(p['max'])}${p['niveau'] != null ? ` · ${p['niveau']}` : ''}`,
             accent: expert.performanceScore == null
           });
@@ -168,11 +168,11 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
   fmtNum(v: unknown): string {
     if (v == null || v === '') return '—';
     if (typeof v === 'number' && Number.isFinite(v)) {
-      return Number.isInteger(v) ? String(v) : v.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+      return Number.isInteger(v) ? String(v) : v.toLocaleString('en-US', { maximumFractionDigits: 2 });
     }
     const n = parseFloat(String(v).replace(',', '.'));
     if (Number.isFinite(n)) {
-      return Number.isInteger(n) ? String(n) : n.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+      return Number.isInteger(n) ? String(n) : n.toLocaleString('en-US', { maximumFractionDigits: 2 });
     }
     return String(v);
   }
@@ -186,7 +186,7 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
         timeout(this.httpTimeoutMs),
         catchError(() => {
           this.error.set(
-            'Impossible de charger les experts (timeout ou serveur indisponible). Verifiez que le backend tourne sur le port 8082.',
+            'Unable to load experts (timeout or server unavailable). Check that the backend is running on port 8082.',
           );
           return of([] as Expert[]);
         }),
@@ -247,13 +247,13 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
         this.showDeleteModal.set(false);
         this.expertToDelete.set(null);
         this.deleteLoading.set(false);
-        this.successMessage.set(`Expert ${expert.firstName} ${expert.lastName} supprime avec succes.`);
+        this.successMessage.set(`Expert ${expert.firstName} ${expert.lastName} deleted successfully.`);
         setTimeout(() => this.successMessage.set(''), 3000);
         this.loadExperts();
       },
       error: (err) => {
         this.deleteLoading.set(false);
-        this.error.set('Erreur lors de la suppression.');
+        this.error.set('Error while deleting.');
         console.error(err);
       }
     });
@@ -298,5 +298,37 @@ export class ExpertDashboardComponent implements OnInit, OnDestroy {
 
   get inactiveExperts(): number {
     return this.experts().filter((e) => e.status === 'INACTIVE' || e.status === 'UNAVAILABLE').length;
+  }
+
+  /** Part d'experts actifs / disponibles sur l'effectif total. */
+  get activeSharePercent(): number {
+    const t = this.totalExperts;
+    if (!t) return 0;
+    return Math.round((this.activeExperts / t) * 100);
+  }
+
+  /** Part de la liste filtrée par rapport au total (contexte recherche). */
+  get filteredSharePercent(): number {
+    const t = this.totalExperts;
+    if (!t) return 0;
+    return Math.round((this.filteredExperts().length / t) * 100);
+  }
+
+  /** Synthèse contextuelle (bandeau intelligent au-dessus des KPI). */
+  get rosterHealthLabel(): string {
+    const p = this.activeSharePercent;
+    if (this.totalExperts === 0) {
+      return 'Waiting for data — connect the backend or create a first expert.';
+    }
+    if (p >= 88) {
+      return 'Excellent availability: most of the team is ready to take on cases.';
+    }
+    if (p >= 70) {
+      return 'Healthy profile — improve further by reactivating secondary profiles.';
+    }
+    if (p >= 50) {
+      return 'Fragile balance: prioritize updating statuses and zones.';
+    }
+    return 'Strong signal: increase the number of active experts to absorb workload.';
   }
 }

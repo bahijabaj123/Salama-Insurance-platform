@@ -32,7 +32,7 @@ import { RouterModule } from '@angular/router';
 </div>
             <div class="user-details">
               <span class="user-name">John Doe</span>
-              <span class="user-role">Assureur</span>
+              <span class="user-role">Insurer</span>
             </div>
             <i class="fas fa-chevron-down"></i>
           </div>

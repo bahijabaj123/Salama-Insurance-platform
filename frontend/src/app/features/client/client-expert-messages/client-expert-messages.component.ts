@@ -93,7 +93,7 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
       seen.add(k);
       out.push(n);
     }
-    return out.sort((a, b) => a.localeCompare(b, 'fr'));
+    return out.sort((a, b) => a.localeCompare(b, 'en'));
   }
 
   private loadExpertDirectory(): void {
@@ -227,7 +227,7 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
   messageTimeLabel(sentAt: string): string {
     const d = new Date(sentAt);
     if (Number.isNaN(d.getTime())) return '—';
-    return d.toLocaleString('fr-FR', {
+    return d.toLocaleString('en-US', {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -260,12 +260,12 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
     });
     if (!ok) {
       this.sendError.set(
-        'Enregistrement impossible (stockage navigateur refusé ou plein). Les messages ne sont pas transmis au serveur.',
+        'Could not save (browser storage denied or full). Messages are not sent to the server.',
       );
       return;
     }
     this.threadDraftByDossier = { ...this.threadDraftByDossier, [msg.dossierId]: '' };
-    this.sendSuccess.set(`Message envoyé pour le dossier ${msg.dossierReference}.`);
+    this.sendSuccess.set(`Message sent for case ${msg.dossierReference}.`);
     setTimeout(() => this.sendSuccess.set(''), 2500);
     this.refreshAnchors();
   }
@@ -275,7 +275,7 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
     this.sendSuccess.set('');
     const text = this.newMessageText.trim();
     if (!text) {
-      this.sendError.set('Saisissez un message.');
+      this.sendError.set('Enter a message.');
       return;
     }
 
@@ -284,12 +284,12 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
 
     if (mine.length > 0) {
       if (this.selectedClaimId == null) {
-        this.sendError.set('Sélectionnez un dossier (sinistre).');
+        this.sendError.set('Select a case (claim).');
         return;
       }
       const claim = mine.find((c) => c.id === this.selectedClaimId);
       if (!claim) {
-        this.sendError.set('Dossier introuvable.');
+        this.sendError.set('Case not found.');
         return;
       }
       const expert = getClaimExpert(claim);
@@ -305,14 +305,14 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
     } else {
       const missing: string[] = [];
       if (!this.manualReference.trim()) {
-        missing.push('référence du dossier');
+        missing.push('case reference');
       }
       if (!this.manualExpertName.trim()) {
-        missing.push("nom de l'expert (liste, saisie ou même orthographe que l'espace expert)");
+        missing.push("expert name (list, free text, or same spelling as in the expert app)");
       }
       if (missing.length) {
         this.sendError.set(
-          `Impossible d’envoyer : complétez ${missing.join(', ')}. Sans sinistre lié au compte, ces champs sont obligatoires.`,
+          `Cannot send: fill in ${missing.join(', ')}. With no claim linked to the account, these fields are required.`,
         );
         return;
       }
@@ -330,14 +330,14 @@ export class ClientExpertMessagesComponent implements OnInit, OnDestroy {
 
     if (!saved) {
       this.sendError.set(
-        'Enregistrement impossible (stockage navigateur refusé ou plein). Les messages restent locaux à ce navigateur : client et coordinateur doivent utiliser le même appareil / navigateur pour la démo.',
+        'Could not save (browser storage denied or full). Messages stay local to this browser: client and coordinator must use the same device/browser for the demo.',
       );
       return;
     }
 
     this.newMessageText = '';
     this.sendSuccess.set(
-      'Message enregistré. Il apparaît dans « Consulter les messages » côté expert sur ce même navigateur.',
+      'Message saved. It appears under “View client messages” on the expert side in this same browser.',
     );
     setTimeout(() => this.sendSuccess.set(''), 4000);
     this.refreshAnchors();

@@ -1,11 +1,11 @@
 <div class="profile-page">
   <div class="page-top-bar">
-    <button class="back-btn" id="btn-back" (click)="onCancel()">Retour a la liste</button>
-    <h2 class="page-heading">{{ isEditMode ? "Modifier l'Expert" : 'Nouvel Expert' }}</h2>
+    <button class="back-btn" id="btn-back" (click)="onCancel()">Back to list</button>
+    <h2 class="page-heading">{{ isEditMode ? 'Edit expert' : 'New expert' }}</h2>
   </div>
 
   @if (successMessage()) {
-    <div class="alert alert-success" id="form-success">{{ successMessage() }} Redirection en cours...</div>
+    <div class="alert alert-success" id="form-success">{{ successMessage() }} Redirecting...</div>
   }
   @if (error()) {
     <div class="alert alert-error" id="form-error">{{ error() }}</div>
@@ -14,7 +14,7 @@
   @if (loading()) {
     <div class="loading-state" id="form-loading">
       <div class="spinner"></div>
-      <p>Chargement...</p>
+      <p>Loading...</p>
     </div>
   }
 
@@ -25,27 +25,27 @@
           <div class="avatar-block">
             <div class="avatar-circle" [style.background]="'linear-gradient(135deg, #7c3aed, #a855f7)'">
               @if (photoDataUrl()) {
-                <img [src]="photoDataUrl()!" alt="Photo expert" class="avatar-photo" />
+                <img [src]="photoDataUrl()!" alt="Expert photo" class="avatar-photo" />
               } @else {
                 {{ getInitials() }}
               }
             </div>
-            <p class="avatar-name">{{ expert.firstName || 'Prenom' }} {{ expert.lastName || 'Nom' }}</p>
+            <p class="avatar-name">{{ expert.firstName || 'First name' }} {{ expert.lastName || 'Last name' }}</p>
             <p class="avatar-email">{{ expert.email || 'email@salama.tn' }}</p>
 
             <div class="photo-actions">
-              <label class="btn-photo" for="expert-photo-file">Ajouter photo</label>
+              <label class="btn-photo" for="expert-photo-file">Add photo</label>
               <input id="expert-photo-file" type="file" accept="image/*" (change)="onPhotoFileSelected($event)" hidden />
-              <button type="button" class="btn-photo btn-photo-camera" (click)="openCamera()">Camera PC</button>
+              <button type="button" class="btn-photo btn-photo-camera" (click)="openCamera()">PC camera</button>
               @if (photoDataUrl()) {
-                <button type="button" class="btn-photo btn-photo-clear" (click)="clearPhoto()">Supprimer</button>
+                <button type="button" class="btn-photo btn-photo-clear" (click)="clearPhoto()">Remove</button>
               }
             </div>
 
             @if (cameraOpen()) {
               <div class="camera-panel">
                 @if (cameraLoading()) {
-                  <p class="camera-hint">Ouverture de la camera...</p>
+                  <p class="camera-hint">Opening camera...</p>
                 } @else {
                   <div class="camera-video-wrap">
                     <video #cameraVideo class="camera-video" autoplay playsinline muted></video>
@@ -55,7 +55,7 @@
                 @if (similarityPercent() !== null) {
                   <div class="face-result" [class.face-result--bad]="isMatch() === false">
                     <div class="face-result__head">
-                      <span>{{ isMatch() === false ? 'Identite non verifiee' : 'Identite verifiee' }}</span>
+                      <span>{{ isMatch() === false ? 'Identity not verified' : 'Identity verified' }}</span>
                       <strong>{{ similarityPercent() }}%</strong>
                     </div>
                     <div class="face-result__bar">
@@ -64,14 +64,14 @@
                   </div>
                 }
                 @if (faceIdentity()) {
-                  <p class="face-id">Identifiant visage : {{ faceIdentity() }}</p>
+                  <p class="face-id">Face ID: {{ faceIdentity() }}</p>
                 }
                 @if (faceError()) {
                   <p class="camera-hint camera-hint--error">{{ faceError() }}</p>
                 }
                 <div class="camera-actions">
-                  <button type="button" class="btn-photo btn-photo-camera" (click)="capturePhoto()" [disabled]="cameraLoading()">Capturer</button>
-                  <button type="button" class="btn-photo btn-photo-clear" (click)="closeCamera()">Fermer</button>
+                  <button type="button" class="btn-photo btn-photo-camera" (click)="capturePhoto()" [disabled]="cameraLoading()">Capture</button>
+                  <button type="button" class="btn-photo btn-photo-clear" (click)="closeCamera()">Close</button>
                 </div>
               </div>
             }
@@ -79,7 +79,7 @@
 
           <div class="left-info-block">
             <div class="info-item">
-              <span class="info-label">Statut</span>
+              <span class="info-label">Status</span>
               <span class="info-badge" [class.badge-active]="expert.status === 'ACTIVE'" [class.badge-inactive]="expert.status !== 'ACTIVE'">
                 {{ expert.status || 'N/A' }}
               </span>
@@ -90,11 +90,11 @@
             </div>
             <div class="info-item">
               <span class="info-label">Experience</span>
-              <span class="info-value">{{ expert.yearsOfExperience != null ? expert.yearsOfExperience + ' ans' : '—' }}</span>
+              <span class="info-value">{{ expert.yearsOfExperience != null ? expert.yearsOfExperience + ' years' : '—' }}</span>
             </div>
             <div class="info-item">
-              <span class="info-label">Disponible</span>
-              <span class="info-value">{{ expert.available ? 'Oui' : 'Non' }}</span>
+              <span class="info-label">Available</span>
+              <span class="info-value">{{ expert.available ? 'Yes' : 'No' }}</span>
             </div>
           </div>
         </div>
@@ -102,36 +102,36 @@
         <div class="col-divider"></div>
 
         <div class="col-center">
-          <h3 class="col-title">Profile Settings</h3>
+          <h3 class="col-title">Profile settings</h3>
 
           <div class="form-row">
             <div class="field">
-              <label for="firstName">Prenom <span class="req">*</span></label>
+              <label for="firstName">First name <span class="req">*</span></label>
               <input id="firstName" type="text" [(ngModel)]="expert.firstName" name="firstName" required />
             </div>
             <div class="field">
-              <label for="lastName">Nom <span class="req">*</span></label>
+              <label for="lastName">Last name <span class="req">*</span></label>
               <input id="lastName" type="text" [(ngModel)]="expert.lastName" name="lastName" required />
             </div>
           </div>
 
           <div class="field">
-            <label for="phone">Numero de Telephone</label>
+            <label for="phone">Phone number</label>
             <input id="phone" type="text" [(ngModel)]="expert.phone" name="phone" />
           </div>
 
           <div class="field">
-            <label for="address">Adresse</label>
+            <label for="address">Address</label>
             <input id="address" type="text" [(ngModel)]="expert.address" name="address" />
           </div>
 
           <div class="form-row">
             <div class="field">
-              <label for="city">Ville</label>
+              <label for="city">City</label>
               <input id="city" type="text" [(ngModel)]="expert.city" name="city" />
             </div>
             <div class="field">
-              <label for="postalCode">Code Postal</label>
+              <label for="postalCode">Postal code</label>
               <input id="postalCode" type="text" [(ngModel)]="expert.postalCode" name="postalCode" />
             </div>
           </div>
@@ -142,22 +142,22 @@
           </div>
 
           <div class="field">
-            <label for="specialty">Specialite</label>
+            <label for="specialty">Specialty</label>
             <input id="specialty" type="text" [(ngModel)]="expert.specialty" name="specialty" />
           </div>
 
           <div class="form-row">
             <div class="field">
-              <label for="interventionZone">Zone d'Intervention</label>
+              <label for="interventionZone">Intervention zone</label>
               <select id="interventionZone" [(ngModel)]="expert.interventionZone" name="interventionZone">
-                <option [ngValue]="undefined">-- zone --</option>
+                <option [ngValue]="undefined">— Zone —</option>
                 @for (zone of interventionZones; track zone) {
                   <option [value]="zone">{{ zone }}</option>
                 }
               </select>
             </div>
             <div class="field">
-              <label for="yearsOfExperience">Annees d'Experience</label>
+              <label for="yearsOfExperience">Years of experience</label>
               <input id="yearsOfExperience" type="number" [(ngModel)]="expert.yearsOfExperience" name="yearsOfExperience" min="0" />
             </div>
           </div>
@@ -168,7 +168,7 @@
               <input id="fax" type="text" [(ngModel)]="expert.fax" name="fax" />
             </div>
             <div class="field">
-              <label for="registrationDate">Date d'Inscription</label>
+              <label for="registrationDate">Registration date</label>
               <input id="registrationDate" type="date" [(ngModel)]="expert.registrationDate" name="registrationDate" />
             </div>
           </div>
@@ -179,12 +179,12 @@
         <div class="col-right">
           <div class="right-section">
             <div class="right-section-header">
-              <h4>Statut & Disponibilite</h4>
-              <span class="right-tag">Statut</span>
+              <h4>Status &amp; availability</h4>
+              <span class="right-tag">Status</span>
             </div>
 
             <div class="field">
-              <label for="status">Statut</label>
+              <label for="status">Status</label>
               <select id="status" [(ngModel)]="expert.status" name="status">
                 @for (s of expertStatuses; track s) {
                   <option [value]="s">{{ s }}</option>
@@ -193,13 +193,13 @@
             </div>
 
             <div class="field">
-              <label>Disponible</label>
+              <label>Available</label>
               <div class="toggle-row">
                 <label class="toggle" for="available">
-                  <input id="available" type="checkbox" [(ngModel)]="expert.available" name="available"/>
+                  <input id="available" type="checkbox" [(ngModel)]="expert.available" name="available" />
                   <span class="toggle-slider"></span>
                 </label>
-                <span class="toggle-label">{{ expert.available ? 'Oui' : 'Non' }}</span>
+                <span class="toggle-label">{{ expert.available ? 'Yes' : 'No' }}</span>
               </div>
             </div>
           </div>
@@ -207,29 +207,29 @@
           <div class="right-section">
             <div class="right-section-header">
               <h4>Performance</h4>
-              <span class="right-tag">Metriques</span>
+              <span class="right-tag">Metrics</span>
             </div>
 
             <div class="field">
               <label for="performanceScore">Score ({{ expert.performanceScore }}%)</label>
-              <input id="performanceScore" type="range" [(ngModel)]="expert.performanceScore" name="performanceScore" min="0" max="100" class="slider-field"/>
+              <input id="performanceScore" type="range" [(ngModel)]="expert.performanceScore" name="performanceScore" min="0" max="100" class="slider-field" />
               <div class="score-track">
                 <div class="score-fill" [style.width.%]="expert.performanceScore || 0"></div>
               </div>
             </div>
 
             <div class="field">
-              <label for="maxWorkload">Charge Max.</label>
+              <label for="maxWorkload">Max load</label>
               <input id="maxWorkload" type="number" [(ngModel)]="expert.maxWorkload" name="maxWorkload" min="0" />
             </div>
 
             <div class="field">
-              <label for="currentWorkload">Charge Actuelle</label>
+              <label for="currentWorkload">Current load</label>
               <input id="currentWorkload" type="number" [(ngModel)]="expert.currentWorkload" name="currentWorkload" min="0" />
             </div>
 
             <div class="field">
-              <label for="validationRate">Taux Validation (%)</label>
+              <label for="validationRate">Validation rate (%)</label>
               <input id="validationRate" type="number" [(ngModel)]="expert.validationRate" name="validationRate" min="0" max="100" step="0.1" />
             </div>
           </div>
@@ -237,9 +237,9 @@
       </div>
 
       <div class="form-footer">
-        <button type="button" id="btn-cancel" class="btn-cancel" (click)="onCancel()">Annuler</button>
+        <button type="button" id="btn-cancel" class="btn-cancel" (click)="onCancel()">Cancel</button>
         <button type="submit" id="btn-submit" class="btn-save" [disabled]="expertForm.invalid || submitLoading()">
-          {{ submitLoading() ? 'Enregistrement...' : 'Save Profile' }}
+          {{ submitLoading() ? 'Saving...' : 'Save profile' }}
         </button>
       </div>
     </form>

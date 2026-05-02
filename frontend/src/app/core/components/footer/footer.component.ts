@@ -9,12 +9,12 @@ import { CommonModule } from '@angular/common';
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-left">
-          <p>&copy; 2026 Salama Insurance. Tous droits réservés.</p>
+          <p>&copy; 2026 Salama Insurance. All rights reserved.</p>
         </div>
         <div class="footer-right">
-          <a href="#">À propos</a>
+          <a href="#">About</a>
           <a href="#">Contact</a>
-          <a href="#">Mentions légales</a>
+          <a href="#">Legal notice</a>
           <a href="#">Support</a>
         </div>
       </div>
