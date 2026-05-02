@@ -1,5 +1,6 @@
 package org.example.salamainsurance.Controller.Fraud;
 
+import lombok.RequiredArgsConstructor;
 import org.example.salamainsurance.DTO.FraudAnalysisDTO;
 import org.example.salamainsurance.Entity.Fraud.FraudAnalysis;
 import org.example.salamainsurance.Entity.Fraud.RiskLevel;
@@ -18,6 +19,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/fraud")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class FraudController {
 
   @Autowired
@@ -25,6 +28,10 @@ public class FraudController {
 
   @Autowired
   private FraudAnalysisRepository fraudAnalysisRepository;
+
+  // ============================================================
+  // ANALYSE FRAUDE
+  // ============================================================
 
   @PostMapping("/analyze/{claimId}")
   public ResponseEntity<?> analyzeClaim(@PathVariable Long claimId) {
@@ -38,23 +45,74 @@ public class FraudController {
     }
   }
 
-  @GetMapping("/analysis/{id}")
-  public ResponseEntity<?> getAnalysis(@PathVariable Long id) {
-    return fraudAnalysisRepository.findById(id)
-      .map(analysis -> {
-        FraudAnalysisDTO dto = new FraudAnalysisDTO();
-        dto.setId(analysis.getId());
-        dto.setClaimId(analysis.getClaim().getId());
-        dto.setClaimReference(analysis.getClaim().getReference());
-        dto.setAnalysisDate(analysis.getAnalysisDate());
-        dto.setFraudScore(analysis.getFraudScore());
-        dto.setRiskLevel(analysis.getRiskLevel());
-        dto.setTriggeredRules(analysis.getTriggeredRules());
-        dto.setRecommendation(analysis.getRecommendation());
-        return ResponseEntity.ok(dto);
-      })
-      .orElse(ResponseEntity.notFound().build());
+  @PostMapping("/analyze-with-alert/{claimId}")
+  public ResponseEntity<?> analyzeWithAlert(@PathVariable Long claimId) {
+    try {
+      FraudAnalysis analysis = fraudDetectionService.analyzeClaimWithAlert(claimId);
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("analysis", analysis);
+      response.put("alertSent", true);
+      response.put("message", "Analyse terminée avec alertes envoyées");
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      Map<String, String> error = new HashMap<>();
+      error.put("error", e.getMessage());
+      return ResponseEntity.badRequest().body(error);
+    }
   }
+
+  // ============================================================
+  // RECHERCHE PAR ID
+  // ============================================================
+
+  @GetMapping("/analysis/{id}")
+  public ResponseEntity<?> getFraudAnalysisByClaimId(@PathVariable Long id) {
+    try {
+      // Chercher l'analyse par ID de sinistre
+      FraudAnalysis analysis = fraudAnalysisRepository.findByClaimId(id);
+      if (analysis == null) {
+        // Si aucune analyse n'existe, en créer une
+        analysis = fraudDetectionService.analyzeClaimWithAlert(id);
+      }
+      return ResponseEntity.ok(analysis);
+    } catch (Exception e) {
+      Map<String, String> error = new HashMap<>();
+      error.put("error", e.getMessage());
+      return ResponseEntity.status(500).body(error);
+    }
+  }
+
+
+
+  // ============================================================
+  // NOUVEAU - Récupérer par claimId (pour frontend client)
+  // ============================================================
+
+  @GetMapping("/analysis/by-claim/{claimId}")
+  public ResponseEntity<?> getAnalysisByClaimId(@PathVariable Long claimId) {
+    FraudAnalysis analysis = fraudAnalysisRepository.findByClaimId(claimId);
+    if (analysis == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    FraudAnalysisDTO dto = new FraudAnalysisDTO();
+    dto.setId(analysis.getId());
+    dto.setClaimId(analysis.getClaim().getId());
+    dto.setClaimReference(analysis.getClaim().getReference());
+    dto.setAnalysisDate(analysis.getAnalysisDate());
+    dto.setFraudScore(analysis.getFraudScore());
+    dto.setRiskLevel(analysis.getRiskLevel());
+    dto.setTriggeredRules(analysis.getTriggeredRules());
+    dto.setRecommendation(analysis.getRecommendation());
+
+    return ResponseEntity.ok(dto);
+  }
+
+  // ============================================================
+  // LISTES
+  // ============================================================
 
   @GetMapping("/analyses")
   public ResponseEntity<List<FraudAnalysis>> getAllAnalyses() {
@@ -72,25 +130,25 @@ public class FraudController {
     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
     return ResponseEntity.ok(fraudAnalysisRepository.findByAnalysisDateBetween(start, end));
   }
-  //DASHBOARD - STATISTIC
+
+  // ============================================================
+  // DASHBOARD STATISTICS
+  // ============================================================
+
   @GetMapping("/dashboard")
   public ResponseEntity<Map<String, Object>> getDashboard() {
     Map<String, Object> dashboard = new HashMap<>();
 
-    // Statistiques générales
     long totalAnalyses = fraudAnalysisRepository.count();
     dashboard.put("totalAnalyses", totalAnalyses);
 
-    // Répartition par niveau de risque
     dashboard.put("highRisk", fraudAnalysisRepository.countByRiskLevel(RiskLevel.HIGH));
     dashboard.put("mediumRisk", fraudAnalysisRepository.countByRiskLevel(RiskLevel.MEDIUM));
     dashboard.put("lowRisk", fraudAnalysisRepository.countByRiskLevel(RiskLevel.LOW));
 
-    // Score moyen
     Double avgScore = fraudAnalysisRepository.averageFraudScore();
     dashboard.put("averageScore", avgScore != null ? Math.round(avgScore * 10) / 10.0 : 0);
 
-    // Dernières analyses (top 5)
     List<FraudAnalysis> latestAnalyses = fraudAnalysisRepository.findTop5ByOrderByAnalysisDateDesc();
     List<Map<String, Object>> latestList = new ArrayList<>();
 
@@ -106,11 +164,9 @@ public class FraudController {
     }
     dashboard.put("latestAnalyses", latestList);
 
-    // Sinistres à haut risque (score > 60)
     List<FraudAnalysis> highRiskAnalyses = fraudAnalysisRepository.findByRiskLevel(RiskLevel.HIGH);
     dashboard.put("highRiskCount", highRiskAnalyses.size());
 
-    // Répartition des règles les plus déclenchées
     Map<String, Integer> topRules = getTopTriggeredRules();
     dashboard.put("topRules", topRules);
 
@@ -127,7 +183,10 @@ public class FraudController {
     return ruleCount;
   }
 
-  // ✅ NOUVEAU - Endpoint de test simple
+  // ============================================================
+  // TEST
+  // ============================================================
+
   @GetMapping("/test-simple/{id}")
   public ResponseEntity<String> testSimple(@PathVariable Long id) {
     try {
@@ -136,28 +195,6 @@ public class FraudController {
         .orElse(ResponseEntity.notFound().build());
     } catch (Exception e) {
       return ResponseEntity.status(500).body("Erreur: " + e.getMessage());
-    }
-  }
-
-  // notifications
-  // Dans FraudController.java
-
-  @PostMapping("/analyze-with-alert/{claimId}")
-  public ResponseEntity<?> analyzeWithAlert(@PathVariable Long claimId) {
-    try {
-      FraudAnalysis analysis = fraudDetectionService.analyzeClaimWithAlert(claimId);
-
-      Map<String, Object> response = new HashMap<>();
-      response.put("analysis", analysis);
-      response.put("alertSent", true);
-      response.put("message", "Analyse terminée avec alertes envoyées");
-
-      return ResponseEntity.ok(response);
-
-    } catch (Exception e) {
-      Map<String, String> error = new HashMap<>();
-      error.put("error", e.getMessage());
-      return ResponseEntity.badRequest().body(error);
     }
   }
 
@@ -185,5 +222,4 @@ public class FraudController {
 
     return ResponseEntity.ok(config);
   }
-
 }

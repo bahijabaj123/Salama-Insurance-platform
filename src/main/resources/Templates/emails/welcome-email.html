@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Bienvenue - Salama Insurance</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; background: #f4f6f9; }
+    .header { background: linear-gradient(135deg, #185FA5 0%, #0e3d6b 100%); color: white; padding: 30px; text-align: center; }
+    .content { padding: 30px; background: white; }
+    .credentials { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: monospace; }
+    .button { background: #185FA5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; }
+    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Bienvenue chez Salama Insurance</h1>
+  </div>
+  <div class="content">
+    <h2>Bonjour <span th:text="${clientName}">Client</span>,</h2>
+    <p>Nous sommes ravis de vous accueillir parmi nos clients.</p>
+
+    <h3>Vos accès :</h3>
+    <div class="credentials">
+      <p><strong>Email :</strong> <span th:text="${email}">email@example.com</span></p>
+      <p><strong>Mot de passe :</strong> <span th:text="${password}">password</span></p>
+    </div>
+
+    <p><strong>⚠️ Important :</strong> Nous vous recommandons de changer votre mot de passe lors de votre première connexion.</p>
+
+    <p style="margin-top: 30px; text-align: center;">
+      <a class="button" th:href="${loginLink}" target="_blank">Se connecter</a>
+    </p>
+
+    <p style="margin-top: 20px;">Pour toute assistance, contactez-nous à <strong th:text="${supportEmail}">support@salama.tn</strong></p>
+  </div>
+  <div class="footer">
+    <p>Salama Insurance - Votre assureur de confiance</p>
+    <p>&copy; <span th:text="${currentYear}">2026</span> Salama Insurance</p>
+  </div>
+</div>
+</body>
+</html>
