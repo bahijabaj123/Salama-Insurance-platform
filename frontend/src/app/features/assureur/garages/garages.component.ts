@@ -137,7 +137,7 @@ export class GaragesComponent implements OnInit, AfterViewInit, OnDestroy {
           this.applyFilter();
         },
         error: (err) => {
-          this.showError(`Chargement impossible: ${err?.error?.message || err.message}`);
+          this.showError(`Could not load: ${err?.error?.message || err.message}`);
         },
       });
   }
@@ -208,18 +208,18 @@ export class GaragesComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.showSuccess(this.selectedGarageId ? 'Garage modifié avec succès.' : 'Garage ajouté avec succès.');
+          this.showSuccess(this.selectedGarageId ? 'Garage updated successfully.' : 'Garage added successfully.');
           this.startCreate();
           this.loadGarages();
         },
         error: (err) => {
-          this.showError(`Enregistrement impossible: ${err?.error?.message || err.message}`);
+          this.showError(`Could not save: ${err?.error?.message || err.message}`);
         },
       });
   }
 
   remove(garage: Garage): void {
-    if (!confirm(`Supprimer le garage "${garage.name}" ?`)) return;
+    if (!confirm(`Delete garage "${garage.name}"?`)) return;
     this.deletingId = garage.id;
     this.garageService.delete(garage.id)
       .pipe(
@@ -228,7 +228,7 @@ export class GaragesComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.showSuccess('Garage supprimé avec succès.');
+          this.showSuccess('Garage deleted successfully.');
           this.garages = this.garages.filter((g) => g.id !== garage.id);
           this.applyFilter();
           if (this.selectedGarageId === garage.id) {
@@ -236,7 +236,7 @@ export class GaragesComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         },
         error: (err) => {
-          this.showError(`Suppression impossible: ${err?.error?.message || err.message}`);
+          this.showError(`Could not delete: ${err?.error?.message || err.message}`);
         },
       });
   }

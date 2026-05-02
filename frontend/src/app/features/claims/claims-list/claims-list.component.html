@@ -12,9 +12,9 @@
   <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
   <div class="page-header">
     <div>
-      <h1 class="page-title">Gestion des Sinistres</h1>
+      <h1 class="page-title">Claims management</h1>
       <p class="page-sub">
-        {{ filteredClaims.length }} sinistre{{ filteredClaims.length !== 1 ? 's' : '' }}
+        {{ filteredClaims.length }} claim{{ filteredClaims.length !== 1 ? 's' : '' }}
         <span *ngIf="activeStatus !== 'ALL'"> · {{ STATUS_LABELS[activeStatus] }}</span>
         <span *ngIf="activeRegion"> · {{ activeRegion }}</span>
       </p>
@@ -23,24 +23,23 @@
       <button mat-stroked-button color="warn"
               *ngIf="selectedIds.size > 0"
               (click)="deleteBatch()">
-        <mat-icon>delete_sweep</mat-icon> Supprimer ({{ selectedIds.size }})
+        <mat-icon>delete_sweep</mat-icon> Delete ({{ selectedIds.size }})
       </button>
       <button mat-stroked-button (click)="loadClaims()">
         <mat-icon>refresh</mat-icon>
       </button>
       <button mat-flat-button color="primary" (click)="openCreateModal()">
-        <mat-icon>add</mat-icon> Nouveau sinistre
+        <mat-icon>add</mat-icon> New claim
       </button>
     </div>
   </div>
 
-  <!-- ── FILTRES ────────────────────────────────────────────────────────── -->
-  <!-- Après la barre de recherche, avant les chips statuts -->
+  <!-- ── FILTERS ────────────────────────────────────────────────────────── -->
 <div class="filters-bar">
   <div class="search-wrap">
     <mat-icon class="search-icon">search</mat-icon>
     <input class="search-input"
-           placeholder="Référence, région, expert…"
+           placeholder="Reference, region, expert…"
            [(ngModel)]="searchQuery"
            (input)="applyFilters()">
     <button *ngIf="searchQuery" class="clear-btn" (click)="searchQuery=''; applyFilters()">
@@ -49,27 +48,25 @@
   </div>
 
   <mat-form-field appearance="outline" class="region-field">
-    <mat-label>Région</mat-label>
+    <mat-label>Region</mat-label>
     <mat-select [(value)]="activeRegion" (selectionChange)="setRegionFilter($event.value)">
-      <mat-option value="">Toutes</mat-option>
+      <mat-option value="">All</mat-option>
       <mat-option *ngFor="let r of regions" [value]="r">{{ r }}</mat-option>
     </mat-select>
   </mat-form-field>
 
-  <!-- BOUTON FILTRES AVANCÉS -->
   <button mat-stroked-button (click)="showAdvancedFilters = !showAdvancedFilters" class="advanced-filter-btn">
     <mat-icon>tune</mat-icon>
-    Filtres avancés
+    Advanced filters
     <mat-icon *ngIf="!showAdvancedFilters">expand_more</mat-icon>
     <mat-icon *ngIf="showAdvancedFilters">expand_less</mat-icon>
   </button>
 </div>
 
-<!-- FILTRES AVANCÉS -->
 <div class="advanced-filters" *ngIf="showAdvancedFilters">
   <div class="filter-row">
     <div class="filter-group">
-      <label>Score d'urgence</label>
+      <label>Urgency score</label>
       <div class="range-inputs">
         <input type="number" placeholder="Min" [(ngModel)]="filters.urgencyMin" (change)="applyFilters()" class="filter-input">
         <span>-</span>
@@ -78,7 +75,7 @@
     </div>
 
     <div class="filter-group">
-      <label>Période</label>
+      <label>Period</label>
       <div class="range-inputs">
         <input type="date" [(ngModel)]="filters.dateDebut" (change)="applyFilters()" class="filter-input">
         <span>-</span>
@@ -87,12 +84,12 @@
     </div>
 
     <button mat-button color="warn" (click)="resetAdvancedFilters()" class="reset-btn">
-      <mat-icon>clear</mat-icon> Réinitialiser
+      <mat-icon>clear</mat-icon> Reset
     </button>
   </div>
 </div>
 
-  <!-- Chips statuts -->
+  <!-- Status chips -->
   <div class="status-chips">
     <button *ngFor="let f of STATUS_FILTERS"
             class="chip" [class.active]="activeStatus === f.key"
@@ -102,27 +99,23 @@
     </button>
   </div>
 
-  <!-- ── LOADING ────────────────────────────────────────────────────────── -->
   <div class="center-state" *ngIf="loading">
     <mat-spinner diameter="40"></mat-spinner>
-    <p>Chargement…</p>
+    <p>Loading…</p>
   </div>
 
-  <!-- ── ERREUR ─────────────────────────────────────────────────────────── -->
   <div class="center-state error-state" *ngIf="!loading && error && !claims.length">
     <mat-icon>wifi_off</mat-icon>
     <p>{{ error }}</p>
-    <button mat-stroked-button (click)="loadClaims()">Réessayer</button>
+    <button mat-stroked-button (click)="loadClaims()">Retry</button>
   </div>
 
-  <!-- ── VIDE ───────────────────────────────────────────────────────────── -->
   <div class="center-state" *ngIf="!loading && !error && filteredClaims.length === 0">
     <mat-icon>inbox</mat-icon>
-    <p>Aucun sinistre trouvé</p>
-    <button mat-stroked-button (click)="resetFilters()">Réinitialiser les filtres</button>
+    <p>No claims found</p>
+    <button mat-stroked-button (click)="resetFilters()">Reset filters</button>
   </div>
 
-  <!-- ── TABLE ──────────────────────────────────────────────────────────── -->
   <div class="table-wrap" *ngIf="!loading && filteredClaims.length > 0">
     <table class="claims-table">
       <thead>
@@ -133,12 +126,12 @@
                           (change)="toggleAll($event.checked)">
             </mat-checkbox>
           </th>
-          <th>Référence</th>
-          <th>Statut</th>
-          <th>Région</th>
+          <th>Reference</th>
+          <th>Status</th>
+          <th>Region</th>
           <th>Expert</th>
-          <th>Urgence</th>
-          <th>Date ouverture</th>
+          <th>Urgency</th>
+          <th>Opened on</th>
           <th class="col-actions">Actions</th>
         </tr>
       </thead>
@@ -196,26 +189,26 @@
           <td class="text-muted">{{ c.openingDate | date:'dd/MM/yyyy' }}</td>
 
           <td class="col-actions" (click)="$event.stopPropagation()">
-            <button mat-icon-button matTooltip="Voir le détail" (click)="goToDetail(c.id)">
+            <button mat-icon-button matTooltip="View details" (click)="goToDetail(c.id)">
               <mat-icon>visibility</mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Modifier" (click)="openEditModal(c, $event)">
+            <button mat-icon-button matTooltip="Edit" (click)="openEditModal(c, $event)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Assigner un expert"
+            <button mat-icon-button matTooltip="Assign expert"
                     *ngIf="canAssign(c)"
                     (click)="openAssignModal(c, $event)">
               <mat-icon>person_add</mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Assigner un garage (carte)"
+            <button mat-icon-button matTooltip="Assign garage (map)"
                     (click)="goAssignGarage(c.id, $event)">
               <mat-icon>directions_car</mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Télécharger PDF"
+            <button mat-icon-button matTooltip="Download PDF"
                     (click)="claimService.downloadPdf(c.id)">
               <mat-icon>picture_as_pdf</mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Supprimer" color="warn"
+            <button mat-icon-button matTooltip="Delete" color="warn"
                     (click)="openDeleteModal(c, $event)"
                     [disabled]="deletingId === c.id">
               <mat-spinner *ngIf="deletingId === c.id" diameter="16"></mat-spinner>
@@ -226,7 +219,6 @@
       </tbody>
     </table>
 
-    <!-- Pagination -->
     <div class="pagination" *ngIf="totalPages > 1">
       <button mat-icon-button [disabled]="currentPage === 0"
               (click)="currentPage = currentPage - 1">
@@ -240,63 +232,59 @@
               (click)="currentPage = currentPage + 1">
         <mat-icon>chevron_right</mat-icon>
       </button>
-      <span class="page-info">{{ filteredClaims.length }} résultats</span>
+      <span class="page-info">{{ filteredClaims.length }} results</span>
     </div>
   </div>
 
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- MODAL : CRÉER un sinistre                                               -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- Create claim modal -->
 <div class="modal-overlay" *ngIf="showCreateModal" (click)="showCreateModal = false">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Créer un sinistre</h2>
+      <h2>Create claim</h2>
       <button mat-icon-button (click)="showCreateModal = false"><mat-icon>close</mat-icon></button>
     </div>
 
     <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="modal-body">
       <p class="modal-hint">
-        Le sinistre est créé automatiquement à partir d'un accident existant.
-        Saisissez l'ID de l'accident enregistré dans la base.
+        The claim is created from an existing accident record.
+        Enter the accident ID stored in the database.
       </p>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>ID de l'accident *</mat-label>
-        <input matInput type="number" formControlName="accidentId" placeholder="ex: 42">
+        <mat-label>Accident ID *</mat-label>
+        <input matInput type="number" formControlName="accidentId" placeholder="e.g. 42">
         <mat-error *ngIf="createForm.get('accidentId')?.hasError('required')">
-          Champ obligatoire
+          Required field
         </mat-error>
         <mat-error *ngIf="createForm.get('accidentId')?.hasError('min')">
-          L'ID doit être supérieur à 0
+          ID must be greater than 0
         </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>ID de l'assureur</mat-label>
+        <mat-label>Insurer ID</mat-label>
         <input matInput type="number" formControlName="insurerId">
       </mat-form-field>
 
       <div class="modal-footer">
-        <button mat-button type="button" (click)="showCreateModal = false">Annuler</button>
+        <button mat-button type="button" (click)="showCreateModal = false">Cancel</button>
         <button mat-flat-button color="primary" type="submit" [disabled]="saving">
           <mat-spinner *ngIf="saving" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
-          {{ saving ? 'Création…' : 'Créer le sinistre' }}
+          {{ saving ? 'Creating…' : 'Create claim' }}
         </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- MODAL : MODIFIER un sinistre                                            -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- Edit claim modal -->
 <div class="modal-overlay" *ngIf="showEditModal" (click)="showEditModal = false">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div>
-        <h2>Modifier le sinistre</h2>
+        <h2>Edit claim</h2>
         <span class="modal-ref" *ngIf="claimToEdit">{{ claimToEdit.reference }}</span>
       </div>
       <button mat-icon-button (click)="showEditModal = false"><mat-icon>close</mat-icon></button>
@@ -305,13 +293,13 @@
     <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="modal-body">
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Région *</mat-label>
-        <input matInput formControlName="region" placeholder="ex: Tunis">
-        <mat-error *ngIf="editForm.get('region')?.hasError('required')">Champ obligatoire</mat-error>
+        <mat-label>Region *</mat-label>
+        <input matInput formControlName="region" placeholder="e.g. Tunis">
+        <mat-error *ngIf="editForm.get('region')?.hasError('required')">Required field</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Statut *</mat-label>
+        <mat-label>Status *</mat-label>
         <mat-select formControlName="status">
           <mat-option *ngFor="let s of ALL_STATUSES" [value]="s">
             {{ STATUS_LABELS[s] }}
@@ -320,10 +308,10 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Score d'urgence (0–100)</mat-label>
+        <mat-label>Urgency score (0–100)</mat-label>
         <input matInput type="number" formControlName="urgencyScore" placeholder="0 – 100">
         <mat-error *ngIf="editForm.get('urgencyScore')?.hasError('min') || editForm.get('urgencyScore')?.hasError('max')">
-          Entre 0 et 100
+          Between 0 and 100
         </mat-error>
       </mat-form-field>
 
@@ -333,75 +321,69 @@
       </mat-form-field>
 
       <div class="modal-footer">
-        <button mat-button type="button" (click)="showEditModal = false">Annuler</button>
+        <button mat-button type="button" (click)="showEditModal = false">Cancel</button>
         <button mat-flat-button color="primary" type="submit" [disabled]="saving">
           <mat-spinner *ngIf="saving" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
-          {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+          {{ saving ? 'Saving…' : 'Save' }}
         </button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- MODAL : SUPPRIMER                                                       -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- Delete modal -->
 <div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal = false">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Supprimer le sinistre</h2>
+      <h2>Delete claim</h2>
       <button mat-icon-button (click)="showDeleteModal = false"><mat-icon>close</mat-icon></button>
     </div>
     <div class="modal-body">
       <div class="delete-warning">
         <mat-icon>warning</mat-icon>
         <p>
-          Êtes-vous sûr de vouloir supprimer le sinistre
-          <strong>{{ claimToDelete?.reference }}</strong> ?
-          <br>Cette action est irréversible.
+          Are you sure you want to delete claim
+          <strong>{{ claimToDelete?.reference }}</strong>?
+          <br>This cannot be undone.
         </p>
       </div>
     </div>
     <div class="modal-footer">
-      <button mat-button (click)="showDeleteModal = false">Annuler</button>
+      <button mat-button (click)="showDeleteModal = false">Cancel</button>
       <button mat-flat-button color="warn" (click)="confirmDelete()" [disabled]="deletingId != null">
         <mat-spinner *ngIf="deletingId != null" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
-        Supprimer
+        Delete
       </button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- MODAL : ASSIGNER un expert                                              -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- Assign expert modal -->
 <div class="modal-overlay" *ngIf="showAssignModal" (click)="showAssignModal = false">
   <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <div>
-        <h2>Assigner un expert</h2>
+        <h2>Assign expert</h2>
         <span class="modal-ref" *ngIf="claimToAssign">{{ claimToAssign.reference }}</span>
       </div>
       <button mat-icon-button (click)="showAssignModal = false"><mat-icon>close</mat-icon></button>
     </div>
 
     <div class="modal-body">
-      <!-- Auto-assigner -->
       <div class="auto-assign-row">
         <div>
-          <div class="auto-title">Assignation automatique (IA)</div>
-          <div class="auto-sub">Sélectionne le meilleur expert selon région, charge et performance</div>
+          <div class="auto-title">Automatic assignment (AI)</div>
+          <div class="auto-sub">Picks the best expert by region, workload, and performance</div>
         </div>
         <button mat-stroked-button color="primary"
                 [disabled]="assigningId != null"
                 (click)="claimToAssign && autoAssign(claimToAssign, $event); showAssignModal = false">
-          <mat-icon>auto_fix_high</mat-icon> Auto-assigner
+          <mat-icon>auto_fix_high</mat-icon> Auto-assign
         </button>
       </div>
 
-      <div class="assign-divider"><span>ou choisir manuellement</span></div>
+      <div class="assign-divider"><span>or choose manually</span></div>
 
-    <!-- Liste experts -->
 <div class="experts-grid">
   <div *ngFor="let e of availableExperts"
        class="expert-card"
@@ -419,63 +401,59 @@
           <mat-icon>star</mat-icon>{{ e.performanceScore }}
         </span>
         <span>
-          <mat-icon>work</mat-icon>{{ e.activeClaims }} en cours
+          <mat-icon>work</mat-icon>{{ e.activeClaims }} active
         </span>
       </div>
     </div>
   </div>
   <div class="experts-empty" *ngIf="availableExperts.length === 0">
     <mat-icon>person_off</mat-icon>
-    <p>Aucun expert disponible</p>
+    <p>No experts available</p>
   </div>
 </div>
 
-<!-- Filtre avancé (toggle) -->
-<!-- Bouton pour afficher les filtres avancés -->
 <button mat-button (click)="showAdvancedFilters = !showAdvancedFilters">
-  <mat-icon>tune</mat-icon> Filtres avancés
+  <mat-icon>tune</mat-icon> Advanced filters
   <mat-icon *ngIf="showAdvancedFilters">expand_less</mat-icon>
   <mat-icon *ngIf="!showAdvancedFilters">expand_more</mat-icon>
 </button>
 
-<!-- Filtres avancés -->
 <div class="advanced-filters" *ngIf="showAdvancedFilters">
   <div class="filter-row">
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Urgence min</mat-label>
+      <mat-label>Min urgency</mat-label>
       <input matInput type="number" [(ngModel)]="filters.urgencyMin" (change)="applyFilters()" min="0" max="100">
     </mat-form-field>
     
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Urgence max</mat-label>
+      <mat-label>Max urgency</mat-label>
       <input matInput type="number" [(ngModel)]="filters.urgencyMax" (change)="applyFilters()" min="0" max="100">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Date début</mat-label>
+      <mat-label>Start date</mat-label>
       <input matInput type="date" [(ngModel)]="filters.dateDebut" (change)="applyFilters()">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Date fin</mat-label>
+      <mat-label>End date</mat-label>
       <input matInput type="date" [(ngModel)]="filters.dateFin" (change)="applyFilters()">
     </mat-form-field>
 
     <button mat-stroked-button (click)="resetAdvancedFilters()" class="reset-btn">
-      <mat-icon>clear</mat-icon> Réinitialiser
+      <mat-icon>clear</mat-icon> Reset
     </button>
   </div>
 </div>
 
     <div class="modal-footer">
-      <button mat-button (click)="showAssignModal = false">Annuler</button>
+      <button mat-button (click)="showAssignModal = false">Cancel</button>
       <button mat-flat-button color="primary"
               [disabled]="!selectedExpertId || assigningId != null"
               (click)="confirmAssign()">
         <mat-spinner *ngIf="assigningId != null" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
-        Confirmer l'assignation
+        Confirm assignment
       </button>
     </div>
   </div>
 </div>
-

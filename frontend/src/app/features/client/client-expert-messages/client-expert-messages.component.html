@@ -4,23 +4,22 @@
       @if (!embedded()) {
         <button type="button" class="cem-back" (click)="goBack()">
           <mat-icon aria-hidden="true">arrow_back</mat-icon>
-          Retour
+          Back
         </button>
       }
-      <h1 class="cem-title">Messages avec votre expert</h1>
+      <h1 class="cem-title">Messages with your expert</h1>
       <p class="cem-sub">
         @if (embedded()) {
-          Échangez avec votre expert sur vos dossiers ; les messages sont partagés via le stockage local du navigateur
-          (démo).
+          Chat with your expert about your cases; messages are shared via the browser’s local storage (demo).
         } @else {
-          Même fil que sur le tableau de bord expert (<strong>Gestion des Experts</strong> → bloc
-          « Messages déjà envoyés par l'utilisateur ») : chaque message est partagé via le stockage local du navigateur.
+          Same thread as on the expert dashboard (<strong>Expert management</strong> →
+          “Messages already sent by the user”): each message is shared via the browser’s local storage.
         }
       </p>
     </div>
     <button type="button" class="cem-refresh" (click)="refreshAll()">
       <mat-icon aria-hidden="true">refresh</mat-icon>
-      Actualiser
+      Refresh
     </button>
   </header>
 
@@ -32,18 +31,18 @@
   }
 
   <section class="cem-card cem-card--compose">
-    <h2 class="cem-card-title">Nouveau message</h2>
+    <h2 class="cem-card-title">New message</h2>
     <p class="cem-card-hint">
-      Choisissez le sinistre concerné (ou les champs manuels si aucun sinistre n’est lié à votre compte), puis envoyez.
-      <strong>Important :</strong> les messages sont enregistrés dans le navigateur (localStorage) — pour la démo, ouvrez
-      l’espace client et la vue coordinateur <strong>sur le même navigateur</strong> pour voir le fil côté expert.
+      Pick the relevant claim (or use the manual fields if no claim is linked to your account), then send.
+      <strong>Important:</strong> messages are stored in the browser (localStorage) — for the demo, open
+      the client area and the coordinator view <strong>in the same browser</strong> to see the thread on the expert side.
     </p>
 
     @if (loadingClaims()) {
-      <p class="cem-muted">Chargement de vos dossiers…</p>
+      <p class="cem-muted">Loading your cases…</p>
     } @else if (myClaims().length > 0) {
       <div class="cem-form-row">
-        <label class="cem-label" for="cem-claim">Dossier (sinistre)</label>
+        <label class="cem-label" for="cem-claim">Case (claim)</label>
         <select id="cem-claim" class="cem-select" [(ngModel)]="selectedClaimId">
           @for (c of myClaims(); track c.id) {
             <option [ngValue]="c.id">{{ c.reference }} — {{ c.status }}</option>
@@ -52,17 +51,17 @@
       </div>
     } @else {
       <p class="cem-muted">
-        Aucun sinistre associé à votre compte pour le moment. Indiquez la référence de dossier et l’expert : la
-        conversation reste locale au navigateur (même principe que l’espace coordinateur).
+        No claim linked to your account yet. Enter the case reference and expert: the conversation stays local to the browser
+        (same idea as the coordinator space).
       </p>
       <div class="cem-form-row">
-        <label class="cem-label" for="cem-mref">Référence dossier</label>
+        <label class="cem-label" for="cem-mref">Case reference</label>
         <input
           id="cem-mref"
           type="text"
           class="cem-input"
           [(ngModel)]="manualReference"
-          placeholder="ex. RAP-2026-RMZ-001"
+          placeholder="e.g. RAP-2026-RMZ-001"
         />
       </div>
       <div class="cem-form-row">
@@ -72,7 +71,7 @@
           class="cem-input"
           [(ngModel)]="manualExpertName"
           [attr.list]="expertDatalistId"
-          placeholder="Choisir une suggestion ou saisir le nom (ex. Mohamed Salah)"
+          placeholder="Pick a suggestion or type the name (e.g. Mohamed Salah)"
           autocomplete="off"
         />
         <datalist [id]="expertDatalistId">
@@ -81,8 +80,7 @@
           }
         </datalist>
         <p class="cem-field-hint">
-          Les suggestions viennent de l’API et des messages déjà présents. Le nom doit correspondre à celui affiché côté
-          expert pour filtrer la conversation.
+          Suggestions come from the API and existing messages. The name must match what appears on the expert side to filter the thread.
         </p>
       </div>
     }
@@ -94,26 +92,26 @@
         class="cem-textarea"
         rows="4"
         [(ngModel)]="newMessageText"
-        placeholder="Ex. : Bonjour, pouvez-vous confirmer l'avancement de mon dossier ?"
+        placeholder="E.g. Hello, can you confirm progress on my case?"
       ></textarea>
     </div>
 
     <button type="button" class="cem-btn-primary" (click)="sendNewMessage()" [disabled]="loadingClaims()">
       <mat-icon aria-hidden="true">send</mat-icon>
-      Envoyer le message
+      Send message
     </button>
   </section>
 
   <section class="cem-card cem-messages-card">
     <div class="cem-messages-head">
       <div>
-        <h2 class="cem-card-title">Messages déjà envoyés</h2>
-        <p class="cem-card-hint">Même présentation que le dashboard expert : dossier, expert, fil des réponses.</p>
+        <h2 class="cem-card-title">Messages already sent</h2>
+        <p class="cem-card-hint">Same layout as the expert dashboard: case, expert, reply thread.</p>
       </div>
     </div>
 
     @if (!anchors().length) {
-      <p class="cem-empty">Aucun message pour l'instant. Envoyez un premier message ci-dessus.</p>
+      <p class="cem-empty">No messages yet. Send a first message above.</p>
     } @else {
       <ul class="cem-messages-list">
         @for (msg of anchors(); track msg.id) {
@@ -124,25 +122,25 @@
             </div>
             <p class="cem-message-text">{{ msg.message }}</p>
             <div class="cem-message-meta">
-              <span>Dossier : {{ msg.dossierReference }}</span>
-              <span>Expert : {{ msg.expertName }}</span>
+              <span>Case: {{ msg.dossierReference }}</span>
+              <span>Expert: {{ msg.expertName }}</span>
             </div>
             <div class="cem-message-reply">
               <input
                 type="text"
                 [ngModel]="getThreadDraft(msg.dossierId)"
                 (ngModelChange)="setThreadDraft(msg.dossierId, $event)"
-                placeholder="Écrire à l'expert..."
+                placeholder="Write to the expert..."
               />
               <button type="button" (click)="sendClientFollowUp(msg)" [disabled]="!getThreadDraft(msg.dossierId).trim()">
-                Envoyer
+                Send
               </button>
             </div>
             @if (expertRepliesFor(msg).length > 0) {
               <div class="cem-message-thread">
                 @for (rep of expertRepliesFor(msg); track rep.id) {
                   <p>
-                    <strong>Expert :</strong> {{ rep.message }}
+                    <strong>Expert:</strong> {{ rep.message }}
                     <span>{{ messageTimeLabel(rep.sentAt) }}</span>
                   </p>
                 }

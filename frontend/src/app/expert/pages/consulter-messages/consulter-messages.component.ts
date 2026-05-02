@@ -69,7 +69,7 @@ export class ConsulterMessagesComponent implements OnInit, OnDestroy {
   messageTimeLabel(sentAt: string): string {
     const d = new Date(sentAt);
     if (Number.isNaN(d.getTime())) return '—';
-    return d.toLocaleString('fr-FR', {
+    return d.toLocaleString('en-US', {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
@@ -99,13 +99,13 @@ export class ConsulterMessagesComponent implements OnInit, OnDestroy {
     });
 
     if (!ok) {
-      this.successMessage.set('Impossible d’enregistrer la réponse (stockage navigateur indisponible).');
+      this.successMessage.set('Could not save the reply (browser storage unavailable).');
       setTimeout(() => this.successMessage.set(''), 4000);
       return;
     }
 
     this.replyDrafts.update((d) => ({ ...d, [message.id]: '' }));
-    this.successMessage.set(`Réponse envoyée pour le dossier ${message.dossierReference}.`);
+    this.successMessage.set(`Reply sent for case ${message.dossierReference}.`);
     setTimeout(() => this.successMessage.set(''), 2200);
     this.loadUserMessages();
   }

@@ -13,6 +13,8 @@ import { ClientProfileComponent } from './client/pages/profile/client-profile.co
 import { ClientSimplePageComponent } from './client/pages/simple/client-simple-page.component';
 import { CreateExpertComponent } from './expert/pages/create-expert/create-expert.component';
 import { ExpertDashboardComponent } from './expert/pages/dashboard/expert-dashboard.component';
+import { ExpertVehicleDamageComponent } from './expert/pages/expert-vehicle-damage/expert-vehicle-damage.component';
+import { ExpertVehicleSelectionComponent } from './expert/pages/expert-vehicle-selection/expert-vehicle-selection.component';
 import { RapportExpertiseChatComponent } from './expert/pages/rapport-expertise-chat/rapport-expertise-chat.component';
 import { RapportExpertiseFormComponent } from './expert/pages/rapport-expertise-form/rapport-expertise-form.component';
 import { RapportStatistiquesDashboardComponent } from './expert/pages/rapport-statistiques-dashboard/rapport-statistiques-dashboard.component';
@@ -163,6 +165,8 @@ component: MainLayoutComponent,
   { path: 'expert/chat', component: RapportExpertiseChatComponent },
   { path: 'expert/consulter/thread/:expertKey', component: ConsulterMessagesComponent },
   { path: 'expert/consulter', component: ConsulterMessagesComponent },
+  { path: 'expert/expertise/vehicule', component: ExpertVehicleSelectionComponent },
+  { path: 'expert/expertise/vehicule/degats', component: ExpertVehicleDamageComponent },
   { path: 'expert/reports/new', component: RapportExpertiseFormComponent },
   { path: 'expert/reports/stats', component: RapportStatistiquesDashboardComponent },
 

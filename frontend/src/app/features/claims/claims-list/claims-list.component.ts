@@ -109,12 +109,12 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
   readonly ALL_STATUSES = Object.values(ClaimStatus);
 
   readonly STATUS_FILTERS = [
-    { key: 'ALL' as const, label: 'Tous' },
-    { key: ClaimStatus.OPENED, label: 'Ouverts' },
-    { key: ClaimStatus.ASSIGNED_TO_EXPERT, label: 'Assignés' },
-    { key: ClaimStatus.UNDER_EXPERTISE, label: 'En expertise' },
-    { key: ClaimStatus.CLOSED, label: 'Clôturés' },
-    { key: ClaimStatus.REJECTED, label: 'Rejetés' },
+    { key: 'ALL' as const, label: 'All' },
+    { key: ClaimStatus.OPENED, label: 'Open' },
+    { key: ClaimStatus.ASSIGNED_TO_EXPERT, label: 'Assigned' },
+    { key: ClaimStatus.UNDER_EXPERTISE, label: 'Under expertise' },
+    { key: ClaimStatus.CLOSED, label: 'Closed' },
+    { key: ClaimStatus.REJECTED, label: 'Rejected' },
   ];
 
   constructor(
@@ -133,7 +133,7 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
       if (params['region']) this.activeRegion = params['region'];
       if (params['garageOk'] === '1') {
         const ref = params['ref'] ? String(params['ref']) : '';
-        this.showSuccess(ref ? `Garage enregistré sur le sinistre ${ref}` : 'Garage enregistré sur le sinistre');
+        this.showSuccess(ref ? `Garage saved on claim ${ref}` : 'Garage saved on claim');
         void this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { garageOk: null, ref: null },
@@ -183,8 +183,8 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
       },
       error: err => {
         console.error('Erreur chargement:', err);
-        this.error = `Erreur de chargement : ${err.status === 0
-          ? 'Backend inaccessible (port 8080)'
+        this.error = `Load error: ${err.status === 0
+          ? 'Backend unreachable (port 8080)'
           : err.message}`;
       },
     });
@@ -271,13 +271,13 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: claim => {
         this.showCreateModal = false;
-        this.showSuccess(`Sinistre ${claim.reference} créé avec succès`);
+        this.showSuccess(`Claim ${claim.reference} created successfully`);
         this.loadClaims();
         
       },
       error: err => {
         console.error('Erreur création:', err);
-        this.showError(`Création impossible : ${err.error || err.message}`);
+        this.showError(`Could not create: ${err.error || err.message}`);
       },
     });
   }
@@ -313,11 +313,11 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
         if (index !== -1) this.claims[index] = updated;
         this.applyFilters();
         this.showEditModal = false;
-        this.showSuccess('Sinistre mis à jour');
+        this.showSuccess('Claim updated');
       },
       error: err => {
         console.error('Erreur mise à jour:', err);
-        this.showError(`Mise à jour impossible : ${err.error || err.message}`);
+        this.showError(`Could not update: ${err.error || err.message}`);
       },
     });
   }
@@ -343,11 +343,11 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
         this.claims = this.claims.filter(c => c.id !== this.claimToDelete!.id);
         this.applyFilters();
         this.showDeleteModal = false;
-        this.showSuccess('Sinistre supprimé');
+        this.showSuccess('Claim deleted');
       },
       error: err => {
         console.error('Erreur suppression:', err);
-        this.showError(`Suppression impossible : ${err.error || err.message}`);
+        this.showError(`Could not delete: ${err.error || err.message}`);
       },
     });
   }
@@ -356,7 +356,7 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
 
   deleteBatch(): void {
     if (!this.selectedIds.size) return;
-    if (!confirm(`Supprimer ${this.selectedIds.size} sinistre(s) ?`)) return;
+    if (!confirm(`Delete ${this.selectedIds.size} claim(s)?`)) return;
 
     this.claimService.deleteBatch([...this.selectedIds]).pipe(
       takeUntil(this.destroy$),
@@ -365,11 +365,11 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
         this.claims = this.claims.filter(c => !this.selectedIds.has(c.id));
         this.selectedIds.clear();
         this.applyFilters();
-        this.showSuccess('Sinistres supprimés');
+        this.showSuccess('Claims deleted');
       },
       error: err => {
         console.error('Erreur suppression batch:', err);
-        this.showError(`Erreur suppression : ${err.message}`);
+        this.showError(`Delete error: ${err.message}`);
       },
     });
   }
@@ -406,12 +406,12 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: () => {
         this.showAssignModal = false;
-        this.showSuccess('Expert assigné avec succès — email envoyé');
+        this.showSuccess('Expert assigned successfully — email sent');
         this.loadClaims();
       },
       error: err => {
         console.error('Erreur assignation:', err);
-        this.showError(`Assignation impossible : ${err.error || err.message}`);
+        this.showError(`Could not assign: ${err.error || err.message}`);
       },
     });
   }
@@ -433,11 +433,11 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
         const index = this.claims.findIndex(c => c.id === updated.id);
         if (index !== -1) this.claims[index] = updated;
         this.applyFilters();
-        this.showSuccess(`Expert assigné automatiquement : ${updated.expert ? expertFullName(updated.expert) : ''}`);
+        this.showSuccess(`Expert auto-assigned: ${updated.expert ? expertFullName(updated.expert) : ''}`);
       },
       error: err => {
         console.error('Erreur auto-assignation:', err);
-        this.showError(`Auto-assignation impossible : ${err.error || err.message}`);
+        this.showError(`Could not auto-assign: ${err.error || err.message}`);
       },
     });
   }
