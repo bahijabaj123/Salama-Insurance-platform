@@ -78,7 +78,7 @@ export class LogoutComponent {
     private authStorage: AuthStorageService,
     private router: Router
   ) {
-this.authStorage.clear()
+    this.authStorage.clear();
     this.router.navigate(['/login']);
   }
 }
@@ -147,7 +147,6 @@ component: MainLayoutComponent,
     { path: 'assistant', component: ClientAssistantComponent },
     { path: 'sos', component: ClientSosComponent },
     { path: 'garages', redirectTo: 'sos', pathMatch: 'full' },
-    { path: 'assistant', component: ClientAssistantComponent },
     { path: 'consultation-expert', component: ClientExpertConsultationComponent },
     { path: 'messages-expert', component: ClientExpertMessagesComponent },
     { path: 'processing-stats', component: ClientProcessingStatsComponent },
@@ -161,7 +160,6 @@ component: MainLayoutComponent,
   // ============================================================
   // ROUTES EXPERT
   // ============================================================
-  { path: 'expert/dashboard', component: ExpertDashboardComponent },
   { path: 'expert', pathMatch: 'full', redirectTo: 'expert/dashboard' },
   { path: 'expert/dashboard', component: ExpertDashboardComponent },
   { path: 'expert/create', component: CreateExpertComponent },
