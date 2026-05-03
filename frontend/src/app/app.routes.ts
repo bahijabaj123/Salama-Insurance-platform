@@ -160,6 +160,7 @@ component: MainLayoutComponent,
   // ============================================================
   // ROUTES EXPERT
   // ============================================================
+  { path: 'expert/dashboard', component: ExpertDashboardComponent },
   { path: 'expert', pathMatch: 'full', redirectTo: 'expert/dashboard' },
   { path: 'expert/dashboard', component: ExpertDashboardComponent },
   { path: 'expert/create', component: CreateExpertComponent },

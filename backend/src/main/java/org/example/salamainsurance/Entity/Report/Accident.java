@@ -87,11 +87,9 @@ public class Accident {
   @JsonIgnore
   private Claim claim;
 
-
-
-
-
-
+  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
+  private List<Damage> damages = new ArrayList<>();
 
   public List<Integer> getDamagedZones() {
     return damagedZones;
@@ -134,12 +132,6 @@ public class Accident {
   public Claim getClaim() { return claim; }
   public void setClaim(Claim claim) { this.claim = claim; }
 
-  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Damage> damages = new ArrayList<>();
-
   public List<Damage> getDamages() { return damages; }
-
   public void setDamages(List<Damage> damages) { this.damages = damages; }
-
 }
