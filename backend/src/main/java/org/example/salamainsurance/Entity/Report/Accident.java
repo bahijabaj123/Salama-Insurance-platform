@@ -1,8 +1,10 @@
 package org.example.salamainsurance.Entity.Report;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -81,11 +83,13 @@ public class Accident {
   @JsonManagedReference
   private List<Photo> photos = new ArrayList<>();
 
+  @OneToOne(mappedBy = "accident")
+  @JsonIgnore
+  private Claim claim;
 
-
-
-
-
+  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
+  private List<Damage> damages = new ArrayList<>();
 
   public List<Integer> getDamagedZones() {
     return damagedZones;
@@ -125,19 +129,9 @@ public class Accident {
   public List<Photo> getPhotos() { return photos; }
   public void setPhotos(List<Photo> photos) { this.photos = photos; }
 
-  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Damage> damages = new ArrayList<>();
+  public Claim getClaim() { return claim; }
+  public void setClaim(Claim claim) { this.claim = claim; }
 
   public List<Damage> getDamages() { return damages; }
-<<<<<<< HEAD
   public void setDamages(List<Damage> damages) { this.damages = damages; }
-
-    public void setClaim(Claim savedClaim) {
-    }
 }
-=======
-  public void setDamages(List<Damage> damages) { this.damages = damages; } }
->>>>>>> f6b09055fbba76564032bd48ea21f4b7f3eeb3ea
-
-
