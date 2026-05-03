@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-client-simple-page',
+    standalone: true,
   imports: [],
   templateUrl: './client-simple-page.component.html',
   styleUrl: './client-simple-page.component.scss'

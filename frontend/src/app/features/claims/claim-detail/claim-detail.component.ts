@@ -204,7 +204,6 @@ export class ClaimDetailComponent implements OnInit {
     });
   }
 
-  // ⭐ UPLOAD FACTURE FINALE ⭐
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -222,68 +221,65 @@ export class ClaimDetailComponent implements OnInit {
   }
 
   uploadFinalInvoice(): void {
-  if (!this.selectedFile || !this.claim) return;
-  
-  if (this.selectedFile.type !== 'application/pdf') {
-    this.notificationService.show('Erreur', 'Seuls les fichiers PDF sont acceptés', 'error', 3000);
-    return;
+    if (!this.selectedFile || !this.claim) return;
+    
+    if (this.selectedFile.type !== 'application/pdf') {
+      this.notificationService.show('Erreur', 'Seuls les fichiers PDF sont acceptés', 'error', 3000);
+      return;
+    }
+    
+    this.uploading = true;
+    this.uploadProgress = 0;
+    
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+    
+    const interval = setInterval(() => {
+      if (this.uploadProgress < 90) {
+        this.uploadProgress += 10;
+      }
+    }, 200);
+    
+    this.claimService.uploadFinalInvoice(this.claim.id, formData).subscribe({
+      next: (response: any) => {
+        clearInterval(interval);
+        this.uploadProgress = 100;
+        
+        if (this.claim) {
+          this.claim.status = response.status;
+        }
+        
+        this.notificationService.show(
+          '✅ Sinistre clôturé',
+          response.message || `La facture a été uploadée avec succès.`,
+          'success',
+          5000
+        );
+        
+        setTimeout(() => {
+          this.uploading = false;
+          this.uploadProgress = 0;
+          this.selectedFile = null;
+          this.loadClaim(this.claim!.id);
+        }, 1000);
+      },
+      error: (err) => {
+        clearInterval(interval);
+        console.error('Erreur upload:', err);
+        if (err.status === 200) {
+          this.notificationService.show('⚠️ Document uploadé', "Le document a été uploadé mais la réponse n'a pas pu être lue.", 'warning', 5000);
+          this.uploading = false;
+          this.uploadProgress = 0;
+          this.selectedFile = null;
+          this.loadClaim(this.claim!.id);
+        } else {
+          this.notificationService.show('Erreur', "Échec de l'upload de la facture", 'error', 3000);
+          this.uploading = false;
+          this.uploadProgress = 0;
+        }
+      }
+    });
   }
-  
-  this.uploading = true;
-  this.uploadProgress = 0;
-  
-  const formData = new FormData();
-  formData.append('file', this.selectedFile);
-  
-  const interval = setInterval(() => {
-    if (this.uploadProgress < 90) {
-      this.uploadProgress += 10;
-    }
-  }, 200);
-  
-  this.claimService.uploadFinalInvoice(this.claim.id, formData).subscribe({
-    next: (response: any) => {  // ⭐ Attendre une réponse simple
-      clearInterval(interval);
-      this.uploadProgress = 100;
-      
-      // ⭐ Mettre à jour le statut du sinistre localement
-      if (this.claim) {
-        this.claim.status = response.status;
-      }
-      
-      this.notificationService.show(
-        '✅ Sinistre clôturé',
-        response.message || `La facture a été uploadée avec succès.`,
-        'success',
-        5000
-      );
-      
-      setTimeout(() => {
-        this.uploading = false;
-        this.uploadProgress = 0;
-        this.selectedFile = null;
-        this.loadClaim(this.claim!.id); // Recharger pour mettre à jour l'affichage
-      }, 1000);
-    },
-    error: (err) => {
-      clearInterval(interval);
-      console.error('Erreur upload:', err);
-      // ⭐ Même en erreur, le document peut être uploadé
-      if (err.status === 200) {
-        this.notificationService.show('⚠️ Document uploadé', "Le document a été uploadé mais la réponse n'a pas pu être lue.", 'warning', 5000);
-        this.uploading = false;
-        this.uploadProgress = 0;
-        this.selectedFile = null;
-        this.loadClaim(this.claim!.id);
-      } else {
-        this.notificationService.show('Erreur', "Échec de l'upload de la facture", 'error', 3000);
-        this.uploading = false;
-        this.uploadProgress = 0;
-      }
-    }
-  });
-}
-
 
   getStatusColor(status: string): string {
     const colors: Record<string, string> = {

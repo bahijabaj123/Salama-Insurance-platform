@@ -1,0 +1,670 @@
+<div class="main-container">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>🚗 SALAMA INSURANCE <span class="status-badge status-EN_ATTENTE">PENDING</span></h1>
+        <p>Accident Management System — Accident Report &amp; 3D Damage Assessment</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" (click)="switchTab('constat')">📋 Accident Report</button>
+        <button class="tab-btn" (click)="switchTab('damage')">🎮 3D Assessment</button>
+        <button class="tab-btn" (click)="loadDashboard()">📊 Admin Dashboard</button>
+    </div>
+
+    <!-- ===== TAB 1 : Constat ===== -->
+    <div id="constat-tab" class="tab-pane active">
+        <div class="constat-container">
+
+            <!-- General Info -->
+            <div class="section-card">
+                <h3>📋 Accident Information</h3>
+                <div class="info-grid">
+                    <div class="info-item"><label>Date</label><input type="date" id="accidentDate"></div>
+                    <div class="info-item"><label>Time</label><input type="time" id="accidentTime"></div>
+                    <div class="info-item"><label>Location</label><input type="text" id="accidentLocation"
+                            placeholder="Ex: Habib Bourguiba Avenue, Tunis"></div>
+                </div>
+                <div class="checkbox-row">
+                    <label><input type="checkbox" id="chk-injuries"> Injuries</label>
+                    <label><input type="checkbox" id="chk-damage"> Property Damage</label>
+                </div>
+            </div>
+
+            <!-- Vehicles -->
+            <div class="vehicules-container">
+
+                <!-- Vehicle A -->
+                <div class="vehicule vehicule-a">
+                    <div class="vehicule-header">
+                        <h3>VEHICLE A</h3><span class="badge">Driver A</span>
+                    </div>
+                    <div class="form-group"><label>Full Name</label><input type="text" id="a-name"></div>
+                    <div class="form-group"><label>Address</label><input type="text" id="a-address"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Phone</label><input type="text" id="a-phone"></div>
+                        <div class="form-group"><label>ID Number</label><input type="text" id="a-cin"></div>
+                    </div>
+                    <div class="form-group"><label>License No.</label><input type="text" id="a-license"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Insurance</label><input type="text" id="a-insurance"></div>
+                        <div class="form-group"><label>Policy No.</label><input type="text" id="a-policy"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>License Plate</label><input type="text" id="a-plate"></div>
+                        <div class="form-group"><label>Make / Model</label><input type="text" id="a-car"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Driver A Signature</label>
+                        <canvas id="signature-canvas-a" width="300" height="100"
+                            style="border:1px solid #ccc;border-radius:8px;cursor:crosshair;background:white;display:block;"></canvas>
+                        <button type="button" (click)="clearSignature('a')"
+                            style="font-size:11px;padding:4px 10px;margin-top:4px;">🗑️ Clear</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Circumstances (Driver A)</label>
+                        <div class="circumstances-group">
+                            <label *ngFor="let opt of circumstancesOptions">
+                                <input type="checkbox" [value]="opt.code"
+                                    (change)="toggleCircumstance('A', opt.code, $event)">
+                                {{ opt.label }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle B -->
+                <div class="vehicule vehicule-b">
+                    <div class="vehicule-header">
+                        <h3>VEHICLE B</h3><span class="badge">Driver B</span>
+                    </div>
+                    <div class="form-group"><label>Full Name</label><input type="text" id="b-name"></div>
+                    <div class="form-group"><label>Address</label><input type="text" id="b-address"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Phone</label><input type="text" id="b-phone"></div>
+                        <div class="form-group"><label>ID Number</label><input type="text" id="b-cin"></div>
+                    </div>
+                    <div class="form-group"><label>License No.</label><input type="text" id="b-license"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Insurance</label><input type="text" id="b-insurance"></div>
+                        <div class="form-group"><label>Policy No.</label><input type="text" id="b-policy"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>License Plate</label><input type="text" id="b-plate"></div>
+                        <div class="form-group"><label>Make / Model</label><input type="text" id="b-car"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Driver B Signature</label>
+                        <canvas id="signature-canvas-b" width="300" height="100"
+                            style="border:1px solid #ccc;border-radius:8px;cursor:crosshair;background:white;display:block;"></canvas>
+                        <button type="button" (click)="clearSignature('b')"
+                            style="font-size:11px;padding:4px 10px;margin-top:4px;">🗑️ Clear</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Circumstances (Driver B)</label>
+                        <div class="circumstances-group">
+                            <label *ngFor="let opt of circumstancesOptions">
+                                <input type="checkbox" [value]="opt.code"
+                                    (change)="toggleCircumstance('B', opt.code, $event)">
+                                {{ opt.label }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end vehicules-container -->
+
+            <!-- ===== SKETCH ===== -->
+            <div class="sketch-wrapper">
+
+                <div class="sketch-topbar">
+                    <span class="sketch-title">✏️ Accident Sketch</span>
+                    <div class="sketch-toolbar">
+                        <button (click)="setTool('pen')" [class.tool-active]="selectedTool==='pen'" class="tool-btn">✏️
+                            Pen</button>
+                        <button (click)="setTool('eraser')" [class.tool-active]="selectedTool==='eraser'"
+                            class="tool-btn">🧹 Eraser</button>
+                        <button (click)="setTool('line')" [class.tool-active]="selectedTool==='line'"
+                            class="tool-btn">📏 Line</button>
+                        <button (click)="setTool('rect')" [class.tool-active]="selectedTool==='rect'" class="tool-btn">⬜
+                            Rect.</button>
+                        <button (click)="setTool('arrow')" [class.tool-active]="selectedTool==='arrow'"
+                            class="tool-btn">➡️ Arrow</button>
+                        <input type="color" [(ngModel)]="drawColor" class="sketch-color">
+                        <div class="sketch-size-wrap">
+                            <input type="range" min="1" max="20" [(ngModel)]="lineWidth" class="sketch-range">
+                            <span class="sketch-size-val">{{lineWidth}}px</span>
+                        </div>
+                        <button (click)="clearCanvas()" class="sketch-clear-btn">🗑️ Clear</button>
+                    </div>
+                </div>
+
+                <!-- Canvas area + draggable labels -->
+                <div class="sketch-area">
+                    <canvas #sketchCanvas class="sketch-canvas" (mousedown)="startDraw($event)"
+                        (mousemove)="draw($event)" (mouseup)="endDraw()" (mouseleave)="endDraw()"
+                        (touchstart)="startDrawTouch($event)" (touchmove)="drawTouch($event)" (touchend)="endDraw()">
+                    </canvas>
+
+                    <div *ngFor="let car of cars" class="sketch-label sketch-car" [class.label-a]="car.type==='A'"
+                        [class.label-b]="car.type==='B'" [class.label-moto]="car.type==='moto'" [style.left.px]="car.x"
+                        [style.top.px]="car.y" [style.transform]="'rotate(' + (car.rotation || 0) + 'deg)'"
+                        (mousedown)="startDrag($event, car)" (contextmenu)="rotateItem($event, car)">
+                        {{ car.label }}
+                    </div>
+
+                    <!-- Pedestrians -->
+                    <div *ngFor="let ped of pedestrians" class="sketch-label sketch-pedestrian" [style.left.px]="ped.x"
+                        [style.top.px]="ped.y" [style.transform]="'rotate(' + (ped.rotation || 0) + 'deg)'"
+                        (mousedown)="startDrag($event, ped)" (contextmenu)="rotateItem($event, ped)">
+                        {{ ped.label }}
+                    </div>
+
+                    <!-- Impact points -->
+                    <div *ngFor="let imp of impacts" class="sketch-label sketch-impact" [style.left.px]="imp.x"
+                        [style.top.px]="imp.y" (mousedown)="startDrag($event, imp)">
+                        ✕
+                    </div>
+
+                    <!-- Road signs -->
+                    <div *ngFor="let sign of signs" class="sketch-label sketch-sign" [ngClass]="'sign-' + sign.type"
+                        [style.left.px]="sign.x" [style.top.px]="sign.y"
+                        [style.transform]="'rotate(' + (sign.rotation || 0) + 'deg)'"
+                        (mousedown)="startDrag($event, sign)" (contextmenu)="rotateItem($event, sign)">
+                        {{ sign.label }}
+                    </div>
+                </div><!-- end sketch-area -->
+
+                <!-- Add buttons -->
+                <div class="sketch-add-row">
+                    <button (click)="addVehicle('A','Vehicle A')" class="add-label-btn btn-va">+ Vehicle A</button>
+                    <button (click)="addVehicle('B','Vehicle B')" class="add-label-btn btn-vb">+ Vehicle B</button>
+                    <button (click)="addVehicle('moto','Moto')" class="add-label-btn btn-moto">+ Moto</button>
+                    <button (click)="addPedestrian()" class="add-label-btn btn-ped">+ Pedestrian</button>
+                    <button (click)="addImpact()" class="add-label-btn btn-imp">+ Impact Point</button>
+                    <button (click)="addSign('stop','STOP')" class="add-label-btn btn-stop">+ Stop</button>
+                    <button (click)="addSign('roundabout','↺')" class="add-label-btn btn-roundabout">+
+                        Roundabout</button>
+                    <button (click)="addSign('traffic-light','🔴&#10;🟡&#10;🟢')" class="add-label-btn btn-traffic">+
+                        Traffic Light</button>
+                    <button (click)="addSign('priority','!')" class="add-label-btn btn-priority">+ Priority</button>
+                    <button (click)="addSign('no-entry','—')" class="add-label-btn btn-noentry">+ No Entry</button>
+                </div>
+
+                <div class="sketch-hint">
+                    💡 Drag labels to position them · Use tools to annotate the sketch
+                </div>
+            </div><!-- end sketch-wrapper -->
+
+            <!-- Photos -->
+            <div class="section-card">
+                <h3>📸 Photos</h3>
+                <div class="photos-grid" id="photos-grid"></div>
+            </div>
+
+            <!-- Observations -->
+            <div class="section-card">
+                <h3>📝 Observations</h3>
+                <textarea class="observations" id="observations" rows="3"
+                    placeholder="Describe the accident circumstances..."></textarea>
+            </div>
+
+            <button class="btn-submit" (click)="submitConstat()">✅ Submit Accident Report</button>
+
+            <button class="btn-pdf" (click)="downloadPdf(currentAccidentId!)" *ngIf="currentAccidentId">
+                <span class="btn-pdf-icon">📄</span>
+                <span class="btn-pdf-text"><strong>Download PDF Report</strong></span>
+            </button>
+
+        </div>
+    </div><!-- end TAB 1 -->
+
+    <!-- ===== TAB 2 : 3D ===== -->
+    <div id="damage-tab" class="tab-pane">
+        <div class="damage-container">
+            <div class="car-container">
+                <div class="car-viewer" #carViewer></div>
+                <div class="controls-info">
+                    <span>🖱️ Left click: select</span>
+                    <span>🖱️ Right drag: rotate</span>
+                    <span>🖱️ Scroll: zoom</span>
+                </div>
+            </div>
+            <div class="form-panel">
+                <h2>🎯 Report Damage</h2>
+
+                <!-- Driver selector -->
+                <div class="driver-selector">
+                    <button class="driver-btn" [class.driver-active]="selectedDriver==='A'"
+                        (click)="selectDriver('A')">🚗 Driver A</button>
+                    <button class="driver-btn" [class.driver-active]="selectedDriver==='B'"
+                        (click)="selectDriver('B')">🚗 Driver B</button>
+                </div>
+
+                <div class="selected-damage">
+                    <h3>Selected Part:</h3>
+                    <p id="selected-part">None</p>
+                </div>
+
+                <!-- Damage types -->
+                <div class="damage-buttons">
+                    <button class="damage-btn" (click)="setDamageType('scratch',$event)">🪛 Scratch</button>
+                    <button class="damage-btn" (click)="setDamageType('dent',$event)">💥 Dent</button>
+                    <button class="damage-btn" (click)="setDamageType('broken',$event)">🔨 Broken</button>
+                    <button class="damage-btn" (click)="setDamageType('missing',$event)">❌ Missing</button>
+                    <button class="damage-btn" (click)="setDamageType('cracked',$event)">🔱 Cracked</button>
+                    <button class="damage-btn" (click)="setDamageType('paint',$event)">🎨 Paint</button>
+                    <button class="damage-btn" (click)="setDamageType('burnt',$event)">🔥 Burnt</button>
+                    <button class="damage-btn" (click)="setDamageType('deformed',$event)">〰️ Deformed</button>
+                    <button class="damage-btn" (click)="setDamageType('other',$event)">📌 Other</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="damage-desc" rows="3" placeholder="Describe the damage…"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Estimated Cost (TND)</label>
+                    <input type="number" id="damage-cost" placeholder="e.g. 500">
+                </div>
+
+                <button class="btn-submit" (click)="addDamage()">➕ Add Damage</button>
+
+                <!-- Driver A damages -->
+                <div class="damage-section">
+                    <h3 style="margin:16px 0 8px;font-size:13px;font-weight:600;color:#1d4ed8;">
+                        📋 Damages — Driver A
+                    </h3>
+                    <div class="damage-list" id="damage-list-a"></div>
+                </div>
+
+                <!-- Driver B damages -->
+                <div class="damage-section">
+                    <h3 style="margin:16px 0 8px;font-size:13px;font-weight:600;color:#15803d;">
+                        📋 Damages — Driver B
+                    </h3>
+                    <div class="damage-list" id="damage-list-b"></div>
+                </div>
+
+                <button class="btn-submit" style="margin-top:16px;" (click)="submitDamageReport()">
+                    ✅ Submit Damage Report
+                </button>
+            </div>
+        </div>
+    </div><!-- end TAB 2 -->
+
+    <!-- ===== TAB 3 : Dashboard ===== -->
+    <div id="dashboard-tab" class="tab-pane">
+
+        <div *ngIf="!stats"
+            style="display:flex;flex-direction:column;align-items:center;padding:80px 0;gap:16px;color:#64748b;font-size:15px;">
+            <div
+                style="width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0056b3;border-radius:50%;animation:spin 0.8s linear infinite;">
+            </div>
+            <p>Loading statistics...</p>
+        </div>
+
+        <div *ngIf="stats" style="display:flex;flex-direction:column;gap:16px;padding:4px 0;">
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <div style="font-size:17px;font-weight:600;color:#1a1a2e;">Admin Dashboard — Accident Management
+                    </div>
+                    <div style="font-size:12px;color:#64748b;margin-top:2px;">Real-time data · {{ currentYear }}</div>
+                </div>
+            </div>
+
+            <!-- Admin summary -->
+            <div
+                style="background:#003366;border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px;">
+                <div>
+                    <div style="font-size:18px;font-weight:700;color:white;">👋 Hello Taraji ya dawla </div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px;">{{ todayDate }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="position:relative;">
+                        <div
+                            style="background:rgba(255,255,255,0.15);border-radius:10px;padding:12px 20px;text-align:center;">
+                            <div style="font-size:28px;font-weight:800;color:white;">{{ pendingCount }}</div>
+                            <div style="font-size:11px;color:rgba(255,255,255,0.8);">reports to process</div>
+                        </div>
+                        <span *ngIf="pendingCount > 0"
+                            style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:white;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s infinite;">
+                            {{ pendingCount }}
+                        </span>
+                    </div>
+                    <div
+                        style="background:rgba(255,255,255,0.15);border-radius:10px;padding:12px 20px;text-align:center;">
+                        <div style="font-size:28px;font-weight:800;color:#4ade80;">{{ stats.valide }}</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.8);">validated</div>
+                    </div>
+                    <div
+                        style="background:rgba(255,255,255,0.15);border-radius:10px;padding:12px 20px;text-align:center;">
+                        <div style="font-size:28px;font-weight:800;color:#f87171;">{{ stats.rejete }}</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.8);">rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI table -->
+            <div class="db-chart-card">
+                <div class="db-chart-head" style="margin-bottom:14px;"><span class="db-chart-title">Global
+                        Indicators</span></div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead>
+                            <tr>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;letter-spacing:.4px;">
+                                    INDICATOR</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;letter-spacing:.4px;">
+                                    VALUE</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;letter-spacing:.4px;">
+                                    STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;color:#1a1a2e;"><strong>📋
+                                        TOTAL ACCIDENTS</strong><br><span style="font-size:10px;color:#64748b;">All
+                                        statuses</span></td>
+                                <td
+                                    style="padding:11px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:18px;">
+                                    {{ stats.totalAccidents }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;"><span
+                                        style="background:#e0f2e9;color:#1e7b4b;border-radius:30px;padding:4px 10px;font-size:11px;">↑
+                                        +2 vs prev. period</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;color:#1a1a2e;"><strong>⏳
+                                        PENDING</strong><br><span style="font-size:10px;color:#64748b;">In
+                                        progress</span></td>
+                                <td
+                                    style="padding:11px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:18px;">
+                                    {{ stats.enAttente }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;"><span
+                                        style="background:#fff3e0;color:#c26b1a;border-radius:30px;padding:4px 10px;font-size:11px;">To
+                                        be reviewed</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;color:#1a1a2e;"><strong>✅
+                                        VALIDATED</strong><br><span style="font-size:10px;color:#64748b;">Processed
+                                        files</span></td>
+                                <td
+                                    style="padding:11px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:18px;">
+                                    {{ stats.valide }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;"><span
+                                        style="background:#e1f7ed;color:#1b7e44;border-radius:30px;padding:4px 10px;font-size:11px;">Claims
+                                        initiated</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;color:#1a1a2e;"><strong>❌
+                                        REJECTED</strong><br><span
+                                        style="font-size:10px;color:#64748b;">Non-compliant</span></td>
+                                <td
+                                    style="padding:11px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:18px;">
+                                    {{ stats.rejete }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;"><span
+                                        style="background:#ffe8e6;color:#bc3f2e;border-radius:30px;padding:4px 10px;font-size:11px;">{{
+                                        stats.rejete === 0 ? 'No rejected files' : stats.rejete + ' rejected' }}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charts row 1 -->
+            <div class="db-charts-row">
+                <div class="db-chart-card">
+                    <div class="db-chart-head"><span class="db-chart-title">Accidents per Month</span><span
+                            class="db-chip">{{ currentYear }}</span></div>
+                    <div style="position:relative;height:200px;"><canvas id="chart-monthly"></canvas></div>
+                </div>
+                <div class="db-chart-card">
+                    <div class="db-chart-head"><span class="db-chart-title">Status Distribution</span><span
+                            class="db-chip">Total {{ stats.totalAccidents }}</span></div>
+                    <div style="display:flex;gap:12px;margin-bottom:10px;font-size:12px;color:#64748b;flex-wrap:wrap;">
+                        <span style="display:flex;align-items:center;gap:5px;"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#378ADD;display:inline-block;"></span>Validated</span>
+                        <span style="display:flex;align-items:center;gap:5px;"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#EF9F27;display:inline-block;"></span>Pending</span>
+                        <span style="display:flex;align-items:center;gap:5px;"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#E24B4A;display:inline-block;"></span>Rejected</span>
+                    </div>
+                    <div style="position:relative;height:200px;"><canvas id="chart-donut"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Charts row 2 -->
+            <div class="db-charts-row">
+                <div class="db-chart-card">
+                    <div class="db-chart-head"><span class="db-chart-title">Liability Rate</span><span class="db-chip">A
+                            vs B</span></div>
+                    <div style="display:flex;flex-direction:column;gap:18px;margin-top:12px;">
+                        <div>
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px;">
+                                <span>Driver A</span><span style="font-weight:600;color:#185FA5;">{{
+                                    stats.percentResponsableA||54 }}%</span>
+                            </div>
+                            <div style="background:#f1f5f9;border-radius:20px;height:7px;overflow:hidden;">
+                                <div [style.width]="(stats.percentResponsableA||54)+'%'"
+                                    style="height:100%;background:#378ADD;border-radius:20px;transition:width .6s;">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px;">
+                                <span>Driver B</span><span style="font-weight:600;color:#3B6D11;">{{
+                                    stats.percentResponsableB||31 }}%</span>
+                            </div>
+                            <div style="background:#f1f5f9;border-radius:20px;height:7px;overflow:hidden;">
+                                <div [style.width]="(stats.percentResponsableB||31)+'%'"
+                                    style="height:100%;background:#639922;border-radius:20px;transition:width .6s;">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px;">
+                                <span>Shared Liability</span><span style="font-weight:600;color:#854F0B;">{{
+                                    stats.percentPartage||15 }}%</span>
+                            </div>
+                            <div style="background:#f1f5f9;border-radius:20px;height:7px;overflow:hidden;">
+                                <div [style.width]="(stats.percentPartage||15)+'%'"
+                                    style="height:100%;background:#EF9F27;border-radius:20px;transition:width .6s;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="db-chart-card">
+                    <div class="db-chart-head"><span class="db-chart-title">Injuries vs Property Damage</span><span
+                            class="db-chip">Per Month</span></div>
+                    <div style="display:flex;gap:12px;margin-bottom:10px;font-size:12px;color:#64748b;">
+                        <span style="display:flex;align-items:center;gap:5px;"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#E24B4A;display:inline-block;"></span>Injuries</span>
+                        <span style="display:flex;align-items:center;gap:5px;"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#378ADD;display:inline-block;"></span>Property</span>
+                    </div>
+                    <div style="position:relative;height:160px;"><canvas id="chart-type"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Circumstances -->
+            <div class="db-chart-card">
+                <div class="db-chart-head"><span class="db-chart-title">Top Declared Circumstances</span><span
+                        class="db-chip">Frequency</span></div>
+                <div style="position:relative;height:220px;"><canvas id="chart-circumstances"></canvas></div>
+            </div>
+
+            <!-- Latest reports -->
+            <div class="db-chart-card">
+                <div class="db-chart-head" style="margin-bottom:14px;">
+                    <span class="db-chart-title">Latest Submitted Reports</span>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <input [(ngModel)]="searchConstat" type="text" placeholder="🔍 Search the file..."
+                        style="width:100%;padding:9px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;">
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead>
+                            <tr>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    ID</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    DATE</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    LOCATION</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    DRIVER A</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    DRIVER B</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    STATUS</th>
+                                <th
+                                    style="text-align:left;font-size:11px;font-weight:600;color:#64748b;padding:8px 10px;border-bottom:1px solid #e2e8f0;">
+                                    ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let c of filteredConstats">
+                                <td
+                                    style="padding:11px 10px;border-bottom:1px solid #f1f5f9;color:#94a3b8;font-size:12px;">
+                                    #{{ c.id }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;">{{ c.accidentDate }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;">{{ c.location }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;">{{ c.driverAName }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;">{{ c.driverBName }}</td>
+                                <td style="padding:11px 10px;border-bottom:1px solid #f1f5f9;">
+                                    <span
+                                        [ngStyle]="{'background':c.status==='EN_ATTENTE'?'#FAEEDA':c.status==='VALIDE'?'#EAF3DE':'#FCEBEB','color':c.status==='EN_ATTENTE'?'#854F0B':c.status==='VALIDE'?'#3B6D11':'#A32D2D','padding':'4px 10px','border-radius':'20px','font-size':'11px','font-weight':'500'}">
+                                        {{ c.status==='EN_ATTENTE' ? 'Pending' : c.status==='VALIDE' ? 'Validated' :
+                                        'Rejected' }}
+                                    </span>
+                                </td>
+                                <td
+                                    style="padding:11px 10px;border-bottom:1px solid #f1f5f9;display:flex;gap:6px;flex-wrap:wrap;">
+                                    <button (click)="viewConstat(c)"
+                                        style="background:#2563eb;color:white;border:none;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;">👁
+                                        View</button>
+                                    <button (click)="validerConstat(c.id)" *ngIf="c.status==='EN_ATTENTE'"
+                                        style="background:#15803d;color:white;border:none;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;">✅
+                                        Validate</button>
+                                    <button (click)="telechargerPdf(c.id)" *ngIf="c.status==='VALIDE'"
+                                        style="background:#7c3aed;color:white;border:none;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;">📄
+                                        PDF</button>
+                                    <button (click)="rejeterConstat(c.id)" *ngIf="c.status!=='REJETE'"
+                                        style="background:#dc2626;color:white;border:none;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;">✕
+                                        Reject</button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="filteredConstats.length===0">
+                                <td colspan="7" style="padding:24px;text-align:center;color:#94a3b8;">No reports found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal report details -->
+            <div *ngIf="selectedConstat"
+                style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;"
+                (click)="closeConstat()">
+                <div style="background:white;border-radius:12px;padding:28px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;"
+                    (click)="$event.stopPropagation()">
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                        <h2 style="font-size:16px;font-weight:700;color:#1a1a2e;">Report #{{ selectedConstat.id }}</h2>
+                        <button (click)="closeConstat()"
+                            style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+                    </div>
+
+                    <!-- General info -->
+                    <div style="background:#f8fafc;border-radius:8px;padding:14px;margin-bottom:16px;">
+                        <div style="font-size:12px;font-weight:600;color:#64748b;margin-bottom:8px;">GENERAL INFORMATION
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+                            <div><span style="color:#64748b;">Date:</span> <strong>{{ selectedConstat.accidentDate
+                                    }}</strong></div>
+                            <div><span style="color:#64748b;">Location:</span> <strong>{{ selectedConstat.location
+                                    }}</strong></div>
+                            <div><span style="color:#64748b;">Status:</span>
+                                <span
+                                    [ngStyle]="{'background':selectedConstat.status==='EN_ATTENTE'?'#FAEEDA':selectedConstat.status==='VALIDE'?'#EAF3DE':'#FCEBEB','color':selectedConstat.status==='EN_ATTENTE'?'#854F0B':selectedConstat.status==='VALIDE'?'#3B6D11':'#A32D2D','padding':'2px 8px','border-radius':'20px','font-size':'11px'}">
+                                    {{ selectedConstat.status==='EN_ATTENTE' ? 'Pending' :
+                                    selectedConstat.status==='VALIDE' ? 'Validated' : 'Rejected' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drivers -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                        <!-- Driver A -->
+                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;">
+                            <div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:10px;">🚗 DRIVER A
+                            </div>
+                            <div style="font-size:12px;display:flex;flex-direction:column;gap:5px;">
+                                <div><span style="color:#64748b;">Name:</span> <strong>{{ selectedConstat.driverAName
+                                        }}</strong></div>
+                                <div><span style="color:#64748b;">ID:</span> {{ selectedConstat.driverACin }}</div>
+                                <div><span style="color:#64748b;">Phone:</span> {{ selectedConstat.driverAPhone }}</div>
+                                <div><span style="color:#64748b;">Insurance:</span> {{ selectedConstat.driverAInsurance
+                                    }}</div>
+                                <div><span style="color:#64748b;">Plate:</span> {{ selectedConstat.driverAPlate }}</div>
+                            </div>
+                        </div>
+                        <!-- Driver B -->
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;">
+                            <div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:10px;">🚗 DRIVER B
+                            </div>
+                            <div style="font-size:12px;display:flex;flex-direction:column;gap:5px;">
+                                <div><span style="color:#64748b;">Name:</span> <strong>{{ selectedConstat.driverBName
+                                        }}</strong></div>
+                                <div><span style="color:#64748b;">ID:</span> {{ selectedConstat.driverBCin }}</div>
+                                <div><span style="color:#64748b;">Phone:</span> {{ selectedConstat.driverBPhone }}</div>
+                                <div><span style="color:#64748b;">Insurance:</span> {{ selectedConstat.driverBInsurance
+                                    }}</div>
+                                <div><span style="color:#64748b;">Plate:</span> {{ selectedConstat.driverBPlate }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div style="display:flex;gap:10px;justify-content:flex-end;">
+                        <button (click)="validerConstat(selectedConstat.id)"
+                            *ngIf="selectedConstat.status==='EN_ATTENTE'"
+                            style="background:#15803d;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">
+                            ✅ Validate
+                        </button>
+                        <button (click)="rejeterConstat(selectedConstat.id); closeConstat()"
+                            *ngIf="selectedConstat.status!=='REJETE'"
+                            style="background:#dc2626;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">
+                            ✕ Reject
+                        </button>
+                        <button (click)="closeConstat()"
+                            style="background:#64748b;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div><!-- end TAB 3 -->
+
+</div>

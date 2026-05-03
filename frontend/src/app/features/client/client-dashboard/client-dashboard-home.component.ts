@@ -1,39 +1,45 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Chart, registerables } from 'chart.js';
+import { filter, takeUntil } from 'rxjs/operators';
 import { ClaimService } from '../../../core/services/claim.service';
 import { AuthStorageService } from '../../../core/auth/auth-storage.service';
 import { Claim, ClaimStatus, STATUS_LABELS, STATUS_BADGE_CSS } from '../../../core/models/claim.model';
 import { FilterHasExpertPipe } from '../../../core/pipes/filter-has-expert.pipe';
+import { ClientExpertMessagesComponent } from '../client-expert-messages/client-expert-messages.component';
+import { Subject } from 'rxjs';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-client-dashboard-home',
-  standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     MatCardModule,
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    FilterHasExpertPipe
+    FilterHasExpertPipe,
+    ClientExpertMessagesComponent,
   ],
-  templateUrl: './client-dashboard-home.component.html',  // ⚠️ On va créer ce fichier
-  styleUrls: ['./client-dashboard.component.scss']  // ← Réutilise le CSS existant !
+  templateUrl: './client-dashboard-home.component.html',
+  styleUrls: ['./client-dashboard.component.scss']
 })
-export class ClientDashboardHomeComponent implements OnInit, AfterViewInit {
+export class ClientDashboardHomeComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('trendChart') trendChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('dashboardDetails') dashboardDetailsRef!: ElementRef<HTMLElement>;
   
   loading = true;
   error = '';
   allClaims: Claim[] = [];
   private chart: any;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private claimService: ClaimService,
@@ -42,7 +48,22 @@ export class ClientDashboardHomeComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => {
+        if (!this.loading) {
+          this.queueScrollToFragment();
+        }
+      });
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit(): void {
@@ -76,11 +97,28 @@ export class ClientDashboardHomeComponent implements OnInit, AfterViewInit {
     return this.allClaims.length > 0 ? this.allClaims[0] : null;
   }
 
-  kpis = [
-    { label: 'En cours', value: '0', sub: 'Sinistres', color: '#FF8C00' },
-    { label: 'Traitement moyen', value: '0j', sub: 'Délai estimé', color: '#185FA5' },
-    { label: 'Taux résolution', value: '0%', sub: '+12% vs mois dernier', color: '#3B6D11' }
-  ];
+  get avgClosedDurationDays(): number | null {
+    const durs = this.closedClaims
+      .filter(c => c.openingDate && c.closingDate)
+      .map(c => this.daysBetween(c.openingDate, c.closingDate!));
+    if (!durs.length) return null;
+    return Math.round(durs.reduce((a, b) => a + b, 0) / durs.length);
+  }
+
+  get avgOpenAgeDays(): number | null {
+    const open = this.activeClaims.filter(c => c.openingDate);
+    if (!open.length) return null;
+    const today = new Date().toISOString().slice(0, 10);
+    const durs = open.map(c => this.daysBetween(c.openingDate, today));
+    return Math.round(durs.reduce((a, b) => a + b, 0) / durs.length);
+  }
+
+  private daysBetween(startIso: string, endIso: string): number {
+    const t0 = new Date(startIso).getTime();
+    const t1 = new Date(endIso).getTime();
+    if (Number.isNaN(t0) || Number.isNaN(t1)) return 0;
+    return Math.max(0, Math.round((t1 - t0) / 86400000));
+  }
 
   timelineSteps = [
     { key: 'created', label: 'Déclaration' },
@@ -93,49 +131,51 @@ export class ClientDashboardHomeComponent implements OnInit, AfterViewInit {
   STATUS_LABELS = STATUS_LABELS;
 
   loadData(): void {
-  this.loading = true;
-  this.error = '';
+    this.loading = true;
+    this.error = '';
 
-  const currentUser = this.authStorage.getUser();
-  const clientId = currentUser?.id;
-  const clientEmail = currentUser?.email;
+    const currentUser = this.authStorage.getUser();
+    const clientId = currentUser?.id;
+    const clientEmail = currentUser?.email;
 
-  console.log('👤 HOME - Client connecté - ID:', clientId, 'Email:', clientEmail);
+    console.log('👤 HOME - Client connecté - ID:', clientId, 'Email:', clientEmail);
 
-  this.claimService.getAllClaims().subscribe({
-    next: (claims) => {
-      // Filtrer par client ID
-      let clientClaims: Claim[];
-      
-      if (clientId) {
-        clientClaims = claims.filter(c => (c as any).client?.id === clientId);
-      } else if (clientEmail) {
-        clientClaims = claims.filter(c => (c as any).client?.email === clientEmail);
-      } else {
-        clientClaims = [];
+    this.claimService.getAllClaims().subscribe({
+      next: (claims) => {
+        let clientClaims: Claim[];
+        
+        if (clientId) {
+          clientClaims = claims.filter(c => (c as any).client?.id === clientId);
+        } else if (clientEmail) {
+          clientClaims = claims.filter(c => (c as any).client?.email === clientEmail);
+        } else {
+          clientClaims = [];
+        }
+
+        console.log(`📊 HOME - ${clientClaims.length} sinistre(s) trouvé(s) pour le client`);
+        
+        this.allClaims = clientClaims;
+
+        this.loading = false;
+        setTimeout(() => this.initChart(), 100);
+        this.queueScrollToFragment();
+      },
+      error: (err) => {
+        console.error('❌ HOME - Erreur:', err);
+        this.error = 'Erreur de chargement';
+        this.loading = false;
+        this.queueScrollToFragment();
       }
+    });
+  }
 
-      console.log(`📊 HOME - ${clientClaims.length} sinistre(s) trouvé(s) pour le client`);
-      
-      this.allClaims = clientClaims;
-      
-      this.kpis = [
-        { label: 'Sinistres actifs', value: this.activeClaims.length.toString(), sub: 'En cours', color: '#FF8C00' },
-        { label: 'Expert assigné', value: this.allClaimsWithExpert.toString(), sub: 'Dossiers suivis', color: '#185FA5' },
-        { label: 'Taux clôture', value: this.allClaims.length > 0 ? Math.round((this.closedClaims.length / this.allClaims.length) * 100) + '%' : '0%', sub: 'Sinistres résolus', color: '#3B6D11' }
-      ];
-      
-      this.loading = false;
-      setTimeout(() => this.initChart(), 100);
-    },
-    error: (err) => {
-      console.error('❌ HOME - Erreur:', err);
-      this.error = 'Erreur de chargement';
-      this.loading = false;
-    }
-  });
-}
-
+  private queueScrollToFragment(): void {
+    const f = this.router.parseUrl(this.router.url).fragment;
+    if (f !== 'expert-comm' && f !== 'follow-dash') return;
+    setTimeout(() => {
+      document.getElementById(f)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 220);
+  }
 
   initChart(): void {
     if (!this.trendChartRef?.nativeElement) return;
@@ -190,9 +230,11 @@ export class ClientDashboardHomeComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/client/assistant']);
   }
 
+  scrollToDashboardDetails(): void {
+    this.dashboardDetailsRef?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   trackById(_: number, claim: Claim): number {
     return claim.id;
   }
-
-  
 }

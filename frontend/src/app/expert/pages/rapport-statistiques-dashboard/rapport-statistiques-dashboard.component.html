@@ -1,0 +1,407 @@
+<div class="dash-page">
+  <header class="dash-hero">
+    <a routerLink="/expert/chat" class="dash-back">Back to chat</a>
+    <div class="dash-hero-inner">
+      <div class="dash-hero-copy">
+        <h1 class="dash-title">Global statistics</h1>
+        @if (!loading() && !error()) {
+          <p class="dash-sub">{{ titre() }}</p>
+          <p class="dash-date">Data as of {{ date() || '—' }}</p>
+          <div class="dash-live-bar">
+            <span class="live-chip" [class.live-chip--paused]="!autoRefresh()">{{ autoRefresh() ? 'Live' : 'Paused' }}</span>
+            <span class="live-meta">Last updated: {{ lastUpdatedAt() || '—' }}</span>
+            @if (autoRefresh()) {
+              <span class="live-meta">Next sync: {{ nextRefreshInSec() }}s</span>
+            }
+            <button type="button" class="live-btn" (click)="refreshNow()" [disabled]="refreshing()">{{ refreshing() ? 'Refreshing...' : 'Refresh' }}</button>
+            <button type="button" class="live-btn live-btn-ghost" (click)="toggleLiveMode()">{{ autoRefresh() ? 'Turn off live' : 'Turn on live' }}</button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="dash-state">Loading indicators...</div>
+  } @else if (hasBlockingError()) {
+    <div class="dash-state dash-err">{{ error() }}</div>
+  } @else {
+    @if (warning()) {
+      <div class="dash-state dash-warn">{{ warning() }}</div>
+    }
+
+    <section class="dash-section dash-section--panel">
+      <header class="dash-section-head">
+        <h2>Financial statistics</h2>
+        <p class="dash-section-lead">Aggregated amounts across all loaded reports — updated from your data.</p>
+      </header>
+      <div class="dash-kpi-grid dash-kpi-grid--rich">
+        @for (f of financialCards(); track f.label) {
+          <article class="dash-kpi dash-kpi--rich" [ngClass]="'dash-kpi--tone-' + f.tone">
+            <div class="dash-kpi-row">
+              <div class="dash-kpi-icon" aria-hidden="true">
+                @switch (f.tone) {
+                  @case ('indigo') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  }
+                  @case ('sky') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  }
+                  @case ('emerald') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  }
+                  @default {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+                  }
+                }
+              </div>
+              <div class="dash-kpi-copy">
+                <div class="dash-kpi-label">{{ f.label }}</div>
+                <div class="dash-kpi-value">{{ f.value }}</div>
+              </div>
+            </div>
+            <div class="dash-kpi-desc">{{ f.hint }}</div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section dash-section--panel">
+      <header class="dash-section-head">
+        <h2>Real-time statistics</h2>
+        <p class="dash-section-lead">Operational counters — reflect the latest load (live or manual).</p>
+      </header>
+      <div class="dash-kpi-grid dash-kpi-grid--rich">
+        @for (rt of realtimeCards(); track rt.label) {
+          <article class="dash-kpi dash-kpi--rich dash-kpi--tone-live">
+            <div class="dash-kpi-row">
+              <div class="dash-kpi-icon dash-kpi-icon--pulse" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="dash-kpi-copy">
+                <div class="dash-kpi-label">{{ rt.label }}</div>
+                <div class="dash-kpi-value">{{ rt.value }}</div>
+              </div>
+            </div>
+            <div class="dash-kpi-desc">Synced automatically when live mode is on.</div>
+          </article>
+        }
+      </div>
+      <div class="dash-timeline">
+        <h3>Recent activity</h3>
+        @if (recentTimeline().length === 0) {
+          <p class="dash-timeline-empty">No recent activity.</p>
+        } @else {
+          <ul>
+            @for (rep of recentTimeline(); track rep.numeroReference) {
+              <li>
+                <span class="timeline-ref">{{ rep.numeroReference || 'REF-N/A' }}</span>
+                <span class="timeline-meta">{{ rep.assureNom || 'Unknown client' }} · {{ rep.statutRapport || rep.expertiseStatus || '—' }}</span>
+                <span class="timeline-time">{{ timelineDate(rep) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section dash-section--panel dash-section--charts">
+      <header class="dash-section-head">
+        <h2>Financial charts</h2>
+        <p class="dash-section-lead">Quick read of net volume and status mix across your cases.</p>
+      </header>
+
+      @if (pipelineInsight(); as pipe) {
+        <div class="dash-intel-strip" role="status">
+          <div class="intel-strip__main">
+            <span class="intel-strip__title">Case pipeline</span>
+            <p class="intel-strip__text">
+              <strong>{{ pipe.total }}</strong> reports in total —
+              <span class="intel-accent">{{ pipe.pctValides }}%</span> validated,
+              <span class="intel-muted">{{ pipe.enCours }} in progress</span>
+              @if (pipe.total > 0 && pipe.pctValides >= 50) {
+                <span class="intel-badge intel-badge--ok">Good closure rate</span>
+              }
+            </p>
+          </div>
+        </div>
+      }
+
+      @if (netWindowInsight(); as nw) {
+        <div class="dash-intel-strip dash-intel-strip--secondary" role="status">
+          <div class="intel-strip__main">
+            <span class="intel-strip__title">Net volume (displayed window)</span>
+            <p class="intel-strip__text">
+              Peak on <strong>{{ nw.peak.day }}</strong> at <strong>{{ fmt(nw.peak.amount) }} DT</strong>
+              · total <strong>{{ fmt(nw.totalWindow) }} DT</strong>
+              @if (nw.zeroDays > 0) {
+                · <span class="intel-muted">{{ nw.zeroDays }} day(s) with no amount</span>
+              }
+            </p>
+            @if (nw.trend) {
+              <p class="intel-strip__hint">{{ nw.trend }}</p>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="dash-finance-grid">
+        <article class="dash-chart-card dash-chart-card--hero">
+          <header class="dash-chart-head">
+            <h3>Net amount per day</h3>
+            <p class="dash-chart-sub">
+              Histogram on the latest active dates — height relative to the maximum
+              (<strong>{{ fmt(montantParJourMax()) }} DT</strong>).
+            </p>
+          </header>
+          @if (montantParJour().length === 0) {
+            <div class="dash-chart-empty-state">
+              <p class="dash-chart-empty">Not enough dated data to draw the chart.</p>
+              <p class="dash-chart-empty-hint">Reports without exam / mission date are excluded from this view.</p>
+            </div>
+          } @else {
+            <div class="line-chart" role="img" [attr.aria-label]="'Net amount per day, maximum ' + fmt(montantParJourMax()) + ' DT'">
+              <div class="line-chart-y">
+                <span class="y-tick">{{ fmt(montantParJourMax()) }}</span>
+                <span class="y-tick y-tick--mid">{{ fmt(montantParJourMax() / 2) }}</span>
+                <span class="y-tick y-tick--zero">0</span>
+              </div>
+              <div class="line-chart-bars">
+                @for (p of montantParJour(); track p.day) {
+                  <div class="line-col">
+                    <div class="line-bar-wrap">
+                      <div
+                        class="line-bar"
+                        [class.line-bar--empty]="isZeroAmount(p.amount)"
+                        [style.height.%]="barPercent(p.amount, montantParJourMax())"
+                      ></div>
+                    </div>
+                    <span class="line-day">{{ p.day }}</span>
+                    <span class="line-val">{{ fmt(p.amount) }} DT</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <p class="dash-chart-foot">Scale normalized to the peak: compare proportions between days, not absolute amounts across different periods.</p>
+          }
+        </article>
+
+        <article class="dash-chart-card">
+          <header class="dash-chart-head">
+            <h3>Breakdown by status</h3>
+            <p class="dash-chart-sub">Proportional donut — center = total classified reports.</p>
+          </header>
+          @if (statutsPie().length === 0) {
+            <div class="dash-chart-empty-state">
+              <p class="dash-chart-empty">No usable status on loaded reports.</p>
+            </div>
+          } @else {
+            <div class="pie-wrap">
+              <div class="donut" [style.background]="pieConic()">
+                <div class="donut-hole">
+                  <span class="donut-hole__value">{{ pieReportsTotal() }}</span>
+                  <span class="donut-hole__label">reports</span>
+                </div>
+              </div>
+              <ul class="pie-legend">
+                @for (s of statutsPie(); track s.label) {
+                  <li>
+                    <span class="dot" [style.background]="s.color"></span>
+                    <span class="pie-legend-label">{{ s.label }}</span>
+                    <span class="pie-legend-meta">
+                      <strong>{{ s.value }}</strong>
+                      <span class="pie-pct">{{ pieSlicePercent(s.value) }} %</span>
+                    </span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </article>
+      </div>
+    </section>
+
+    <section class="dash-section dash-section--panel">
+      <header class="dash-section-head">
+        <h2>Key indicators</h2>
+        <p class="dash-section-lead">Indicators from the dashboard (API or local calculation).</p>
+      </header>
+      <div class="dash-kpi-grid dash-kpi-grid--rich">
+        @for (c of cards(); track c['id']) {
+          <article class="dash-kpi dash-kpi--rich" [ngClass]="'dash-kpi--id-' + (c['id'] ?? 'card')">
+            <div class="dash-kpi-row">
+              <div class="dash-kpi-icon" aria-hidden="true">
+                @switch (c['id']) {
+                  @case ('net') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  }
+                  @case ('validated') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  }
+                  @case ('encours') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  }
+                  @default {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  }
+                }
+              </div>
+              <div class="dash-kpi-copy">
+                <div class="dash-kpi-label">{{ c['label'] }}</div>
+                <div class="dash-kpi-value">{{ fmt(c['value']) }} <span>{{ c['unite'] }}</span></div>
+              </div>
+            </div>
+            <div class="dash-kpi-desc">{{ c['description'] }}</div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="dash-section dash-section--panel dash-section--watermark dash-section--wm-performance">
+      <span class="dash-watermark" aria-hidden="true">Performance</span>
+      <div class="dash-section-stack">
+        <header class="dash-section-head">
+          <h2>Performance gauges</h2>
+          <p class="dash-section-lead">Summary indicators: validation, load, and expert resources, updated with the dashboard.</p>
+        </header>
+        <div class="dash-gauge-grid">
+          @for (g of gauges(); track g['id']; let idx = $index) {
+            <div class="dash-gauge dash-gauge--rich">
+              <div class="dash-gauge-icon" aria-hidden="true">
+                @switch (idx % 5) {
+                  @case (0) {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  }
+                  @case (1) {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                  }
+                  @case (2) {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  }
+                  @case (3) {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                  }
+                  @default {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  }
+                }
+              </div>
+              <div class="dash-gauge-body">
+                <div class="dash-gauge-head">
+                  <span class="dash-gauge-title">{{ g['label'] }}</span>
+                  <strong class="dash-gauge-val">{{ fmt(g['value']) }}{{ g['unite'] }}</strong>
+                </div>
+                <div class="dash-gauge-track dash-gauge-track--thick">
+                  <div class="dash-gauge-fill" [style.width.%]="barPercent(g['value'], g['max'])"></div>
+                </div>
+                <p class="dash-gauge-desc">{{ g['description'] }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="dash-section dash-section--panel dash-section--watermark dash-section--wm-analytics">
+      <span class="dash-watermark dash-watermark--secondary" aria-hidden="true">Analytics</span>
+      <div class="dash-section-stack">
+        <header class="dash-section-head">
+          <h2>Charts</h2>
+          <p class="dash-section-lead">
+            Report distribution, experts by zone, and load per expert — each card summarizes the series leader and highlights the relative top 3.
+          </p>
+        </header>
+        <div class="dash-charts dash-charts--quad">
+          @for (entry of chartEntries(); track entry.key) {
+            @let rows = chartData(entry.chart);
+            @let cmax = chartMax(rows);
+            <article
+              class="dash-chart-card dash-chart-card--analytics dash-chart-card--pro"
+              [class.dash-chart-card--dual]="chartIsDualExpertGauge(entry.chart)"
+            >
+              <span class="dash-chart-bg-text" aria-hidden="true">{{ chartCardBackdrop(entry.chart, entry.key) }}</span>
+              <div class="dash-chart-card__inner">
+                <header class="dash-chart-card__head">
+                  <h3>{{ entry.chart['titre'] }}</h3>
+                  @if (chartCardInsight(entry.chart); as insight) {
+                    <p class="dash-chart-card__insight">{{ insight }}</p>
+                  }
+                </header>
+                <div class="dash-bar-list">
+                  @for (row of rows; track row['label']) {
+                    @let rk = barListRowRank(entry, row);
+                    @let share = barListShareOfMax(row, entry.chart);
+                    <div
+                      class="dash-bar-row"
+                      [class.dash-bar-row--empty]="isBarEmpty(row['value'])"
+                      [class.dash-bar-row--leader]="rk === 1"
+                      [class.dash-bar-row--runner]="rk === 2"
+                      [class.dash-bar-row--third]="rk === 3"
+                    >
+                      <div class="dash-bar-label-cell">
+                        @if (rk && !chartIsDualExpertGauge(entry.chart)) {
+                          <span class="dash-bar-rank">{{ rk }}</span>
+                        }
+                        <span class="dash-bar-label" [attr.title]="fmt(row['label'])">{{ row['label'] }}</span>
+                      </div>
+                      <div class="dash-bar-track dash-bar-track--rich">
+                        <div
+                          class="dash-bar-fill"
+                          [class.dash-bar-fill--ghost]="isBarEmpty(row['value'])"
+                          [style.width.%]="barPercent(row['value'], cmax)"
+                        ></div>
+                      </div>
+                      <div class="dash-bar-val-col">
+                        <span class="dash-bar-val">{{ fmt(row['value']) }}</span>
+                        @if (share !== null) {
+                          <span class="dash-bar-share">{{ share }}% of peak</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="dash-section dash-section--panel dash-section--watermark dash-section--wm-experts">
+      <span class="dash-watermark dash-watermark--experts" aria-hidden="true">Experts</span>
+      <div class="dash-section-stack">
+        <header class="dash-section-head">
+          <h2>Expert directory</h2>
+          <p class="dash-section-lead">Visual lookup by expert: specialty, geographic zone, and operational status.</p>
+        </header>
+        <div class="dash-score-grid">
+          @for (sc of scorecards(); track sc['idExpert']) {
+            <article
+              class="dash-score dash-score--rich"
+              [ngClass]="'dash-score--stat-' + expertStatutTone(sc['statut'])"
+            >
+              <header class="dash-score-head">
+                <strong class="dash-score-name">{{ sc['nomComplet'] }}</strong>
+                <span class="dash-score-badge">{{ fmt(sc['specialite']) }}</span>
+              </header>
+              <div class="dash-score-meta dash-score-meta--icons">
+                <span class="dash-score-line">
+                  <span class="dash-score-ico" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  {{ fmt(sc['zone']) }}
+                </span>
+                <span class="dash-score-line dash-score-line--stat">
+                  <span class="dash-score-ico" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </span>
+                  <span class="dash-score-stat-pill">{{ fmt(sc['statut']) }}</span>
+                </span>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

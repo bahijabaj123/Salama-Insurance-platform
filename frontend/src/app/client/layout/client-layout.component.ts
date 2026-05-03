@@ -9,6 +9,7 @@ import { ClientTopbarComponent } from './client-topbar.component';
 
 @Component({
   selector: 'app-client-layout',
+    standalone: true,
   imports: [RouterOutlet, ClientSidebarComponent, ClientTopbarComponent],
   templateUrl: './client-layout.component.html',
   styleUrl: './client-layout.component.scss'

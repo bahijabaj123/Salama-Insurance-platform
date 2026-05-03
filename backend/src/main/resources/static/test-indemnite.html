@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Salama Insurance - Calcul & PDF</title>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
+    .card { background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 450px; }
+    h2 { color: #27ae60; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #27ae60; padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #34495e; }
+    input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+    button { width: 100%; border: none; padding: 15px; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+    .btn-calc { background: #27ae60; color: white; }
+    .btn-calc:hover { background: #219150; }
+
+    /* Styles pour la signature */
+    #signatureWrapper { margin-top: 20px; display: none; text-align: center; }
+    #signature-pad { border: 2px dashed #27ae60; background: #fff; border-radius: 8px; cursor: crosshair; }
+    .btn-clear { background: #95a5a6; color: white; padding: 8px; font-size: 13px; margin-bottom: 10px; width: auto; }
+
+    .btn-pdf { background: #e67e22; color: white; margin-top: 10px; text-align: center; text-decoration: none; display: block; padding: 15px; border-radius: 8px; }
+    .btn-pdf:hover { background: #d35400; }
+
+    #resultBox {
+      margin-top: 25px; padding: 20px; border-radius: 10px; display: none;
+      background: #e8f8f5; border: 1px solid #27ae60; color: #145a32;
+    }
+    .res-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #abdcc3; padding-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>💰 Calcul d'Indemnité</h2>
+
+  <div class="form-group">
+    <label>Montant des dommages (DT)</label>
+    <input type="number" id="gross" placeholder="Ex: 1000">
+  </div>
+
+  <div class="form-group">
+    <label>Responsabilité (%)</label>
+    <input type="number" id="resp" placeholder="Ex: 20">
+  </div>
+
+  <div class="form-group">
+    <label>Franchise (DT)</label>
+    <input type="number" id="fixedDed" placeholder="Ex: 100">
+  </div>
+
+  <button class="btn-calc" onclick="lancerLeCalcul()">Calculer l'indemnité</button>
+
+  <div id="resultBox">
+    <div class="res-row"><span>ID Dossier :</span> <span id="resId"></span></div>
+    <div class="res-row"><span>Indemnité Nette :</span> <span id="resNet"></span></div>
+    <div class="res-row"><span>Statut :</span> <span id="resStatus"></span></div>
+
+    <div id="signatureWrapper">
+      <label>✍️ Signez ici :</label>
+      <canvas id="signature-pad" width="380" height="150"></canvas>
+      <button class="btn-clear" onclick="clearSignature()">Effacer la signature</button>
+      <button class="btn-pdf" onclick="validerEtTelecharger()">📥 Télécharger PDF Signé</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentId = null;
+  let signaturePad = null;
+
+  // Initialisation du pad au chargement
+  window.onload = () => {
+    const canvas = document.getElementById('signature-pad');
+    signaturePad = new SignaturePad(canvas);
+  };
+
+  function clearSignature() {
+    signaturePad.clear();
+  }
+
+  async function lancerLeCalcul() {
+    const gross = document.getElementById('gross').value;
+    const resp = document.getElementById('resp').value;
+    const fixedDed = document.getElementById('fixedDed').value;
+
+    if(!gross || resp === "" || !fixedDed) {
+      alert("Veuillez remplir tous les champs");
+      return;
+    }
+
+    const url = `http://localhost:8082/api/indemnities/calculate?gross=${gross}&resp=${resp}&fixedDed=${fixedDed}`;
+
+    try {
+      const response = await fetch(url, { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        currentId = data.id; // On stocke l'ID pour le PDF
+
+        document.getElementById('resultBox').style.display = 'block';
+        document.getElementById('resId').innerText = "#" + data.id;
+        document.getElementById('resNet').innerText = data.netAmount + " DT";
+        document.getElementById('resStatus').innerText = data.status;
+
+        // Afficher la zone de signature
+        document.getElementById('signatureWrapper').style.display = 'block';
+      } else {
+        alert("Erreur serveur : " + response.status);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erreur de connexion au Backend.");
+    }
+  }
+
+  async function validerEtTelecharger() {
+    if (signaturePad.isEmpty()) {
+      alert("Veuillez signer avant de télécharger le PDF.");
+      return;
+    }
+
+    // 1. Extraire l'image Base64 et nettoyer le préfixe
+    const dataURL = signaturePad.toDataURL("image/png");
+    const base64Signature = dataURL.split(',')[1];
+
+    // 2. Rediriger vers l'API avec le paramètre signature
+    try {
+      const response = await fetch(`http://localhost:8082/api/indemnities/${currentId}/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: base64Signature
+      });
+
+      if (response.ok) {
+        // Cette partie transforme la réponse en fichier téléchargeable
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Facture_Salama_${currentId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        alert("Erreur lors de la génération du PDF.");
+      }
+    } catch (error) {
+      alert("Erreur de communication avec le serveur.");
+    }
+
+  }
+</script>
+
+</body>
+</html>

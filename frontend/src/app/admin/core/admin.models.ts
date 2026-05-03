@@ -42,3 +42,26 @@ export interface AdminPage<T> {
   size: number;
 }
 
+export interface MonthlyUserCount {
+  /** ISO year-month, e.g. "2026-04". */
+  period: string;
+  count: number;
+}
+
+export interface UserGrowthResponse {
+  currentMonth: MonthlyUserCount;
+  previousMonth: MonthlyUserCount;
+  /** Current month users as a percentage of the previous month. */
+  currentVsPreviousPercent: number;
+  /** Signed growth rate vs. previous month, e.g. -40 for a 40% drop. */
+  growthRate: number;
+  series: MonthlyUserCount[];
+}
+
+export interface AccountRatesResponse {
+  /** 0..100 */
+  activationRate: number;
+  /** 0..100 */
+  rejectionRate: number;
+}
+

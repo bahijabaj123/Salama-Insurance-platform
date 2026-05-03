@@ -24,4 +24,3 @@ export class AdminTopbarComponent {
     this.settingsClick.emit();
   }
 }
-

@@ -47,6 +47,32 @@
   z-index: 0;
 }
 
+.hero__brands {
+  position: absolute;
+  top: 5.75rem;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  pointer-events: none;
+  padding: 0.5rem 0;
+}
+
+.hero__brands > * {
+  pointer-events: auto;
+}
+
+.hero__brands ::ng-deep .logoloop__item img {
+  filter: brightness(0) invert(1) drop-shadow(0 6px 14px rgb(0 0 0 / 0.45));
+  opacity: 0.85;
+  transition:
+    opacity 0.2s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero__brands ::ng-deep .logoloop__item:hover img {
+  opacity: 1;
+}
+
 .hero__inner--home {
   width: 100%;
   max-width: 980px;

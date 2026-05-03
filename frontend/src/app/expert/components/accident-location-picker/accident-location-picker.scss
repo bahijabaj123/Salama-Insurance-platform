@@ -1,0 +1,8 @@
+.alp-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+.alp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.85rem; justify-content: space-between; }
+.alp-hint { flex: 1; min-width: 200px; font-size: 0.8rem; color: #52525b; line-height: 1.4; }
+.alp-geocode { font-size: 0.75rem; font-weight: 600; color: #7c3aed; }
+.alp-clear { font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 8px; border: 1px solid #e4e4e7; background: #fafafa; color: #3f3f46; cursor: pointer; }
+.alp-map { width: 100%; height: min(320px, 55vh); min-height: 220px; border-radius: 12px; overflow: hidden; border: 1px solid #e4e4e7; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08); z-index: 0; }
+:host ::ng-deep .accident-leaflet-divicon { background: transparent !important; border: none !important; }
+:host ::ng-deep .accident-pin-dot { display: block; width: 22px; height: 22px; margin: 0 auto; background: linear-gradient(145deg, #8b5cf6, #7c3aed); border: 3px solid #fff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 3px 12px rgba(124, 58, 237, 0.45); }

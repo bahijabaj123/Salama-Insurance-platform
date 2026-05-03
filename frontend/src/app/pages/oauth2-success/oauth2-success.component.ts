@@ -7,6 +7,7 @@ import { UserApiService } from '../../core/users/user-api.service';
 
 @Component({
   selector: 'app-oauth2-success',
+  standalone: true,
   imports: [],
   templateUrl: './oauth2-success.component.html',
   styleUrl: './oauth2-success.component.scss'

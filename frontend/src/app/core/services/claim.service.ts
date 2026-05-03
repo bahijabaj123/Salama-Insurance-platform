@@ -267,4 +267,9 @@ downloadDocument(documentId: number): Observable<Blob> {
   return this.http.get(`${this.apiUrl}/documents/download/${documentId}`, { responseType: 'blob' });
 }
 
+patchClaimNotes(claimId: number, notes: string): Observable<Claim> {
+  return this.http.patch<Claim>(`${this.BASE}/claims/${claimId}/notes`, { notes });
+}
+
+
 }

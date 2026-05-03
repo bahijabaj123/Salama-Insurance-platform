@@ -13,6 +13,20 @@
         ></app-silk-background>
       </div>
 
+      <div class="hero__brands" aria-label="Marques de véhicules couvertes">
+        <app-logo-loop
+          [logos]="carBrands"
+          [speed]="60"
+          direction="left"
+          [logoHeight]="44"
+          [gap]="72"
+          [scaleOnHover]="true"
+          [fadeOut]="true"
+          fadeOutColor="#0a0720"
+          ariaLabel="Marques de véhicules couvertes"
+        ></app-logo-loop>
+      </div>
+
       <div class="hero__inner hero__inner--home">
         <h1 class="home-title">Silk touch is a good enhancement.</h1>
 

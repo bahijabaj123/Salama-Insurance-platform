@@ -1,0 +1,89 @@
+<div class="garage-page">
+  <div class="garage-page-inner">
+    <button type="button" class="back-link" (click)="backToClaims()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to claims
+    </button>
+
+    <div class="garage-card" *ngIf="loadingClaim">
+      <p class="muted">Loading claim…</p>
+    </div>
+
+    <div class="garage-card error-card" *ngIf="!loadingClaim && claimLoadError">
+      <p>{{ claimLoadError }}</p>
+      <button mat-flat-button color="primary" type="button" (click)="backToClaims()">Back</button>
+    </div>
+
+    <div class="garage-card" *ngIf="!loadingClaim && claim && !claimLoadError">
+      <div class="garage-card-banner">
+        <div class="garage-card-header">
+          <h1>Choose nearest garage</h1>
+          <span class="ref-pill">{{ claim.reference }}</span>
+        </div>
+      </div>
+
+      <div class="garage-feedback garage-feedback--error" *ngIf="saveError" role="alert">
+        <span class="garage-feedback__iconWrap garage-feedback__iconWrap--error" aria-hidden="true">
+          <mat-icon>priority_high</mat-icon>
+        </span>
+        <p class="garage-feedback__text">{{ saveError }}</p>
+        <button type="button" class="garage-feedback__close" (click)="dismissSaveError()">Close</button>
+      </div>
+
+      <div class="garage-feedback garage-feedback--success" *ngIf="saveSuccessMsg" role="status">
+        <span class="garage-feedback__iconWrap garage-feedback__iconWrap--success" aria-hidden="true">
+          <mat-icon>check</mat-icon>
+        </span>
+        <p class="garage-feedback__text">{{ saveSuccessMsg }}</p>
+        <button type="button" class="garage-feedback__close" (click)="dismissSaveSuccess()">Close</button>
+      </div>
+
+      <div class="garage-card-body">
+      <p class="garage-lead">
+        Place the accident location on the map: nearby garages are calculated automatically.
+      </p>
+      <p class="garage-hint">
+        Click the map to set the accident location. You can drag the marker.
+      </p>
+
+      <div class="garage-toolbar">
+        <button mat-flat-button color="primary" type="button" [disabled]="loadingGarages || !!saveSuccessMsg" (click)="onChooseNearestGarageClick()">
+          Choose nearest garage
+        </button>
+        <button mat-stroked-button color="primary" type="button" [disabled]="!!saveSuccessMsg" (click)="clearPoint()">Clear point</button>
+      </div>
+
+      <div id="claim-garage-map" class="garage-map"></div>
+
+      <div class="garage-address" *ngIf="garageAccidentAddress">{{ garageAccidentAddress }}</div>
+      <p class="garage-nominatim">Nominatim geocoding (moderate use).</p>
+
+      <h2 class="nearby-title">Nearby garages (shortest distance first)</h2>
+      <div class="garage-loading" *ngIf="loadingGarages">Loading garages…</div>
+      <div class="garage-list" *ngIf="!loadingGarages && nearbyGarages.length">
+        <button
+          type="button"
+          class="garage-row"
+          *ngFor="let g of nearbyGarages"
+          [class.active]="selectedGarageId === g.id"
+          (click)="selectGarageRow(g.id)"
+        >
+          <span class="g-name">{{ g.name }}</span>
+          <span class="g-meta">{{ g.city || '—' }} · <strong>{{ g.distanceKm }} km</strong></span>
+        </button>
+      </div>
+      <p class="garage-empty" *ngIf="!loadingGarages && !nearbyGarages.length">
+        No nearby garages yet. Place a point on the map or check that garages exist in the system.
+      </p>
+      </div>
+
+      <div class="garage-actions-footer">
+        <button mat-button type="button" (click)="backToClaims()">Cancel</button>
+        <button mat-flat-button color="primary" type="button" [disabled]="!selectedGarageId || assigningGarage || !!saveSuccessMsg" (click)="confirmGarageOnClaim()">
+          <mat-spinner *ngIf="assigningGarage" diameter="18" style="display: inline-block; margin-right: 8px"></mat-spinner>
+          Confirm garage
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -16,6 +16,7 @@ type LoginServerFieldKey = 'email' | 'password';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [ReactiveFormsModule, RouterLink, HomeNavbarComponent, SilkBackgroundComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -59,6 +60,10 @@ export class LoginComponent {
     // (no redirect back to Angular yet). For now we start the real OAuth2 flow by
     // navigating the browser to the backend entry URL.
     window.location.assign(`${environment.apiBaseUrl}/oauth2/authorization/google`);
+  }
+
+  onGithubSignIn(): void {
+    window.location.assign(`${environment.apiBaseUrl}/oauth2/authorization/github`);
   }
 
   onSubmit(): void {

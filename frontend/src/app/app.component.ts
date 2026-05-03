@@ -8,6 +8,4 @@ import { ToastComponent } from './core/components/toast/toast.component';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
-  title = 'salama-insurance-frontend';
-}
+export class AppComponent {}

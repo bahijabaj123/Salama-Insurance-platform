@@ -13,6 +13,7 @@ type AdminNavItem = {
 @Component({
   selector: 'app-admin-sidebar',
   imports: [RouterLink, RouterLinkActive, MatListModule, MatIconModule, MatButtonModule],
+    standalone: true,
   templateUrl: './admin-sidebar.component.html',
   styleUrl: './admin-sidebar.component.scss'
 })

@@ -210,11 +210,11 @@ export interface PagedResponse<T> {
 // ─── Labels et couleurs (pour le template HTML) ───────────────────────────────
 
 export const STATUS_LABELS: Record<ClaimStatus, string> = {
-  [ClaimStatus.OPENED]:             'Ouvert',
-  [ClaimStatus.ASSIGNED_TO_EXPERT]: 'Expert assigné',
-  [ClaimStatus.UNDER_EXPERTISE]:    'En expertise',
-  [ClaimStatus.CLOSED]:             'Clôturé',
-  [ClaimStatus.REJECTED]:           'Rejeté',
+  [ClaimStatus.OPENED]:             'Open',
+  [ClaimStatus.ASSIGNED_TO_EXPERT]: 'Expert assigned',
+  [ClaimStatus.UNDER_EXPERTISE]:    'Under expertise',
+  [ClaimStatus.CLOSED]:             'Closed',
+  [ClaimStatus.REJECTED]:           'Rejected',
 };
 
 export const STATUS_BADGE_CSS: Record<ClaimStatus, string> = {

@@ -1,0 +1,77 @@
+<div class="veh-page" [class.veh-page--models]="!!openCategory">
+  @if (!openCategory) {
+    <header class="veh-hero">
+      <a routerLink="/expert/dashboard" class="veh-back">← Back to dashboard</a>
+      <h1>Accident vehicle type</h1>
+      <p class="veh-lead">
+        Choose a category, then a specific model. Next you will mark damaged areas on the diagram before opening the report.
+      </p>
+    </header>
+  }
+
+  @if (!openCategory) {
+    @for (group of catalog; track group.id) {
+      <section class="veh-region" [attr.aria-labelledby]="'veh-region-' + group.id">
+        <div class="veh-region-head">
+          <h2 [id]="'veh-region-' + group.id">{{ group.title }}</h2>
+          <p class="veh-region-sub">{{ group.subtitle }}</p>
+        </div>
+        <div class="veh-grid">
+          @for (item of group.items; track item.name) {
+            <button type="button" class="veh-card" (click)="openModels(group, item)">
+              <span class="veh-card__title">{{ item.name }}</span>
+              <span class="veh-card__meta">{{ item.vehiculeMarque }}</span>
+              <span class="veh-card__hint">{{ item.estimationHint }}</span>
+              <span class="veh-card__cta">View models ({{ item.models.length }}) →</span>
+            </button>
+          }
+        </div>
+      </section>
+    }
+  }
+
+  @if (openCategory) {
+    <div class="veh-models-view" role="region" aria-label="Models for the selected category">
+      <div class="veh-models-head">
+        <button type="button" class="veh-models-back" (click)="closeModels()">← Back to categories</button>
+        <div class="veh-models-titles">
+          <p class="veh-models-zone">{{ openCategory.group.title }}</p>
+          <h2 class="veh-models-cat">{{ openCategory.item.name }}</h2>
+          <p class="veh-models-hint">{{ openCategory.item.estimationHint }}</p>
+        </div>
+      </div>
+
+      <div class="veh-models-grid">
+        @for (model of openCategory.item.models; track model.id) {
+          <button type="button" class="veh-model-card" (click)="selectModel(model)">
+            <div class="veh-model-img-wrap">
+              @if (model.imageUrl) {
+                <img
+                  class="veh-model-img"
+                  [src]="model.imageUrl"
+                  [alt]="'Photo — ' + model.modelLabel"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  (error)="onImageError($event)"
+                />
+              } @else {
+                <div class="veh-model-img veh-model-img--placeholder" aria-hidden="true">
+                  <img [src]="placeholderImg" alt="" />
+                </div>
+              }
+            </div>
+            <div class="veh-model-text">
+              <span class="veh-model-brand">{{ model.vehiculeMarque }}</span>
+              <span class="veh-model-name">{{ model.modelLabel }}</span>
+            </div>
+            <span class="veh-model-cta">Select for report</span>
+          </button>
+        }
+      </div>
+
+      <button type="button" class="veh-category-fallback" (click)="selectCategoryOnly()">
+        Other model (use category “{{ openCategory.item.name }}” only)
+      </button>
+    </div>
+  }
+</div>

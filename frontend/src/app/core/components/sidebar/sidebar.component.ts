@@ -47,7 +47,7 @@ interface MenuItem {
         <div class="storage-info">
           <i class="fas fa-cloud-upload-alt"></i>
           <div class="storage-text">
-            <span>49/50 GB utilisé</span>
+            <span>49/50 GB used</span>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 98%"></div>
             </div>
@@ -56,7 +56,7 @@ interface MenuItem {
         
         <div class="logout-btn">
           <i class="fas fa-sign-out-alt"></i>
-          <span>Déconnexion</span>
+          <span>Log out</span>
         </div>
       </div>
     </aside>
@@ -235,11 +235,11 @@ export class SidebarComponent implements OnInit {
   
   menuItems: MenuItem[] = [
     { icon: 'fas fa-chart-line', label: 'Dashboard', route: '/assureur/dashboard' },
-    { icon: 'fas fa-file-alt', label: 'Sinistres', route: '/assureur/claims', badge: 5 },
-    { icon: 'fas fa-map', label: 'Carte des sinistres', route: '/assureur/map' },
-    { icon: 'fas fa-shield-alt', label: 'Anti-fraude', route: '/assureur/fraud', badge: 0 },
-    { icon: 'fas fa-chart-bar', label: 'Statistiques', route:  '/assureur/statistiques' },
-    { icon: 'fas fa-tools', label: 'Gérer les garages', route:  '/assureur/garages'  }
+    { icon: 'fas fa-file-alt', label: 'Claims', route: '/assureur/claims', badge: 5 },
+    { icon: 'fas fa-map', label: 'Claims map', route: '/assureur/map' },
+    { icon: 'fas fa-shield-alt', label: 'Anti-fraud', route: '/assureur/fraud', badge: 0 },
+    { icon: 'fas fa-chart-bar', label: 'Statistics', route:  '/assureur/statistiques' },
+    { icon: 'fas fa-tools', label: 'Manage garages', route:  '/assureur/garages'  }
   ];
 
   constructor(private claimService: ClaimService) {}
@@ -264,7 +264,7 @@ export class SidebarComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Erreur chargement fraud count:', err);
+        console.error('Error loading fraud count:', err);
         this.fraudBadgeCount = 3;
       }
     });

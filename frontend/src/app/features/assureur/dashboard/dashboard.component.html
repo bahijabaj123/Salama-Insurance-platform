@@ -1,7 +1,7 @@
 <div class="dashboard-container">
   <!-- Header -->
   <div class="dashboard-header">
-    <h1>📊 Insurer Dashboard</h1>
+    <h1>📊 Insurer dashboard</h1>
     <button mat-raised-button color="primary" (click)="refreshData()">
       <mat-icon>refresh</mat-icon> Refresh
     </button>
@@ -13,11 +13,11 @@
     <p>Loading data...</p>
   </div>
 
-   <!-- Claims Map -->
+   <!-- Claims map -->
   <mat-card class="map-card">
     <mat-card-header>
-      <mat-card-title>🗺️ Claims Map</mat-card-title>
-      <mat-card-subtitle>{{ claims.length }} claim(s) displayed</mat-card-subtitle>
+      <mat-card-title>🗺️ Claims map</mat-card-title>
+      <mat-card-subtitle>{{ claims.length }} claim(s) shown</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <app-tunisia-map 
@@ -29,7 +29,7 @@
   </mat-card>
   
 
-  <!-- Dashboard Content -->
+  <!-- Dashboard content -->
   <div *ngIf="!loading">
     <!-- KPI Cards -->
     <div class="kpi-grid">
@@ -85,11 +85,11 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Bar - Status -->
+      <!-- Bars - Status -->
       <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>📊 Status Distribution</mat-card-title>
-          <mat-card-subtitle>Click on a bar to filter</mat-card-subtitle>
+          <mat-card-title>📊 Breakdown by status</mat-card-title>
+          <mat-card-subtitle>Click a bar to filter</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">
@@ -98,10 +98,10 @@
         </mat-card-content>
       </mat-card>
 
-      <!-- Line - Evolution -->
+      <!-- Line - Trend -->
       <mat-card class="chart-card full-width">
         <mat-card-header>
-          <mat-card-title>📈 Claims Evolution</mat-card-title>
+          <mat-card-title>📈 Claims trend</mat-card-title>
           <mat-card-subtitle>Last 6 months</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
@@ -114,8 +114,8 @@
       <!-- Doughnut - Urgency -->
       <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>⚡ Urgency Level</mat-card-title>
-          <mat-card-subtitle>Distribution by criticality</mat-card-subtitle>
+          <mat-card-title>⚡ Urgency level</mat-card-title>
+          <mat-card-subtitle>Claims by criticality</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container small-chart">
