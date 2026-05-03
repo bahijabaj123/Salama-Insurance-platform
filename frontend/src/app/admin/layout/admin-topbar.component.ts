@@ -1,9 +1,11 @@
 import { Component, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   selector: 'app-admin-topbar',
-  imports: [RouterLink],
+  imports: [MatToolbarModule, MatButtonModule, MatIconModule],
   templateUrl: './admin-topbar.component.html',
   styleUrl: './admin-topbar.component.scss'
 })
@@ -22,4 +24,3 @@ export class AdminTopbarComponent {
     this.settingsClick.emit();
   }
 }
-

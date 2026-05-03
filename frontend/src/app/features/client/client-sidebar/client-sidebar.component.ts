@@ -15,22 +15,19 @@ import { RouterModule } from '@angular/router';
 
       <nav>
         <a routerLink="/client/dashboard" routerLinkActive="active">
-          <i class="fas fa-chart-line"></i> Tableau de bord
+          <i class="fas fa-chart-line"></i> Dashboard
         </a>
         <a routerLink="/client/sinistres" routerLinkActive="active">
-          <i class="fas fa-file-alt"></i> Mes sinistres
-        </a>
-        <a routerLink="/client/consultation-expert" routerLinkActive="active">
-          <i class="fas fa-user-tie"></i> Consultation d'expert
+          <i class="fas fa-file-alt"></i> My claims
         </a>
         <a routerLink="/client/constat" routerLinkActive="active">
-          <i class="fas fa-plus-circle"></i> Nouveau constat
+          <i class="fas fa-plus-circle"></i> New report
         </a>
-        <a routerLink="/client/sos" routerLinkActive="active">
-          <i class="fas fa-life-ring"></i> SOS disponible
+        <a routerLink="/client/garages" routerLinkActive="active">
+          <i class="fas fa-tools"></i> Available garages
         </a>
         <a routerLink="/client/contract" routerLinkActive="active">
-          <i class="fas fa-file-signature"></i> Mon contrat
+          <i class="fas fa-file-signature"></i> My contract
         </a>
         <a routerLink="/client/documents" routerLinkActive="active">
           <i class="fas fa-folder-open"></i> Documents
@@ -41,7 +38,7 @@ import { RouterModule } from '@angular/router';
 
         <div class="support-title">SUPPORT</div>
         <a routerLink="/client/assistant" routerLinkActive="active">
-          <i class="fas fa-robot"></i> Assistant IA
+          <i class="fas fa-robot"></i> AI Assistant
         </a>
         <a routerLink="/client/faq" routerLinkActive="active">
           <i class="fas fa-question-circle"></i> FAQ
@@ -52,7 +49,7 @@ import { RouterModule } from '@angular/router';
         <div class="user-avatar">AB</div>
         <div>
           <div class="user-name">Ahmed Ben Ali</div>
-          <div class="user-role">Client actif</div>
+          <div class="user-role">Active client</div>
         </div>
       </div>
     </aside>

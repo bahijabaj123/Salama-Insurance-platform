@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import {
   Claim, ClaimResponseDTO, ClaimStatus,
   Expert, FraudAnalysis, FraudDashboard,
@@ -13,7 +12,7 @@ export class ClaimService {
 
   // Backend sur le port 8082
   private readonly BASE = 'http://localhost:8082/api';
-
+  private readonly apiUrl = 'http://localhost:8082/api';
   constructor(private http: HttpClient) {}
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -41,32 +40,12 @@ export class ClaimService {
     return this.http.get<PagedResponse<Claim>>(`${this.BASE}/claims/paginated`, { params });
   }
 
-  createClaimFromAccident(accidentId: number, insurerId = 1): Observable<Claim> {
-    const params = new HttpParams().set('insurerId', insurerId);
-    return this.http.post<Claim>(
-      `${this.BASE}/claims/create-from-accident/${accidentId}`,
-      {},
-      { params }
-    );
-  }
+  createClaimFromAccident(accidentId: number, insurerId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/claims/create-from-accident/${accidentId}?insurerId=${insurerId}`, {});
+}
 
   updateClaim(id: number, payload: Partial<Claim>): Observable<Claim> {
     return this.http.put<Claim>(`${this.BASE}/claims/${id}`, payload);
-  }
-
-  /**
-   * Mise à jour des notes. Utilise PATCH si le backend est à jour ;
-   * si l’API répond 404 (ancien JAR sans route), retombe sur PUT { notes }.
-   */
-  patchClaimNotes(id: number, notes: string): Observable<Claim> {
-    return this.http.patch<Claim>(`${this.BASE}/claims/${id}/notes`, { notes }).pipe(
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 404) {
-          return this.updateClaim(id, { notes });
-        }
-        return throwError(() => err);
-      }),
-    );
   }
 
   deleteClaim(id: number): Observable<string> {
@@ -107,6 +86,11 @@ export class ClaimService {
   cancelClaim(claimId: number): Observable<Claim> {
     return this.http.patch<Claim>(`${this.BASE}/claims/${claimId}/cancel`, {});
   }
+
+saveNotification(data: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/notifications/save`, data);
+}
+
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FILTERS & SEARCH
@@ -268,4 +252,24 @@ export class ClaimService {
   downloadAccidentPdf(accidentId: number): void {
     window.open(`${this.BASE}/reports/accident/${accidentId}/pdf/download`, '_blank');
   }
+
+  uploadFinalInvoice(claimId: number, formData: FormData): Observable<Claim> {
+  return this.http.post<Claim>(`${this.apiUrl}/claims/${claimId}/upload-final-invoice`, formData);
+}
+
+// upload et telecharger les documents
+
+getClaimDocuments(claimId: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/documents/claim/${claimId}`);
+}
+
+downloadDocument(documentId: number): Observable<Blob> {
+  return this.http.get(`${this.apiUrl}/documents/download/${documentId}`, { responseType: 'blob' });
+}
+
+patchClaimNotes(claimId: number, notes: string): Observable<Claim> {
+  return this.http.patch<Claim>(`${this.BASE}/claims/${claimId}/notes`, { notes });
+}
+
+
 }

@@ -18,6 +18,7 @@ type State = 'loading' | 'ready' | 'error';
 
 @Component({
   selector: 'app-admin-role-requests',
+    standalone: true,
   imports: [DatePipe, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, MatTableModule, MatSnackBarModule],
   templateUrl: './admin-role-requests.component.html',
   styleUrl: './admin-role-requests.component.scss'

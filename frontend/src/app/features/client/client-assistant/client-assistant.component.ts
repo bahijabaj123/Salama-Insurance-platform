@@ -22,71 +22,71 @@ interface Message {
   ],
   template: `
     <div class="assistant-container">
-      <mat-card class="chat-card">
-        <mat-card-header>
-          <mat-icon mat-card-avatar>smart_toy</mat-icon>
-          <mat-card-title>Assistant IA Salama</mat-card-title>
-          <mat-card-subtitle>Poser votre question</mat-card-subtitle>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <div class="chat-messages" #chatMessages>
-            <div *ngFor="let msg of messages" class="message" [class.user]="msg.isUser">
-              <div class="message-avatar">
-                <mat-icon *ngIf="!msg.isUser">smart_toy</mat-icon>
-                <mat-icon *ngIf="msg.isUser">person</mat-icon>
-              </div>
-              <div class="message-bubble">
-                <div class="message-text" [innerHTML]="msg.text"></div>
-                <div class="message-time">{{ msg.timestamp | date:'HH:mm' }}</div>
-              </div>
-            </div>
-            <div *ngIf="isLoading" class="message bot">
-              <div class="message-avatar">
-                <mat-icon>smart_toy</mat-icon>
-              </div>
-              <div class="message-bubble typing-indicator">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
+  <mat-card class="chat-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>smart_toy</mat-icon>
+      <mat-card-title>Salama AI Assistant</mat-card-title>
+      <mat-card-subtitle>Ask your question</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="chat-messages" #chatMessages>
+        <div *ngFor="let msg of messages" class="message" [class.user]="msg.isUser">
+          <div class="message-avatar">
+            <mat-icon *ngIf="!msg.isUser">smart_toy</mat-icon>
+            <mat-icon *ngIf="msg.isUser">person</mat-icon>
           </div>
-        </mat-card-content>
+          <div class="message-bubble">
+            <div class="message-text" [innerHTML]="msg.text"></div>
+            <div class="message-time">{{ msg.timestamp | date:'HH:mm' }}</div>
+          </div>
+        </div>
+        <div *ngIf="isLoading" class="message bot">
+          <div class="message-avatar">
+            <mat-icon>smart_toy</mat-icon>
+          </div>
+          <div class="message-bubble typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
 
-        <mat-card-actions>
-          <div class="quick-suggestions">
-            <button mat-stroked-button (click)="sendQuickQuestion('Comment déclarer un sinistre ?')">
-              📝 Déclarer
-            </button>
-            <button mat-stroked-button (click)="sendQuickQuestion('Mes sinistres')">
-              📋 Mes sinistres
-            </button>
-            <button mat-stroked-button (click)="sendQuickQuestion('Statistiques')">
-              📊 Statistiques
-            </button>
-            <button mat-stroked-button (click)="sendQuickQuestion('Quels documents dois-je fournir ?')">
-              📄 Documents
-            </button>
-            <button mat-stroked-button (click)="sendQuickQuestion('Comment contacter mon expert ?')">
-              👨‍🔧 Expert
-            </button>
-            <button mat-stroked-button (click)="sendQuickQuestion('Quels sont les délais ?')">
-              ⏱️ Délais
-            </button>
-          </div>
+    <mat-card-actions>
+      <div class="quick-suggestions">
+        <button mat-stroked-button (click)="sendQuickQuestion('How to file a claim?')">
+          📝 File claim
+        </button>
+        <button mat-stroked-button (click)="sendQuickQuestion('My claims')">
+          📋 My claims
+        </button>
+        <button mat-stroked-button (click)="sendQuickQuestion('Statistics')">
+          📊 Statistics
+        </button>
+        <button mat-stroked-button (click)="sendQuickQuestion('What documents do I need?')">
+          📄 Documents
+        </button>
+        <button mat-stroked-button (click)="sendQuickQuestion('How to contact my expert?')">
+          👨‍🔧 Expert
+        </button>
+        <button mat-stroked-button (click)="sendQuickQuestion('What are the deadlines?')">
+          ⏱️ Deadlines
+        </button>
+      </div>
 
-          <div class="input-area">
-            <input [(ngModel)]="newMessage" 
-                   (keyup.enter)="sendMessage()"
-                   placeholder="Écrivez votre message..."
-                   class="message-input">
-            <button mat-raised-button color="primary" (click)="sendMessage()" [disabled]="!newMessage.trim() || isLoading">
-              <mat-icon>send</mat-icon>
-              Envoyer
-            </button>
-          </div>
-        </mat-card-actions>
-      </mat-card>
-    </div>
+      <div class="input-area">
+        <input [(ngModel)]="newMessage" 
+               (keyup.enter)="sendMessage()"
+               placeholder="Type your message..."
+               class="message-input">
+        <button mat-raised-button color="primary" (click)="sendMessage()" [disabled]="!newMessage.trim() || isLoading">
+          <mat-icon>send</mat-icon>
+          Send
+        </button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</div>
   `,
   styles: [`
     .assistant-container {

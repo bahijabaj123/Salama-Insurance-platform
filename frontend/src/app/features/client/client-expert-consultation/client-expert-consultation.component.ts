@@ -4,8 +4,6 @@ import { CommonModule } from '@angular/common';
 
 import { Router } from '@angular/router';
 
-import { MatButtonModule } from '@angular/material/button';
-
 import { MatIconModule } from '@angular/material/icon';
 
 
@@ -16,7 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 
   standalone: true,
 
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule],
 
   templateUrl: './client-expert-consultation.component.html',
 
@@ -31,13 +29,13 @@ export class ClientExpertConsultationComponent {
 
 
   goCommunicateWithExpert(): void {
-    void this.router.navigate(['/client/dashboard'], { fragment: 'expert-comm' });
+    void this.router.navigate(['/client/messages-expert']);
   }
 
 
 
   goFollow(): void {
-    void this.router.navigate(['/client/dashboard'], { fragment: 'follow-dash' });
+    void this.router.navigate(['/client/processing-stats']);
   }
 
 }

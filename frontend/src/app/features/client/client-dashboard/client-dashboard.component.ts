@@ -17,6 +17,7 @@ import { FilterHasExpertPipe } from '../../../core/pipes/filter-has-expert.pipe'
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { AuthStorageService } from '../../../core/auth/auth-storage.service';
 Chart.register(...registerables);
+
 interface NavItem {
   icon: string;
   label: string;
@@ -65,14 +66,14 @@ export class ClientDashboardComponent implements OnInit, OnDestroy, AfterViewIni
   loading = true;
   error = '';
 
-  // ── Client connecté (depuis AuthStorageService) ──────────────────────────
-currentUser = computed(() => this.authStorage.getUser());
-currentUserId = computed(() => this.currentUser()?.id);
-currentUserEmail = computed(() => this.currentUser()?.email);
+  // ── Connected client (from AuthStorageService) ──────────────────────────
+  currentUser = computed(() => this.authStorage.getUser());
+  currentUserId = computed(() => this.currentUser()?.id);
+  currentUserEmail = computed(() => this.currentUser()?.email);
 
   readonly CLIENT_NAME = computed(() => this.currentUser()?.fullName || 'Client');
   readonly CLIENT_EMAIL = computed(() => this.currentUser()?.email);
-  readonly CLIENT_REF = 'SA-2024-00847'; // À récupérer depuis l'API contrat plus tard
+  readonly CLIENT_REF = 'SA-2024-00847';
   readonly CLIENT_INIT = computed(() => {
     const name = this.currentUser()?.fullName || 'Client';
     const parts = name.split(' ');
@@ -82,20 +83,20 @@ currentUserEmail = computed(() => this.currentUser()?.email);
     return name.substring(0, 2).toUpperCase();
   });
 
- // ── Navigation ────────────────────────────────────────────────────────────
-navItems: NavItem[] = [
-  { icon: 'dashboard', label: 'Tableau de bord', route: '/client', active: true },
-  { icon: 'folder_open', label: 'Mes sinistres', route: '/client/sinistres' },
-  { icon: 'engineering', label: "Consultation d'expert", route: '/client/consultation-expert' },
-  { icon: 'add_circle', label: 'Nouveau constat', route: '/client/constat' },
-  { icon: 'emergency', label: 'SOS disponible', route: '/client/sos' },
-  { icon: 'description', label: 'Mon contrat', route: '/client/contrat' },
-  { icon: 'folder', label: 'Documents', route: '/client/documents' },
-  { icon: 'notifications', label: 'Notifications', route: '/client/notifications', badge: 3 },
-  { icon: 'smart_toy', label: 'Assistant IA', route: '/client/assistant' },
-];
+  // ── Navigation ────────────────────────────────────────────────────────────
+  navItems: NavItem[] = [
+    { icon: 'dashboard', label: 'Dashboard', route: '/client', active: true },
+    { icon: 'folder_open', label: 'My claims', route: '/client/sinistres' },
+    { icon: 'engineering', label: "Expert consultation", route: '/client/consultation-expert' },
+    { icon: 'add_circle', label: 'New report', route: '/client/constat' },
+    { icon: 'emergency', label: 'SOS available', route: '/client/sos' },
+    { icon: 'description', label: 'My contract', route: '/client/contrat' },
+    { icon: 'folder', label: 'Documents', route: '/client/documents' },
+    { icon: 'notifications', label: 'Notifications', route: '/client/notifications', badge: 3 },
+    { icon: 'smart_toy', label: 'AI Assistant', route: '/client/assistant' },
+  ];
 
-  // ── Constantes ────────────────────────────────────────────────────────────
+  // ── Constants ────────────────────────────────────────────────────────────
   readonly ClaimStatus = ClaimStatus;
   readonly STATUS_LABELS = STATUS_LABELS;
   readonly expertFullName = expertFullName;
@@ -109,11 +110,11 @@ navItems: NavItem[] = [
   };
 
   readonly TIMELINE_STEPS = [
-    { key: 'declared', label: 'Constat déclaré', icon: 'check' },
-    { key: 'opened', label: 'Sinistre ouvert', icon: 'check' },
-    { key: 'assigned', label: 'Expert assigné', icon: 'person' },
-    { key: 'expertise', label: "Rapport d'expertise", icon: 'search' },
-    { key: 'closed', label: 'Indemnisation', icon: 'paid' },
+    { key: 'declared', label: 'Report declared', icon: 'check' },
+    { key: 'opened', label: 'Claim opened', icon: 'check' },
+    { key: 'assigned', label: 'Expert assigned', icon: 'person' },
+    { key: 'expertise', label: "Expertise report", icon: 'search' },
+    { key: 'closed', label: 'Compensation', icon: 'paid' },
   ];
 
   constructor(
@@ -126,7 +127,7 @@ navItems: NavItem[] = [
   }
   
   ngAfterViewInit(): void {
-    // Le graphique sera initialisé après chargement des données
+    // Chart will be initialized after data loads
   }
   
   ngOnDestroy(): void { 
@@ -137,57 +138,53 @@ navItems: NavItem[] = [
     this.destroy$.complete(); 
   }
 
-  // ── Chargement ────────────────────────────────────────────────────────────
+  // ── Loading ────────────────────────────────────────────────────────────
 
- loadData(): void {
-  this.loading = true;
-  this.error = '';
+  loadData(): void {
+    this.loading = true;
+    this.error = '';
 
-  const clientEmail = this.CLIENT_EMAIL();
-  const clientId = this.currentUser()?.id;
-  
-  console.log('👤 Client connecté - ID:', clientId, 'Email:', clientEmail);
+    const clientEmail = this.CLIENT_EMAIL();
+    const clientId = this.currentUser()?.id;
+    
+    console.log('👤 Connected client - ID:', clientId, 'Email:', clientEmail);
 
-  this.claimService.getAllClaims().pipe(
-    takeUntil(this.destroy$),
-    finalize(() => this.loading = false),
-  ).subscribe({
-    next: (claims) => {
-      // Filtrer les sinistres par client (via l'objet client)
-      let mine: Claim[];
-      
-      if (clientId) {
-        // Méthode 1: Par ID (recommandé)
-        mine = claims.filter(c => (c as any).client?.id === clientId);
-      } else if (clientEmail) {
-        // Méthode 2: Par email
-        mine = claims.filter(c => (c as any).client?.email === clientEmail);
-      } else {
-        console.warn('⚠️ Aucun client connecté, affichage de tous les sinistres');
-        mine = claims;
-      }
+    this.claimService.getAllClaims().pipe(
+      takeUntil(this.destroy$),
+      finalize(() => this.loading = false),
+    ).subscribe({
+      next: (claims) => {
+        let mine: Claim[];
+        
+        if (clientId) {
+          mine = claims.filter(c => (c as any).client?.id === clientId);
+        } else if (clientEmail) {
+          mine = claims.filter(c => (c as any).client?.email === clientEmail);
+        } else {
+          console.warn('⚠️ No client connected, showing all claims');
+          mine = claims;
+        }
 
-      console.log(`📊 ${mine.length} sinistre(s) trouvé(s) pour le client`);
+        console.log(`📊 ${mine.length} claim(s) found for the client`);
 
-      this.allClaims = mine;
-      this.activeClaims = mine.filter(c =>
-        c.status !== ClaimStatus.CLOSED && c.status !== ClaimStatus.REJECTED
-      );
-      this.closedClaims = mine.filter(c => c.status === ClaimStatus.CLOSED);
+        this.allClaims = mine;
+        this.activeClaims = mine.filter(c =>
+          c.status !== ClaimStatus.CLOSED && c.status !== ClaimStatus.REJECTED
+        );
+        this.closedClaims = mine.filter(c => c.status === ClaimStatus.CLOSED);
 
-      this.latestClaim = [...mine]
-        .sort((a, b) => new Date(b.openingDate).getTime() - new Date(a.openingDate).getTime())[0];
+        this.latestClaim = [...mine]
+          .sort((a, b) => new Date(b.openingDate).getTime() - new Date(a.openingDate).getTime())[0];
 
-      this.buildKpis(mine);
-      setTimeout(() => this.initChart(), 200);
-    },
-    error: (err) => {
-      console.error('❌ Erreur:', err);
-      this.error = err.status === 0 ? 'Backend inaccessible (port 8082)' : `Erreur ${err.status}`;
-    },
-  });
-}
-
+        this.buildKpis(mine);
+        setTimeout(() => this.initChart(), 200);
+      },
+      error: (err) => {
+        console.error('❌ Error:', err);
+        this.error = err.status === 0 ? 'Backend unreachable (port 8082)' : `Error ${err.status}`;
+      },
+    });
+  }
 
   private buildKpis(claims: Claim[]): void {
     const closed = claims.filter(c => c.status === ClaimStatus.CLOSED).length;
@@ -197,32 +194,29 @@ navItems: NavItem[] = [
     const withExpert = claims.filter(c => c.expert).length;
 
     this.kpis = [
-      { label: 'Sinistres totaux', value: claims.length, sub: `${closed} clôturés`, color: '#185FA5' },
-      { label: 'En cours', value: active, sub: 'dossiers actifs', color: '#FF8C00' },
-      { label: 'Expert assigné', value: withExpert, sub: 'dossiers suivis', color: '#0F6E56' },
+      { label: 'Total claims', value: claims.length, sub: `${closed} closed`, color: '#185FA5' },
+      { label: 'In progress', value: active, sub: 'active files', color: '#FF8C00' },
+      { label: 'Expert assigned', value: withExpert, sub: 'tracked files', color: '#0F6E56' },
     ];
   }
 
-  // ── Graphique ─────────────────────────────────────────────────────────────
+  // ── Chart ─────────────────────────────────────────────────────────────
 
   private initChart(): void {
     if (!this.trendChartRef?.nativeElement) return;
     
-    // Compter les sinistres par mois (6 derniers mois)
     const monthMap = new Map<string, number>();
     const now = new Date();
     
-    // Initialiser les 6 derniers mois
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthKey = date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
       monthMap.set(monthKey, 0);
     }
     
-    // Compter les sinistres
     this.allClaims.forEach(claim => {
       const date = new Date(claim.openingDate);
-      const monthKey = date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
       if (monthMap.has(monthKey)) {
         monthMap.set(monthKey, (monthMap.get(monthKey) || 0) + 1);
       }
@@ -236,7 +230,7 @@ navItems: NavItem[] = [
       data: {
         labels: labels,
         datasets: [{
-          label: 'Sinistres',
+          label: 'Claims',
           data: data,
           borderColor: '#185FA5',
           backgroundColor: 'rgba(24, 95, 165, 0.1)',
@@ -252,7 +246,7 @@ navItems: NavItem[] = [
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.raw} sinistre(s)` } }
+          tooltip: { callbacks: { label: (ctx) => `${ctx.raw} claim(s)` } }
         },
         scales: {
           y: { beginAtZero: true, ticks: { stepSize: 1 } }
@@ -284,12 +278,12 @@ navItems: NavItem[] = [
 
   getTimelineDate(claim: Claim, stepKey: string): string {
     if (stepKey === 'declared' || stepKey === 'opened') {
-      return new Date(claim.openingDate).toLocaleDateString('fr-FR', {
+      return new Date(claim.openingDate).toLocaleDateString('en-US', {
         day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
     }
     if (stepKey === 'assigned' && claim.assignedDate) {
-      return new Date(claim.assignedDate).toLocaleDateString('fr-FR', {
+      return new Date(claim.assignedDate).toLocaleDateString('en-US', {
         day: '2-digit', month: 'short'
       });
     }
@@ -331,8 +325,6 @@ navItems: NavItem[] = [
   }
 
   goToNotifications(): void {
-  this.router.navigate(['/client/notifications']);
-}
-
-
+    this.router.navigate(['/client/notifications']);
+  }
 }

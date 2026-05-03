@@ -5,7 +5,6 @@ import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimService;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimServiceImpl;
-import org.example.salamainsurance.Service.ClaimManagement.IntelligentExpertAssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,9 +34,6 @@ public class ClaimController {
 
   @Autowired
   private ClaimServiceImpl claimServices;
-
-  @Autowired
-  private IntelligentExpertAssignmentService intelligentAssignmentService;
 
   // ========== CREATE ==========
 

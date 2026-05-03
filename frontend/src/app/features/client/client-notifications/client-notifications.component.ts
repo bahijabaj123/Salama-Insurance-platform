@@ -28,12 +28,12 @@ interface Notification {
       <div class="header">
         <h1>🔔 Notifications</h1>
         <button mat-stroked-button (click)="markAllAsRead()" *ngIf="unreadCount > 0">
-          <mat-icon>done_all</mat-icon> Tout marquer comme lu
+          <mat-icon>done_all</mat-icon> Mark all as read
         </button>
       </div>
 
       <mat-tab-group animationDuration="0ms">
-        <mat-tab label="Toutes">
+        <mat-tab label="All">
           <div class="tab-content">
             <div *ngFor="let notif of allNotifications" class="notification-item" [class.unread]="!notif.read" (click)="markAsRead(notif)">
               <div class="notif-icon" [class]="getIconClass(notif.type)">
@@ -47,12 +47,12 @@ interface Notification {
               <div class="notif-badge" *ngIf="!notif.read"><span class="dot"></span></div>
             </div>
             <div *ngIf="allNotifications.length === 0" class="empty-state">
-              <mat-icon>notifications_off</mat-icon><p>Aucune notification</p>
+              <mat-icon>notifications_off</mat-icon><p>No notifications</p>
             </div>
           </div>
         </mat-tab>
 
-        <mat-tab label="Non lues">
+        <mat-tab label="Unread">
           <div class="tab-content">
             <div *ngFor="let notif of unreadNotifications" class="notification-item unread" (click)="markAsRead(notif)">
               <div class="notif-icon" [class]="getIconClass(notif.type)">
@@ -65,7 +65,7 @@ interface Notification {
               </div>
             </div>
             <div *ngIf="unreadNotifications.length === 0" class="empty-state">
-              <mat-icon>done_all</mat-icon><p>Toutes vos notifications sont lues</p>
+              <mat-icon>done_all</mat-icon><p>All notifications are read</p>
             </div>
           </div>
         </mat-tab>
@@ -121,23 +121,23 @@ export class ClientNotificationsComponent implements OnInit {
       let notifId = 1;
       
       userClaims.forEach(claim => {
-        // Notification: Sinistre créé
+        // Notification: Claim created
         this.allNotifications.push({
           id: notifId++,
-          title: 'Sinistre enregistré',
-          message: `Votre sinistre ${claim.reference} a été enregistré avec succès.`,
+          title: 'Claim registered',
+          message: `Your claim ${claim.reference} has been successfully registered.`,
           date: new Date(claim.openingDate),
           read: false,
           type: 'claim_update',
           claimId: claim.id
         });
         
-        // Notification: Expert assigné
+        // Notification: Expert assigned
         if (claim.expert && claim.expert.firstName) {
           this.allNotifications.push({
             id: notifId++,
-            title: 'Expert assigné',
-            message: `L'expert ${claim.expert.firstName} ${claim.expert.lastName} a été assigné à votre sinistre ${claim.reference}.`,
+            title: 'Expert assigned',
+            message: `Expert ${claim.expert.firstName} ${claim.expert.lastName} has been assigned to your claim ${claim.reference}.`,
             date: new Date(claim.assignedDate || claim.openingDate),
             read: false,
             type: 'expert_assigned',
@@ -145,12 +145,12 @@ export class ClientNotificationsComponent implements OnInit {
           });
         }
         
-        // Notification: Sinistre clôturé
+        // Notification: Claim closed
         if (claim.status === 'CLOSED') {
           this.allNotifications.push({
             id: notifId++,
-            title: 'Sinistre clôturé',
-            message: `Votre sinistre ${claim.reference} a été clôturé. L'indemnisation a été versée.`,
+            title: 'Claim closed',
+            message: `Your claim ${claim.reference} has been closed. Compensation has been paid.`,
             date: new Date(claim.closingDate || claim.lastModifiedDate),
             read: false,
             type: 'payment',
@@ -159,7 +159,7 @@ export class ClientNotificationsComponent implements OnInit {
         }
       });
       
-      // Trier par date décroissante (plus récent en premier)
+      // Sort by date descending (most recent first)
       this.allNotifications.sort((a, b) => b.date.getTime() - a.date.getTime());
       this.updateUnreadCount();
     });
@@ -209,9 +209,9 @@ export class ClientNotificationsComponent implements OnInit {
     const diffMins = Math.floor((Date.now() - date.getTime()) / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-    if (diffMins < 60) return `il y a ${diffMins} min`;
-    if (diffHours < 24) return `il y a ${diffHours} h`;
-    if (diffDays < 7) return `il y a ${diffDays} j`;
-    return date.toLocaleDateString('fr-FR');
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} h ago`;
+    if (diffDays < 7) return `${diffDays} d ago`;
+    return date.toLocaleDateString('en-GB');
   }
 }

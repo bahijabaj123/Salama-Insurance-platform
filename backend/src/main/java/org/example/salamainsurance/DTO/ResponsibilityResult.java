@@ -23,4 +23,11 @@ public class ResponsibilityResult {
   public String getDecision() {
     return decision;
   }
+
+  public String getPercentA() {
+    return String.valueOf(driverAResponsibility);
+  }
+  public String getPercentB() {
+    return String.valueOf(driverBResponsibility);
+  }
 }

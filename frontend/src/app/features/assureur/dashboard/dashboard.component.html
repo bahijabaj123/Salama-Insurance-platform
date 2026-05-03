@@ -36,7 +36,7 @@
       <mat-card class="kpi-card" (click)="goToClaims()">
         <div class="kpi-icon blue"><mat-icon>assignment</mat-icon></div>
         <div class="kpi-value">{{ totalClaims }}</div>
-        <div class="kpi-label">Total claims</div>
+        <div class="kpi-label">Total Claims</div>
       </mat-card>
 
       <mat-card class="kpi-card" (click)="filterByStatus('OPENED')">
@@ -48,7 +48,7 @@
       <mat-card class="kpi-card" (click)="filterByStatus('ASSIGNED_TO_EXPERT')">
         <div class="kpi-icon cyan"><mat-icon>engineering</mat-icon></div>
         <div class="kpi-value">{{ inProgressClaims }}</div>
-        <div class="kpi-label">In progress</div>
+        <div class="kpi-label">In Progress</div>
       </mat-card>
 
       <mat-card class="kpi-card" (click)="filterByStatus('CLOSED')">
@@ -66,7 +66,7 @@
       <mat-card class="kpi-card">
         <div class="kpi-icon purple"><mat-icon>speed</mat-icon></div>
         <div class="kpi-value">{{ avgProcessingDays }}d</div>
-        <div class="kpi-label">Avg. processing</div>
+        <div class="kpi-label">Avg Processing</div>
       </mat-card>
     </div>
 
@@ -75,8 +75,8 @@
       <!-- Pie - Regions -->
       <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>📍 Claims by region</mat-card-title>
-          <mat-card-subtitle>Click a region to filter</mat-card-subtitle>
+          <mat-card-title>📍 Claims by Region</mat-card-title>
+          <mat-card-subtitle>Click on a region to filter</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <div class="chart-container">

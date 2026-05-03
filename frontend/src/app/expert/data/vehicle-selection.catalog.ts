@@ -41,6 +41,10 @@ export interface ExpertisePrefillPayload {
   selectionLabel?: string;
   estimationHint?: string;
   damages?: ExpertisePrefillDamage[];
+  /** ISO 8601 (ex. accident + heure) — utilisé par le détecteur de fraude (ex. déclaration de nuit). */
+  accidentAt?: string;
+  /** Sinistre lié — pour analyse serveur ultérieure */
+  claimId?: number;
 }
 
 function m(id: string, modelLabel: string, marque: string, imageUrl?: string): VehicleModelVariant {

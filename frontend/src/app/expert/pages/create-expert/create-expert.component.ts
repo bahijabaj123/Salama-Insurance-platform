@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-
+import * as faceapi from 'face-api.js';
 import { Expert, EXPERT_STATUSES, INTERVENTION_ZONES } from '../../models/expert.model';
 import { ExpertService } from '../../services/expert.service';
 
@@ -260,7 +260,9 @@ export class CreateExpertComponent implements OnInit, OnDestroy {
   private async ensureModelsLoaded(): Promise<void> {
     if (this.modelReady()) return;
     try {
-      this.faceapiLib ??= await import('face-api.js');
+if (!this.faceapiLib) {
+  this.faceapiLib = await import('face-api.js');
+}
       const faceapi = this.faceapiLib;
       await Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(this.modelUrl),

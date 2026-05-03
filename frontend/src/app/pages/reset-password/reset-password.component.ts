@@ -33,6 +33,7 @@ function confirmPasswordMatches(passwordControlName: string): ValidatorFn {
 
 @Component({
   selector: 'app-reset-password',
+    standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss'

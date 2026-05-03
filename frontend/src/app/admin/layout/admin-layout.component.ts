@@ -11,6 +11,7 @@ import { AdminTopbarComponent } from './admin-topbar.component';
 
 @Component({
   selector: 'app-admin-layout',
+   standalone: true,
   imports: [RouterOutlet, AdminSidebarComponent, AdminTopbarComponent, MatSidenavModule],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss'

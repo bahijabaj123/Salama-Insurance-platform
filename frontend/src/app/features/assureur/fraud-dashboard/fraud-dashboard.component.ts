@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClaimService } from '../../../core/services/claim.service';
 import { Claim } from '../../../core/models/claim.model';
 
@@ -41,47 +40,46 @@ interface FraudAlert {
     MatButtonModule,
     MatTableModule,
     MatChipsModule,
-    MatTabsModule,
-    MatTooltipModule
+    MatTabsModule
   ],
   template: `
     <div class="fraud-dashboard">
       <div class="dashboard-header">
-        <h1>🛡️ Anti-fraud</h1>
+        <h1>🛡️ Anti-fraude</h1>
         <button mat-raised-button color="primary" (click)="refreshData()">
-          <mat-icon>refresh</mat-icon> Analyze claims
+          <mat-icon>refresh</mat-icon> Analyser les sinistres
         </button>
       </div>
 
-      <!-- Stats -->
+      <!-- Statistiques -->
       <div class="stats-grid">
         <mat-card class="stat-card critical">
           <div class="stat-icon"><mat-icon>warning</mat-icon></div>
           <div class="stat-value">{{ criticalCount }}</div>
-          <div class="stat-label">Critical</div>
+          <div class="stat-label">Critique</div>
         </mat-card>
         <mat-card class="stat-card high">
           <div class="stat-icon"><mat-icon>error</mat-icon></div>
           <div class="stat-value">{{ highCount }}</div>
-          <div class="stat-label">High</div>
+          <div class="stat-label">Élevé</div>
         </mat-card>
         <mat-card class="stat-card medium">
           <div class="stat-icon"><mat-icon>info</mat-icon></div>
           <div class="stat-value">{{ mediumCount }}</div>
-          <div class="stat-label">Medium</div>
+          <div class="stat-label">Moyen</div>
         </mat-card>
         <mat-card class="stat-card total">
           <div class="stat-icon"><mat-icon>assignment</mat-icon></div>
           <div class="stat-value">{{ totalAnalyzed }}</div>
-          <div class="stat-label">Analyzed</div>
+          <div class="stat-label">Analysés</div>
         </mat-card>
       </div>
 
-      <!-- Detection rules -->
+      <!-- Règles de détection -->
       <mat-card class="rules-card">
         <mat-card-header>
           <mat-icon mat-card-avatar>gavel</mat-icon>
-          <mat-card-title>Fraud detection rules</mat-card-title>
+          <mat-card-title>Règles de détection de fraude</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="rules-grid">
@@ -89,25 +87,25 @@ interface FraudAlert {
               <div class="rule-code">{{ rule.code }}</div>
               <div class="rule-name">{{ rule.name }}</div>
               <div class="rule-desc">{{ rule.description }}</div>
-              <div class="rule-weight">Weight: {{ rule.weight }}</div>
+              <div class="rule-weight">Poids: {{ rule.weight }}</div>
             </div>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <!-- Fraud alerts -->
+      <!-- Alertes de fraude -->
       <mat-card class="alerts-card">
         <mat-card-header>
           <mat-icon mat-card-avatar>notifications_active</mat-icon>
-          <mat-card-title>Fraud alerts</mat-card-title>
+          <mat-card-title>Alertes de fraude</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="filters">
             <mat-chip-listbox>
-              <mat-chip-option [selected]="filterStatus === 'ALL'" (click)="filterStatus = 'ALL'">All</mat-chip-option>
-              <mat-chip-option [selected]="filterStatus === 'PENDING'" (click)="filterStatus = 'PENDING'">Pending</mat-chip-option>
-              <mat-chip-option [selected]="filterStatus === 'CONFIRMED'" (click)="filterStatus = 'CONFIRMED'">Confirmed</mat-chip-option>
-              <mat-chip-option [selected]="filterStatus === 'REJECTED'" (click)="filterStatus = 'REJECTED'">Rejected</mat-chip-option>
+              <mat-chip-option [selected]="filterStatus === 'ALL'" (click)="filterStatus = 'ALL'">Tous</mat-chip-option>
+              <mat-chip-option [selected]="filterStatus === 'PENDING'" (click)="filterStatus = 'PENDING'">En attente</mat-chip-option>
+              <mat-chip-option [selected]="filterStatus === 'CONFIRMED'" (click)="filterStatus = 'CONFIRMED'">Confirmés</mat-chip-option>
+              <mat-chip-option [selected]="filterStatus === 'REJECTED'" (click)="filterStatus = 'REJECTED'">Rejetés</mat-chip-option>
             </mat-chip-listbox>
           </div>
 
@@ -115,11 +113,11 @@ interface FraudAlert {
             <table>
               <thead>
                 <tr>
-                  <th>Reference</th>
-                  <th>Region</th>
+                  <th>Référence</th>
+                  <th>Région</th>
                   <th>Score</th>
-                  <th>Triggered rules</th>
-                  <th>Status</th>
+                  <th>Règles déclenchées</th>
+                  <th>Statut</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -149,19 +147,19 @@ interface FraudAlert {
                     </span>
                   </td>
                   <td class="actions">
-                    <button mat-icon-button color="primary" (click)="viewClaim(alert.claimId)" matTooltip="View claim">
+                    <button mat-icon-button color="primary" (click)="viewClaim(alert.claimId)" matTooltip="Voir sinistre">
                       <mat-icon>visibility</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" *ngIf="alert.status === 'PENDING'" (click)="confirmFraud(alert)" matTooltip="Confirm fraud">
+                    <button mat-icon-button color="warn" *ngIf="alert.status === 'PENDING'" (click)="confirmFraud(alert)" matTooltip="Confirmer fraude">
                       <mat-icon>check_circle</mat-icon>
                     </button>
-                    <button mat-icon-button *ngIf="alert.status === 'PENDING'" (click)="rejectFraud(alert)" matTooltip="Dismiss alert">
+                    <button mat-icon-button *ngIf="alert.status === 'PENDING'" (click)="rejectFraud(alert)" matTooltip="Rejeter alerte">
                       <mat-icon>cancel</mat-icon>
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="filteredAlerts.length === 0">
-                  <td colspan="6" class="empty-state">No fraud alerts</td>
+                  <td colspan="6" class="empty-state">Aucune alerte de fraude</td>
                 </tr>
               </tbody>
             </table>
@@ -365,14 +363,14 @@ export class FraudDashboardComponent implements OnInit {
   totalAnalyzed = 0;
 
   fraudRules: FraudRule[] = [
-    { id: 1, code: 'FR-001', name: 'Same driver', description: 'Same driver involved in multiple claims', weight: 25 },
-    { id: 2, code: 'FR-002', name: 'Same location', description: 'Multiple claims at the same place in a short time', weight: 20 },
-    { id: 3, code: 'FR-003', name: 'Late reporting', description: 'Claim reported more than 7 days after the accident', weight: 15 },
-    { id: 4, code: 'FR-004', name: 'Missing witnesses', description: 'No witnesses declared', weight: 10 },
-    { id: 5, code: 'FR-005', name: 'Incomplete documents', description: 'Supporting documents missing', weight: 15 },
-    { id: 6, code: 'FR-006', name: 'Contradictions', description: 'Contradictory information in the declaration', weight: 30 },
-    { id: 7, code: 'FR-007', name: 'Excessive value', description: 'Damage estimate unusually high', weight: 20 },
-    { id: 8, code: 'FR-008', name: 'Repetition', description: 'Same garage or same expert flagged as suspicious', weight: 25 }
+    { id: 1, code: 'FR-001', name: 'Même conducteur', description: 'Même conducteur impliqué dans plusieurs sinistres', weight: 25 },
+    { id: 2, code: 'FR-002', name: 'Même lieu', description: 'Plusieurs sinistres au même endroit en peu de temps', weight: 20 },
+    { id: 3, code: 'FR-003', name: 'Déclaration tardive', description: 'Sinistre déclaré plus de 7 jours après l\'accident', weight: 15 },
+    { id: 4, code: 'FR-004', name: 'Témoins manquants', description: 'Aucun témoin déclaré', weight: 10 },
+    { id: 5, code: 'FR-005', name: 'Documents incomplets', description: 'Pièces justificatives manquantes', weight: 15 },
+    { id: 6, code: 'FR-006', name: 'Contradictions', description: 'Informations contradictoires dans la déclaration', weight: 30 },
+    { id: 7, code: 'FR-007', name: 'Valeur excessive', description: 'Estimation des dommages anormalement élevée', weight: 20 },
+    { id: 8, code: 'FR-008', name: 'Répétition', description: 'Même garage ou même expert suspect', weight: 25 }
   ];
 
   constructor(
@@ -405,12 +403,10 @@ export class FraudDashboardComponent implements OnInit {
       }
       
       // Règle 2: Notes suspectes
-      if (claim.notes) {
-        const n = claim.notes.toLowerCase();
-        if (n.includes('contradiction') || n.includes('incohérence') || n.includes('inconsistency')) {
-          triggeredRules.push(this.fraudRules[5]);
-          fraudScore += 30;
-        }
+      if (claim.notes && (claim.notes.toLowerCase().includes('contradiction') || 
+          claim.notes.toLowerCase().includes('incohérence'))) {
+        triggeredRules.push(this.fraudRules[5]);
+        fraudScore += 30;
       }
       
       // Règle 3: Sinistre récent avec notes
@@ -446,7 +442,7 @@ export class FraudDashboardComponent implements OnInit {
         this.fraudAlerts.push({
           claimId: claim.id,
           claimReference: claim.reference,
-          region: claim.region || 'N/A',
+          region: claim.region || 'N/C',
           clientName: 'Client',
           fraudScore: fraudScore,
           riskLevel: riskLevel,
@@ -474,10 +470,10 @@ export class FraudDashboardComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      'PENDING': 'Pending',
-      'REVIEWED': 'Reviewed',
-      'CONFIRMED': 'Confirmed',
-      'REJECTED': 'Rejected'
+      'PENDING': 'En attente',
+      'REVIEWED': 'Révisé',
+      'CONFIRMED': 'Confirmé',
+      'REJECTED': 'Rejeté'
     };
     return labels[status] || status;
   }

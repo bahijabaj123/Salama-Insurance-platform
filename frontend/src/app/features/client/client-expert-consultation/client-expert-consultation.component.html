@@ -1,30 +1,52 @@
-<section class="expert-page">
-  <header class="expert-page__header">
-    <h1 class="expert-page__title">Consultation d'expert</h1>
-    <p class="expert-page__lead">
-      Choisissez une action pour échanger avec votre expert ou suivre l'avancement de vos dossiers.
-    </p>
-  </header>
+<section class="expert-page" aria-labelledby="expert-consult-title">
+  <div class="expert-card">
+    <div class="expert-card__accent" aria-hidden="true"></div>
 
-  <div class="expert-page__actions">
-    <button
-      mat-flat-button
-      type="button"
-      class="expert-page__btn expert-page__btn--primary"
-      (click)="goCommunicateWithExpert()"
-    >
-      <mat-icon aria-hidden="true">forum</mat-icon>
-      <span>Communiquer avec l'expert</span>
-    </button>
+    <header class="expert-card__header">
+      <span class="expert-card__eyebrow">Expert hub</span>
+      <h1 id="expert-consult-title" class="expert-card__title">Expert consultation</h1>
+      <p class="expert-card__lead">
+        Message your expert securely, or open live processing-time statistics for your claims (averages and
+        per-file durations).
+      </p>
+    </header>
 
-    <button
-      mat-stroked-button
-      type="button"
-      class="expert-page__btn expert-page__btn--secondary"
-      (click)="goFollow()"
-    >
-      <mat-icon aria-hidden="true">timeline</mat-icon>
-      <span>Suivre</span>
-    </button>
+    <div class="expert-card__actions" role="group" aria-label="Expert actions">
+      <button
+        type="button"
+        class="action-tile action-tile--primary"
+        (click)="goCommunicateWithExpert()"
+        aria-describedby="expert-primary-hint"
+      >
+        <span class="action-tile__icon-wrap" aria-hidden="true">
+          <mat-icon>forum</mat-icon>
+        </span>
+        <span class="action-tile__text">
+          <span class="action-tile__label">Chat with your expert</span>
+          <span id="expert-primary-hint" class="action-tile__hint">
+            Open the conversation thread linked to your file
+          </span>
+        </span>
+        <mat-icon class="action-tile__chevron" aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+
+      <button
+        type="button"
+        class="action-tile action-tile--secondary"
+        (click)="goFollow()"
+        aria-describedby="expert-secondary-hint"
+      >
+        <span class="action-tile__icon-wrap" aria-hidden="true">
+          <mat-icon>query_stats</mat-icon>
+        </span>
+        <span class="action-tile__text">
+          <span class="action-tile__label">Processing duration stats</span>
+          <span id="expert-secondary-hint" class="action-tile__hint">
+            Real-time elapsed time and average treatment duration for your files
+          </span>
+        </span>
+        <mat-icon class="action-tile__chevron" aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+    </div>
   </div>
 </section>

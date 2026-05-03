@@ -1,7 +1,7 @@
 <div class="client-app">
 
   <!-- ═══════════════════════════════════════════════════════════════════ -->
-  <!-- SIDEBAR (TON SIDEBAR)                                              -->
+  <!-- SIDEBAR                                                            -->
   <!-- ═══════════════════════════════════════════════════════════════════ -->
   <aside class="sidebar">
     <div class="logo-zone">
@@ -9,7 +9,7 @@
         <div class="logo-s">S</div>
         <div>
           <div class="logo-name">Salama Insurance</div>
-          <div class="logo-sub">Espace client</div>
+          <div class="logo-sub">Client Space</div>
         </div>
       </div>
     </div>
@@ -17,7 +17,7 @@
     <nav class="nav">
       <div class="nav-label">Menu</div>
       
-      <!-- Première partie : liens principaux -->
+      <!-- Main links -->
       <a *ngFor="let item of navItems"
          class="nav-item"
          [class.active]="item.active"
@@ -25,22 +25,22 @@
         <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
         <span>{{ item.label }}</span>
         <span class="nav-badge" *ngIf="item.badge">{{ item.badge }}</span>
-        <span class="nav-badge" *ngIf="!item.badge && item.label === 'Mes sinistres' && activeClaims.length">
+        <span class="nav-badge" *ngIf="!item.badge && item.label === 'My claims' && activeClaims.length">
           {{ activeClaims.length }}
         </span>
       </a>
       
-      <!-- Séparateur -->
+      <!-- Separator -->
       <div class="nav-divider"></div>
       
-      <!-- Deuxième partie : profil et déconnexion -->
+      <!-- Profile and logout -->
       <a routerLink="/client/profile" class="nav-item">
         <mat-icon class="nav-icon">person</mat-icon>
-        <span>Mon profil</span>
+        <span>My profile</span>
       </a>
       <a routerLink="/client/logout" class="nav-item">
         <mat-icon class="nav-icon">logout</mat-icon>
-        <span>Déconnexion</span>
+        <span>Logout</span>
       </a>
     </nav>
 
@@ -48,7 +48,7 @@
       <div class="user-av">{{ CLIENT_INIT() }}</div>
       <div class="user-info">
         <div class="user-name">{{ CLIENT_NAME() }}</div>
-        <div class="user-role">Client Salama</div>
+        <div class="user-role">Salama Client</div>
       </div>
     </div>
   </aside>
@@ -61,8 +61,8 @@
     <!-- Topbar -->
     <header class="topbar">
       <div>
-        <div class="topbar-title">Tableau de bord</div>
-        <div class="topbar-sub">Bienvenue, {{ CLIENT_NAME() }} — voici l'état de vos dossiers</div>
+        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-sub">Welcome, {{ CLIENT_NAME() }} — here is the status of your files</div>
       </div>
       <div class="topbar-right">
         <div class="notif-btn" matTooltip="Notifications" (click)="goToNotifications()">
@@ -71,7 +71,7 @@
         </div>
         <button class="chat-fab" (click)="openAssistant()">
           <mat-icon>smart_toy</mat-icon>
-          Assistant IA
+          AI Assistant
         </button>
       </div>
     </header>

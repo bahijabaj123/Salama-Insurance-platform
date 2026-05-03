@@ -1,3 +1,37 @@
+<mat-toolbar class="topbar">
+  <div class="topbar__left">
+    <div class="topbar__titles">
+      <span class="topbar__eyebrow">Admin console</span>
+      <span class="topbar__title">{{ pageTitle() }}</span>
+    </div>
+  </div>
+
+  <div class="topbar__search" role="search" aria-label="Global search (UI only)">
+    <mat-icon class="topbar__search-icon" aria-hidden="true">search</mat-icon>
+    <input class="topbar__search-input" type="search" placeholder="Search…" />
+    <span class="topbar__search-kbd" aria-hidden="true">Ctrl K</span>
+  </div>
+
+  <div class="topbar__right">
+    <button mat-icon-button type="button" class="topbar__icon-btn" aria-label="Notifications" (click)="onNotifications()">
+      <mat-icon>notifications</mat-icon>
+    </button>
+    <button mat-icon-button type="button" class="topbar__icon-btn" aria-label="Settings" (click)="onSettings()">
+      <mat-icon>settings</mat-icon>
+    </button>
+
+    @if (identity(); as id) {
+      <div class="topbar__identity" [attr.title]="id.name">
+        <div class="avatar" aria-hidden="true">{{ id.initials }}</div>
+        <div class="identity">
+          <span class="identity__name">{{ id.name }}</span>
+          <span class="identity__role">Administrator</span>
+        </div>
+      </div>
+    }
+  </div>
+</mat-toolbar>
+
 <header class="entry__nav" aria-label="Admin primary">
   <div class="entry__nav-inner">
     <div class="home-nav" role="navigation" aria-label="Admin primary navigation">

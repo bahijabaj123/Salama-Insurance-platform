@@ -16,7 +16,7 @@ export interface EmailRequest {
 })
 export class EmailService {
   private readonly BASE = 'http://localhost:8082/api/email';
-
+  
   constructor(private http: HttpClient) {}
 
   // Envoi d'email personnalisé pour mise à jour de sinistre
@@ -28,10 +28,20 @@ export class EmailService {
     return this.http.post<string>(`${this.BASE}/send-claim-update`, request);
   }
 
-
   // Envoi de notification urgente
   sendUrgentNotification(emailData: EmailRequest): Observable<string> {
     return this.http.post<string>(`${this.BASE}/send-urgent-notification`, emailData);
+  }
+
+  sendClientNotification(data: {
+    to: string;
+    subject: string;
+    message: string;
+    claimId: number;
+    claimReference: string;
+    clientName?: string;
+  }): Observable<any> {
+      return this.http.post(`${this.BASE}/notify-client`, data, { responseType: 'text' });
   }
 
   // Envoi d'email d'assignation d'expert

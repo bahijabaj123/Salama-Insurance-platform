@@ -6,18 +6,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Chart, registerables } from 'chart.js';
-import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ClaimService } from '../../../core/services/claim.service';
 import { AuthStorageService } from '../../../core/auth/auth-storage.service';
 import { Claim, ClaimStatus, STATUS_LABELS, STATUS_BADGE_CSS } from '../../../core/models/claim.model';
+import { FilterHasExpertPipe } from '../../../core/pipes/filter-has-expert.pipe';
 import { ClientExpertMessagesComponent } from '../client-expert-messages/client-expert-messages.component';
+import { Subject } from 'rxjs';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-client-dashboard-home',
-  standalone: true,
   imports: [
     CommonModule,
     RouterModule,
@@ -25,15 +25,16 @@ Chart.register(...registerables);
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    FilterHasExpertPipe,
     ClientExpertMessagesComponent,
   ],
-  templateUrl: './client-dashboard-home.component.html',  // ⚠️ On va créer ce fichier
-  styleUrls: ['./client-dashboard.component.scss']  // ← Réutilise le CSS existant !
+  templateUrl: './client-dashboard-home.component.html',
+  styleUrls: ['./client-dashboard.component.scss']
 })
 export class ClientDashboardHomeComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('trendChart') trendChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('dashboardDetails') dashboardDetailsRef!: ElementRef<HTMLElement>;
-
+  
   loading = true;
   error = '';
   allClaims: Claim[] = [];
@@ -130,44 +131,43 @@ export class ClientDashboardHomeComponent implements OnInit, OnDestroy, AfterVie
   STATUS_LABELS = STATUS_LABELS;
 
   loadData(): void {
-  this.loading = true;
-  this.error = '';
+    this.loading = true;
+    this.error = '';
 
-  const currentUser = this.authStorage.getUser();
-  const clientId = currentUser?.id;
-  const clientEmail = currentUser?.email;
+    const currentUser = this.authStorage.getUser();
+    const clientId = currentUser?.id;
+    const clientEmail = currentUser?.email;
 
-  console.log('👤 HOME - Client connecté - ID:', clientId, 'Email:', clientEmail);
+    console.log('👤 HOME - Client connecté - ID:', clientId, 'Email:', clientEmail);
 
-  this.claimService.getAllClaims().subscribe({
-    next: (claims) => {
-      // Filtrer par client ID
-      let clientClaims: Claim[];
-      
-      if (clientId) {
-        clientClaims = claims.filter(c => (c as any).client?.id === clientId);
-      } else if (clientEmail) {
-        clientClaims = claims.filter(c => (c as any).client?.email === clientEmail);
-      } else {
-        clientClaims = [];
+    this.claimService.getAllClaims().subscribe({
+      next: (claims) => {
+        let clientClaims: Claim[];
+        
+        if (clientId) {
+          clientClaims = claims.filter(c => (c as any).client?.id === clientId);
+        } else if (clientEmail) {
+          clientClaims = claims.filter(c => (c as any).client?.email === clientEmail);
+        } else {
+          clientClaims = [];
+        }
+
+        console.log(`📊 HOME - ${clientClaims.length} sinistre(s) trouvé(s) pour le client`);
+        
+        this.allClaims = clientClaims;
+
+        this.loading = false;
+        setTimeout(() => this.initChart(), 100);
+        this.queueScrollToFragment();
+      },
+      error: (err) => {
+        console.error('❌ HOME - Erreur:', err);
+        this.error = 'Erreur de chargement';
+        this.loading = false;
+        this.queueScrollToFragment();
       }
-
-      console.log(`📊 HOME - ${clientClaims.length} sinistre(s) trouvé(s) pour le client`);
-      
-      this.allClaims = clientClaims;
-
-      this.loading = false;
-      setTimeout(() => this.initChart(), 100);
-      this.queueScrollToFragment();
-    },
-    error: (err) => {
-      console.error('❌ HOME - Erreur:', err);
-      this.error = 'Erreur de chargement';
-      this.loading = false;
-      this.queueScrollToFragment();
-    }
-  });
-}
+    });
+  }
 
   private queueScrollToFragment(): void {
     const f = this.router.parseUrl(this.router.url).fragment;
@@ -176,7 +176,6 @@ export class ClientDashboardHomeComponent implements OnInit, OnDestroy, AfterVie
       document.getElementById(f)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 220);
   }
-
 
   initChart(): void {
     if (!this.trendChartRef?.nativeElement) return;
@@ -238,6 +237,4 @@ export class ClientDashboardHomeComponent implements OnInit, OnDestroy, AfterVie
   trackById(_: number, claim: Claim): number {
     return claim.id;
   }
-
-  
 }

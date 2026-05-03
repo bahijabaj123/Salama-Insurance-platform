@@ -9,7 +9,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { ClaimService } from '../../../core/services/claim.service';
 import { Claim, ClaimStatus, STATUS_LABELS } from '../../../core/models/claim.model';
 
-// ─── Import Chart.js avec types explicites ────────────────────────────────────
+// ─── Import Chart.js with explicit types ────────────────────────────────────
 import {
   Chart, registerables,
   ChartEvent, ActiveElement, TooltipItem,
@@ -84,7 +84,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ⭐ CORRIGÉ : Ajout de /assureur
   goToClaim(claimId: number): void {
     this.router.navigate(['/assureur/claims', claimId]);
   }
@@ -102,7 +101,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   }
 
   prepareChartData(): void {
-    // Par région
+    // By region
     const regionMap = new Map<string, number>();
     this.claims.forEach(c => {
       if (c.region) regionMap.set(c.region, (regionMap.get(c.region) ?? 0) + 1);
@@ -112,7 +111,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
 
-    // Évolution mensuelle
+    // Monthly evolution
     const monthMap = new Map<string, number>();
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
@@ -127,7 +126,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
     this.monthlyData = Array.from(monthMap.entries()).map(([month, count]) => ({ month, count }));
 
-    // Distribution urgence
+    // Urgency distribution
     this.urgencyDistribution = { low: 0, medium: 0, high: 0 };
     this.claims.forEach(c => {
       const s = c.urgencyScore ?? 0;
@@ -137,7 +136,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ⭐ CORRIGÉ : Ajout de /assureur
   filterByRegion(region: string): void {
     this.router.navigate(['/assureur/claims'], { queryParams: { region } });
   }
@@ -153,13 +151,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Détruire les anciens
+    // Destroy old charts
     this.regionChart?.destroy();
     this.statusChart?.destroy();
     this.trendChart?.destroy();
     this.urgencyChart?.destroy();
 
-    // ── Graphique 1 : Camembert régions ──────────────────────────────────
+    // ── Chart 1: Region pie chart ──────────────────────────────────
     this.regionChart = new Chart(this.regionChartRef.nativeElement, {
       type: 'pie',
       data: {
@@ -182,7 +180,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             },
           },
         },
-        // ⭐ CORRIGÉ : Ajout de /assureur
         onClick: (_event: ChartEvent, active: ActiveElement[]) => {
           if (active.length > 0) {
             const region = this.regionData[active[0].index].region;
@@ -192,7 +189,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
     });
 
-    // ── Graphique 2 : Barres statuts ─────────────────────────────────────
+    // ── Chart 2: Status bar chart ─────────────────────────────────────
     const statusMap = [
       ClaimStatus.OPENED,
       ClaimStatus.ASSIGNED_TO_EXPERT,
@@ -218,7 +215,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         responsive:          true,
         maintainAspectRatio: false,
         scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-        // ⭐ CORRIGÉ : Ajout de /assureur
         onClick: (_event: ChartEvent, active: ActiveElement[]) => {
           if (active.length > 0) {
             const status = statusMap[active[0].index];
@@ -228,7 +224,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
     });
 
-    // ── Graphique 3 : Ligne évolution mensuelle ───────────────────────────
+    // ── Chart 3: Monthly trend line chart ───────────────────────────
     this.trendChart = new Chart(this.trendChartRef.nativeElement, {
       type: 'line',
       data: {
@@ -252,7 +248,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       },
     });
 
-    // ── Graphique 4 : Donut urgence ───────────────────────────────────────
+    // ── Chart 4: Urgency donut chart ───────────────────────────────────────
     this.urgencyChart = new Chart(this.urgencyChartRef.nativeElement, {
       type: 'doughnut',
       data: {
@@ -273,12 +269,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
   refreshData(): void { this.loadData(); }
   
-  // ⭐ CORRIGÉ : Ajout de /assureur
   goToClaims(): void { 
     this.router.navigate(['/assureur/claims']); 
   }
   
-  // ⭐ CORRIGÉ : Ajout de /assureur
   filterByStatus(status: string): void {
     this.router.navigate(['/assureur/claims'], { queryParams: { status } });
   }

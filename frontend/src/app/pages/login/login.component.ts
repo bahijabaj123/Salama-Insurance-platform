@@ -16,6 +16,7 @@ type LoginServerFieldKey = 'email' | 'password';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [ReactiveFormsModule, RouterLink, HomeNavbarComponent, SilkBackgroundComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'

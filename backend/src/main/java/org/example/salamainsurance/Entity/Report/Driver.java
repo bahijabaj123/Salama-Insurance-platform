@@ -2,10 +2,8 @@ package org.example.salamainsurance.Entity.Report;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 
 import java.time.LocalDate;
-
 import java.util.List;
 
 @Entity
@@ -24,11 +22,14 @@ public class Driver {
   private String cin;  // National ID / CIN
   private String address; // Adresse
   private String phoneNumber; // Telephone
+  private String email;
   private String licenseNumber; // NumPermis
   private String insuranceCompany; // Assurance
   private String policyNumber; // NumContrat
   private String licensePlate; // Immatriculation
   private String carMake; // MarqueVoiture
+
+  @Column(columnDefinition = "LONGTEXT")
   private String signature;
 
   @Column(name = "date_of_birth")
@@ -38,7 +39,6 @@ public class Driver {
   @JoinColumn(name = "accident_id")
   @JsonBackReference
   private Accident accident;
-  private String email;
 
   @ElementCollection(targetClass = Circumstances.class)
   @CollectionTable(
@@ -107,6 +107,14 @@ public class Driver {
     this.phoneNumber = phoneNumber;
   }
 
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
   public String getLicenseNumber() {
     return licenseNumber;
   }
@@ -155,27 +163,6 @@ public class Driver {
     this.signature = signature;
   }
 
-  public Accident getAccident() {
-    return accident;
-  }
-
-  public void setAccident(Accident accident) {
-    this.accident = accident;
-  }
-
-  //ajout bahija
-  public String getRegion() {
-    return "";
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
   public LocalDate getDateOfBirth() {
     return dateOfBirth;
   }
@@ -183,6 +170,12 @@ public class Driver {
   public void setDateOfBirth(LocalDate dateOfBirth) {
     this.dateOfBirth = dateOfBirth;
   }
+
+  public Accident getAccident() {
+    return accident;
+  }
+
+  public void setAccident(Accident accident) {
+    this.accident = accident;
+  }
 }
-
-

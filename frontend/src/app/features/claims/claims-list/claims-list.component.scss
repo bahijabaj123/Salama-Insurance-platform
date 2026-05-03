@@ -33,7 +33,6 @@ $radius-lg: 12px;
   font-weight: 500;
   animation: slideIn .25s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,.12);
-
   button { background: none; border: none; cursor: pointer; font-size: 18px; line-height: 1; margin-left: 8px; }
 }
 .toast-success { background: #EAF3DE; color: #3B6D11; border: 1px solid #C0DD97; }
@@ -46,8 +45,10 @@ $radius-lg: 12px;
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 .page-header {
-  display: flex; align-items: flex-start;
-  justify-content: space-between; margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
 .page-title { font-size: 22px; font-weight: 600; color: $text; margin: 0 0 4px; }
 .page-sub   { font-size: 13px; color: $muted; margin: 0; }
@@ -55,24 +56,42 @@ $radius-lg: 12px;
 
 // ─── Filtres ──────────────────────────────────────────────────────────────────
 .filters-bar {
-  display: flex; gap: 12px; margin-bottom: 16px; align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
   ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
 }
-
 .search-wrap {
-  flex: 1; max-width: 360px;
-  display: flex; align-items: center; gap: 8px;
-  background: white; border: 1px solid $border; border-radius: $radius;
-  padding: 0 12px; height: 44px;
+  flex: 1;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0 12px;
+  height: 44px;
   &:focus-within { border-color: $primary; }
 }
 .search-icon { font-size: 18px; width: 18px; height: 18px; color: $muted; flex-shrink: 0; }
 .search-input {
-  flex: 1; border: none; outline: none; font-size: 13px; color: $text; background: transparent;
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: $text;
+  background: transparent;
 }
 .clear-btn {
-  background: none; border: none; cursor: pointer; display: flex; align-items: center;
-  color: $muted; padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: $muted;
+  padding: 0;
   mat-icon { font-size: 16px; width: 16px; height: 16px; }
 }
 .region-field { min-width: 180px; }
@@ -84,75 +103,71 @@ $radius-lg: 12px;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
 }
-
 .filter-row {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
   align-items: flex-end;
 }
-
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #666;
-  }
+  label { font-size: 12px; font-weight: 600; color: #666; }
 }
 .range-inputs {
   display: flex;
   align-items: center;
   gap: 8px;
-  
-  span {
-    color: #666;
-  }
-}
-
-.filter-field {
-  flex: 1;
-  min-width: 120px;
+  span { color: #666; }
 }
 .filter-input {
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   width: 100px;
-  
-  &:focus {
-    outline: none;
-    border-color: #185FA5;
-  }
+  &:focus { outline: none; border-color: #185FA5; }
 }
-
-.reset-btn {
-  height: 36px;
-}
+.reset-btn { height: 36px; }
 
 // ─── Chips ────────────────────────────────────────────────────────────────────
 .status-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px; border-radius: 20px;
-  border: 1px solid $border; background: white;
-  font-size: 12px; color: $muted; cursor: pointer; transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid $border;
+  background: white;
+  font-size: 12px;
+  color: $muted;
+  cursor: pointer;
+  transition: all .15s;
   &:hover { background: $surface; }
   &.active { background: $primary; color: white; border-color: $primary;
     .chip-n { background: rgba(255,255,255,.25); color: white; } }
 }
 .chip-n {
-  background: $surface; color: $muted;
-  font-size: 10px; font-weight: 600;
-  padding: 1px 7px; border-radius: 20px; min-width: 22px; text-align: center;
+  background: $surface;
+  color: $muted;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 20px;
+  min-width: 22px;
+  text-align: center;
 }
 
 // ─── États ────────────────────────────────────────────────────────────────────
 .center-state {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 80px 24px; color: $muted; gap: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  color: $muted;
+  gap: 12px;
   mat-icon { font-size: 44px; width: 44px; height: 44px; opacity: .35; }
   p { font-size: 14px; margin: 0; }
 }
@@ -160,44 +175,57 @@ $radius-lg: 12px;
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 .table-wrap {
-  background: white; border: 1px solid $border;
-  border-radius: $radius-lg; overflow: hidden;
+  background: white;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  overflow-x: auto;
 }
-table.claims-table {
-  width: 100%; border-collapse: collapse;
+.claims-table {
+  width: 100%;
+  border-collapse: collapse;
   thead tr { background: $surface; border-bottom: 1px solid $border; }
   th {
-    padding: 11px 14px; font-size: 11px; font-weight: 600;
-    color: $muted; text-align: left; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap;
+    padding: 11px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    color: $muted;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
   }
   td { padding: 12px 14px; font-size: 13px; color: $text; border-bottom: 1px solid rgba($border,.6); vertical-align: middle; }
 }
-.col-check   { width: 44px; }
+.col-check { width: 44px; }
 .col-actions {
-  width: 228px;
+  width: 260px;
   text-align: right;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0;
+  white-space: nowrap;
+  button { margin: 0 2px; }
 }
-
 .claim-row {
-  cursor: pointer; transition: background .1s;
+  cursor: pointer;
+  transition: background .1s;
   &:hover { background: rgba($primary,.03); }
   &:last-child td { border-bottom: none; }
   &.selected { background: rgba($primary,.06); }
 }
-
 .ref {
-  font-family: 'Courier New', monospace; font-size: 12px; font-weight: 700;
-  color: $primary; background: rgba($primary,.08); padding: 3px 8px; border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: $primary;
+  background: rgba($primary,.08);
+  padding: 3px 8px;
+  border-radius: 4px;
 }
-
-// Status badges
 .status-badge {
-  display: inline-flex; padding: 3px 10px; border-radius: 20px;
-  font-size: 11px; font-weight: 600; white-space: nowrap;
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 .status-opened    { background: #E6F1FB; color: #185FA5; }
 .status-assigned  { background: #FAEEDA; color: #854F0B; }
@@ -205,26 +233,37 @@ table.claims-table {
 .status-closed    { background: #EAF3DE; color: #3B6D11; }
 .status-rejected  { background: #FCEBEB; color: #A32D2D; }
 
-// Expert cell
 .expert-cell { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
 .expert-avatar {
-  width: 26px; height: 26px; border-radius: 50%;
-  background: rgba($primary,.12); color: $primary;
-  font-size: 10px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba($primary,.12);
+  color: $primary;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-
 .btn-assign {
-  font-size: 11px !important; height: 26px !important;
-  padding: 0 8px !important; color: $primary !important;
+  font-size: 11px !important;
+  height: 26px !important;
+  padding: 0 8px !important;
+  color: $primary !important;
   mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  mat-spinner { display: inline-block; margin-right: 4px; }
 }
 
-// Urgency bar
 .urgency-bar { display: flex; align-items: center; gap: 8px; }
 .urgency-fill {
-  height: 4px; border-radius: 2px; min-width: 4px; max-width: 60px;
-  width: 60px; transition: width .3s;
+  height: 4px;
+  border-radius: 2px;
+  min-width: 4px;
+  max-width: 60px;
+  width: 60px;
+  transition: width .3s;
 }
 .urgency-val { font-size: 11px; color: $muted; min-width: 20px; }
 .u-high { background: #A32D2D; }
@@ -233,119 +272,185 @@ table.claims-table {
 
 .text-muted { color: $muted; font-size: 12px; }
 
-// Pagination
 .pagination {
-  display: flex; align-items: center; justify-content: center;
-  gap: 4px; padding: 14px; border-top: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px;
+  border-top: 1px solid $border;
 }
 .page-btn {
-  width: 30px; height: 30px; border-radius: 6px;
-  border: 1px solid $border; background: white;
-  font-size: 12px; cursor: pointer; transition: all .15s;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid $border;
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
   &:hover  { background: $surface; }
   &.active { background: $primary; color: white; border-color: $primary; }
 }
 .page-info { font-size: 12px; color: $muted; margin-left: 10px; }
 
-// ─── MODALS ───────────────────────────────────────────────────────────────────
+// ─── MODALES QUI MARCHENT ───────────────────────────────────────────────────
 .modal-overlay {
-  position: fixed; inset: 0; z-index: 1000;
-  background: rgba(0,0,0,.45);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  animation: fadeOv .2s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-@keyframes fadeOv { from { opacity: 0; } to { opacity: 1; } }
-
 .modal {
-  background: white; border-radius: $radius-lg;
-  width: 100%; max-width: 500px;
-  max-height: 90vh; overflow-y: auto;
-  animation: slideUp .22s ease;
+  background: white;
+  border-radius: 16px;
+  width: 500px;
+  max-width: 90%;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
 }
-.modal-sm { max-width: 420px; }
-.modal-lg { max-width: 700px; }
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: none; }
-}
-
+.modal-sm { width: 400px; }
+.modal-lg { width: 700px; }
 .modal-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid $border;
-  h2 { font-size: 17px; font-weight: 600; color: $text; margin: 0; }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 .modal-ref {
-  font-family: 'Courier New', monospace; font-size: 12px;
-  color: $primary; background: rgba($primary,.08); padding: 2px 8px; border-radius: 4px; margin-top: 4px; display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: $primary;
+  background: rgba($primary,.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: block;
 }
-.modal-body  { padding: 20px 24px; }
-.modal-hint  { font-size: 13px; color: $muted; margin-bottom: 16px; line-height: 1.5; }
+.modal-body { padding: 20px; }
 .modal-footer {
-  display: flex; gap: 10px; justify-content: flex-end;
-  padding: 16px 24px; border-top: 1px solid $border;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
 }
-.full-width { width: 100%; margin-bottom: 4px; }
+.full-width { width: 100%; margin-bottom: 16px; }
+.modal-hint {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 16px;
+}
 
 .delete-warning {
-  display: flex; gap: 12px; align-items: flex-start;
-  background: #FCEBEB; border: 1px solid #F09595;
-  border-radius: $radius; padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #FCEBEB;
+  border: 1px solid #F09595;
+  border-radius: $radius;
+  padding: 16px;
   mat-icon { color: $danger; flex-shrink: 0; margin-top: 2px; }
   p { margin: 0; font-size: 14px; color: #712B13; line-height: 1.5; }
 }
 
-// ─── Assign modal ─────────────────────────────────────────────────────────────
 .auto-assign-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  background: rgba($primary,.04); border: 1px solid rgba($primary,.15);
-  border-radius: $radius; padding: 16px; margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba($primary,.04);
+  border: 1px solid rgba($primary,.15);
+  border-radius: $radius;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 .auto-title { font-size: 14px; font-weight: 600; color: $text; }
 .auto-sub   { font-size: 12px; color: $muted; margin-top: 2px; }
-
 .assign-divider {
-  display: flex; align-items: center; gap: 12px;
-  margin: 16px 0; color: $muted; font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: $muted;
+  font-size: 12px;
   &::before, &::after { content: ''; flex: 1; height: 1px; background: $border; }
 }
-
-.experts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 10px; }
-
+.experts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
 .expert-card {
-  position: relative; background: white;
-  border: 2px solid $border; border-radius: $radius;
-  padding: 14px; cursor: pointer; display: flex; gap: 12px;
+  position: relative;
+  background: white;
+  border: 2px solid $border;
+  border-radius: $radius;
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
   transition: all .15s;
-  &:hover    { border-color: color.adjust($border, $lightness: -10%);
- }
+  &:hover { border-color: color.adjust($border, $lightness: -10%); }
   &.selected { border-color: $primary; background: rgba($primary,.03); }
 }
 .expert-check {
-  position: absolute; top: 8px; right: 8px;
-  color: $primary; opacity: 0; transition: opacity .15s;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: $primary;
+  opacity: 0;
+  transition: opacity .15s;
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
   &.visible { opacity: 1; }
 }
 .expert-av {
-  width: 40px; height: 40px; border-radius: 50%;
-  background: rgba($primary,.1); color: $primary;
-  font-weight: 700; font-size: 14px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba($primary,.1);
+  color: $primary;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 .expert-info { flex: 1; min-width: 0; }
 .expert-name { font-size: 13px; font-weight: 600; color: $text; }
-.expert-sub  { font-size: 11px; color: $muted; margin-top: 1px; }
+.expert-sub { font-size: 11px; color: $muted; margin-top: 1px; }
 .expert-stats {
-  display: flex; gap: 10px; margin-top: 6px;
-  font-size: 11px; color: $muted;
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: $muted;
   mat-icon { font-size: 12px; width: 12px; height: 12px; vertical-align: middle; }
 }
 .experts-empty {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 32px; color: $muted; gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  color: $muted;
+  gap: 8px;
   mat-icon { font-size: 32px; width: 32px; height: 32px; opacity: .35; }
   p { margin: 0; font-size: 13px; }
 }

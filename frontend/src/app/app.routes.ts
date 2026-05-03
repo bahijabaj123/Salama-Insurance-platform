@@ -11,8 +11,8 @@ import { AdminUsersComponent } from './admin/pages/users/admin-users.component';
 import { clientAuthGuard } from './client/guards/client-auth.guard';
 import { ClientProfileComponent } from './client/pages/profile/client-profile.component';
 import { ClientSimplePageComponent } from './client/pages/simple/client-simple-page.component';
-import { CreateExpertComponent } from './expert/pages/create-expert/create-expert.component';
 import { ExpertDashboardComponent } from './expert/pages/dashboard/expert-dashboard.component';
+import { CreateExpertComponent } from './expert/pages/create-expert/create-expert.component';
 import { ExpertVehicleDamageComponent } from './expert/pages/expert-vehicle-damage/expert-vehicle-damage.component';
 import { ExpertVehicleSelectionComponent } from './expert/pages/expert-vehicle-selection/expert-vehicle-selection.component';
 import { RapportExpertiseChatComponent } from './expert/pages/rapport-expertise-chat/rapport-expertise-chat.component';
@@ -26,6 +26,10 @@ import { OAuth2SuccessComponent } from './pages/oauth2-success/oauth2-success.co
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { SignupComponent } from './pages/signup/signup.component';
 
+
+// IMPORTS ACCIDENT
+import { AccidentComponent } from './features/accident/accident.component';
+
 // ============================================================
 // IMPORTS LAYOUTS (ton projet)
 // ============================================================
@@ -37,9 +41,9 @@ import { MainLayoutComponent } from './core/layouts/main-layout/main-layout.comp
 import { DashboardComponent } from './features/assureur/dashboard/dashboard.component';
 import { ClaimsListComponent } from './features/claims/claims-list/claims-list.component';
 import { ClaimDetailComponent } from './features/claims/claim-detail/claim-detail.component';
-import { ClaimGarageProximityComponent } from './features/claims/claim-garage-proximity/claim-garage-proximity.component';
 import { FraudDashboardComponent } from './features/assureur/fraud-dashboard/fraud-dashboard.component';
 import { TunisiaMapComponent } from './features/assureur/tunisia-map/tunisia-map.component';
+import { ClaimGarageProximityComponent } from './features/claims/claim-garage-proximity/claim-garage-proximity.component';
 import { GaragesComponent } from './features/assureur/garages/garages.component';
 import { assureurAuthGuard } from './features/assureur/guards/assureur-auth.guard';
 
@@ -55,6 +59,7 @@ import { ClientDashboardHomeComponent } from './features/client/client-dashboard
 import { ClientSosComponent } from './features/client/client-sos/client-sos.component';
 import { ClientExpertConsultationComponent } from './features/client/client-expert-consultation/client-expert-consultation.component';
 import { ClientExpertMessagesComponent } from './features/client/client-expert-messages/client-expert-messages.component';
+import { ClientProcessingStatsComponent } from './features/client/client-processing-stats/client-processing-stats.component';
 
 // ============================================================
 // COMPOSANT DE DÉCONNEXION SIMPLE (temporaire)
@@ -89,6 +94,9 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'oauth2/success', component: OAuth2SuccessComponent },
 
+  { path: 'accident', component: AccidentComponent },
+
+ 
   // ============================================================
   // ROUTES ADMIN
   // ============================================================
@@ -116,7 +124,7 @@ component: MainLayoutComponent,
     { path: 'dashboard', component: DashboardComponent },
     { path: 'claims', component: ClaimsListComponent },
     { path: 'claims/:id/garage', component: ClaimGarageProximityComponent },
-    { path: 'claims/:id', component: ClaimDetailComponent },
+{ path: 'claims/:id', component: ClaimDetailComponent },
     { path: 'map', component: TunisiaMapComponent },
     { path: 'fraud', component: FraudDashboardComponent },
     { path: 'statistiques',  component: DashboardComponent },
@@ -136,11 +144,13 @@ component: MainLayoutComponent,
     { path: 'sinistres/:id', component: ClientSinistreDetailComponent },
     { path: 'documents', component: ClientDocumentsComponent },
     { path: 'notifications', component: ClientNotificationsComponent },
+    { path: 'assistant', component: ClientAssistantComponent },
     { path: 'sos', component: ClientSosComponent },
     { path: 'garages', redirectTo: 'sos', pathMatch: 'full' },
     { path: 'assistant', component: ClientAssistantComponent },
     { path: 'consultation-expert', component: ClientExpertConsultationComponent },
     { path: 'messages-expert', component: ClientExpertMessagesComponent },
+    { path: 'processing-stats', component: ClientProcessingStatsComponent },
     { path: 'profile', component: ClientProfileComponent },
     { path: 'create-contract', component: ClientSimplePageComponent },
     { path: 'history', component: ClientSimplePageComponent },
@@ -151,6 +161,7 @@ component: MainLayoutComponent,
   // ============================================================
   // ROUTES EXPERT
   // ============================================================
+  { path: 'expert/dashboard', component: ExpertDashboardComponent },
   { path: 'expert', pathMatch: 'full', redirectTo: 'expert/dashboard' },
   { path: 'expert/dashboard', component: ExpertDashboardComponent },
   { path: 'expert/create', component: CreateExpertComponent },
