@@ -1,9 +1,19 @@
 :host {
   display: block;
+  width: 100%;
+  /* Defensive: never let this component contribute to horizontal page scroll. */
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .logoloop {
   position: relative;
+  /* The inner .logoloop__track uses width: max-content so it can be many times
+     wider than the viewport. Clipping at this level keeps the marquee fully
+     inside the parent container instead of overflowing into the next "page". */
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 
   --logoloop-gap: 32px;
   --logoloop-logoHeight: 28px;

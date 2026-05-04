@@ -11,6 +11,7 @@ import org.example.salamainsurance.Exception.BadRequestException;
 import org.example.salamainsurance.Exception.DuplicateResourceException;
 import org.example.salamainsurance.Exception.ResourceNotFoundException;
 import org.example.salamainsurance.Repository.UserRepository;
+import org.example.salamainsurance.Service.admin.AdminNotificationService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +24,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminNotificationService adminNotificationService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           AdminNotificationService adminNotificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.adminNotificationService = adminNotificationService;
     }
 
     @Override
@@ -72,6 +77,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User savedUser = userRepository.save(user);
+        adminNotificationService.notifyNewUserRegistered(savedUser);
         return mapToResponse(savedUser);
     }
 

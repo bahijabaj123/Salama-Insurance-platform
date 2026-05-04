@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,62 +24,51 @@ import java.util.stream.Collectors;
 @Slf4j
 public class IntelligentExpertAssignmentService {
 
-  private final ExpertHassenRepository expertRepository;
-  private final ClaimRepository claimRepository;
-  private final NotificationService notificationService;
-
-  // Poids pour chaque critère
+  // Poids pour chaque critère (total = 1.0)
   private static final double WEIGHT_REGION = 0.30;
   private static final double WEIGHT_AVAILABILITY = 0.25;
   private static final double WEIGHT_PERFORMANCE = 0.20;
   private static final double WEIGHT_SPECIALITY = 0.15;
   private static final double WEIGHT_WORKLOAD = 0.10;
 
+  private final ExpertHassenRepository expertRepository;
+  private final ClaimRepository claimRepository;
+  private final NotificationService notificationService;
+
   @Transactional
   public ExpertAssignmentResult assignBestExpert(Long claimId) {
     log.info("Début de l'attribution intelligente pour le sinistre ID: {}", claimId);
 
-    // 1. Récupérer le sinistre
     Claim claim = claimRepository.findById(claimId)
       .orElseThrow(() -> new RuntimeException("Sinistre non trouvé"));
 
-    // Vérifier si un expert est déjà assigné
     if (claim.getExpert() != null) {
       throw new IllegalStateException("Un expert est déjà assigné à ce sinistre");
     }
 
-    // 2. Récupérer tous les experts disponibles
     List<ExpertHassen> availableExperts = expertRepository.findByStatus(ExpertStatus.AVAILABLE);
-
     if (availableExperts.isEmpty()) {
       log.warn("Aucun expert disponible pour le sinistre ID: {}", claimId);
       return handleNoExpertsAvailable(claim);
     }
 
-    // 3. Extraire les informations du sinistre
     String claimRegion = extractRegionFromClaim(claim);
     String damageType = extractDamageTypeFromClaim(claim);
 
-    // 4. Calculer le score pour chaque expert
     List<ExpertScore> expertScores = availableExperts.stream()
       .map(expert -> calculateExpertScore(expert, claimRegion, damageType))
       .sorted((e1, e2) -> Double.compare(e2.getScore(), e1.getScore()))
       .collect(Collectors.toList());
 
-
-    // 5. Sélectionner le meilleur expert
     ExpertScore bestExpertScore = expertScores.get(0);
     ExpertHassen bestExpert = findExpertById(bestExpertScore.getExpertId());
 
-    // 6. Assigner l'expert au sinistre
     assignExpertToClaim(claim, bestExpert);
 
-    // 7. Envoyer les notifications
     notificationService.sendToExpert(bestExpert,
       "Vous avez été assigné au sinistre " + claim.getReference() +
         " dans la région " + claim.getRegion());
 
-    // 8. Préparer le résultat
     return ExpertAssignmentResult.builder()
       .assignedExpertId(Long.valueOf(bestExpert.getIdExpert()))
       .expertName(bestExpert.getFirstName() + " " + bestExpert.getLastName())
@@ -89,15 +81,28 @@ public class IntelligentExpertAssignmentService {
       .build();
   }
 
-  private String extractDamageTypeFromClaim(Claim claim) {
-    return null ;
+  public List<ExpertHassen> findTopExpertsForClaim(Long claimId, int limit) {
+    Claim claim = claimRepository.findById(claimId)
+      .orElseThrow(() -> new RuntimeException("Claim not found"));
+
+    String region = extractRegionFromClaim(claim);
+    List<ExpertHassen> experts = expertRepository.findAvailableExpertsByRegion(region);
+
+    return experts.stream()
+      .map(expert -> new AbstractMap.SimpleEntry<>(expert, calculateSimpleScore(expert, region)))
+      .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
+      .limit(limit)
+      .map(Map.Entry::getKey)
+      .collect(Collectors.toList());
   }
+
+  // ===== Scoring =====
 
   private ExpertScore calculateExpertScore(ExpertHassen expert, String claimRegion, String damageType) {
     double score = 0.0;
     List<String> reasons = new ArrayList<>();
 
-    // Critère 1: Région (30%)
+    // 1. Région (30%)
     String expertRegion = expert.getInterventionZone() != null ? expert.getInterventionZone().name() : "";
     if (expertRegion.equalsIgnoreCase(claimRegion)) {
       score += WEIGHT_REGION * 100;
@@ -107,21 +112,20 @@ public class IntelligentExpertAssignmentService {
       reasons.add("Expert en dehors de la région");
     }
 
-
-    // Critère 2: Disponibilité (25%)
+    // 2. Disponibilité (25%)
     double availabilityScore = calculateAvailabilityScore(expert);
     score += WEIGHT_AVAILABILITY * availabilityScore;
     if (availabilityScore > 80) {
       reasons.add("Très disponible");
     }
 
-    // Critère 3: Performance (20%)
+    // 3. Performance (20%)
     if (expert.getPerformanceScore() != null) {
       score += WEIGHT_PERFORMANCE * expert.getPerformanceScore();
       reasons.add("Score performance: " + expert.getPerformanceScore());
     }
 
-    // Critère 4: Spécialité (15%)
+    // 4. Spécialité (15%)
     if (expert.getSpecialty() != null && expert.getSpecialty().equalsIgnoreCase(damageType)) {
       score += WEIGHT_SPECIALITY * 100;
       reasons.add("Spécialiste du type de dommage");
@@ -130,15 +134,15 @@ public class IntelligentExpertAssignmentService {
       reasons.add("Compétence générale");
     }
 
-
-    // Critère 5: Charge de travail (10%)
+    // 5. Charge de travail (10%)
     double workloadScore = calculateWorkloadScore(expert);
     score += WEIGHT_WORKLOAD * workloadScore;
     if (workloadScore > 80) {
       reasons.add("Charge de travail optimale");
     }
 
-    return new ExpertScore(Long.valueOf(expert.getIdExpert()),
+    return new ExpertScore(
+      Long.valueOf(expert.getIdExpert()),
       expert.getFirstName() + " " + expert.getLastName(),
       Math.min(score, 100),
       reasons);
@@ -149,14 +153,13 @@ public class IntelligentExpertAssignmentService {
       return 70.0;
     }
 
-
     int workload = expert.getCurrentWorkload();
     int maxWorkload = expert.getMaxWorkload();
 
     if (workload >= maxWorkload) return 0.0;
     if (workload == 0) return 100.0;
 
-    return ((double)(maxWorkload - workload) / maxWorkload) * 100;
+    return ((double) (maxWorkload - workload) / maxWorkload) * 100;
   }
 
   private double calculateWorkloadScore(ExpertHassen expert) {
@@ -170,6 +173,26 @@ public class IntelligentExpertAssignmentService {
     return 20.0;
   }
 
+  private double calculateSimpleScore(ExpertHassen expert, String region) {
+    double score = 0.0;
+
+    if (expert.getInterventionZone() != null && expert.getInterventionZone().name().equalsIgnoreCase(region)) {
+      score += 30;
+    }
+
+    if (expert.getPerformanceScore() != null) {
+      score += expert.getPerformanceScore() * 0.4;
+    }
+
+    if (expert.getMaxWorkload() != null && expert.getCurrentWorkload() != null && expert.getMaxWorkload() > 0) {
+      double availability = (expert.getMaxWorkload() - expert.getCurrentWorkload()) * 1.0 / expert.getMaxWorkload();
+      score += availability * 30;
+    }
+
+    return score;
+  }
+
+  // ===== Assignment =====
 
   private void assignExpertToClaim(Claim claim, ExpertHassen expert) {
     claim.setExpert(expert);
@@ -178,48 +201,15 @@ public class IntelligentExpertAssignmentService {
     claim.addAction("Expert assigné: " + expert.getFirstName() + " " + expert.getLastName());
     claimRepository.save(claim);
 
-    expert.setCurrentWorkload(expert.getCurrentWorkload() == null ?
-      1 : expert.getCurrentWorkload() + 1);
+    expert.setCurrentWorkload(expert.getCurrentWorkload() == null ? 1 : expert.getCurrentWorkload() + 1);
     expert.setLastAssignmentDate(LocalDateTime.now());
 
-    if (expert.getCurrentWorkload() >= expert.getMaxWorkload()) {
+    if (expert.getMaxWorkload() != null && expert.getCurrentWorkload() >= expert.getMaxWorkload()) {
       expert.setStatus(ExpertStatus.BUSY);
     }
 
     expertRepository.save(expert);
-
     log.info("Expert {} assigné au sinistre {}", expert.getIdExpert(), claim.getId());
-  }
-
-  private String extractRegionFromClaim(Claim claim) {
-    if (claim.getAccident() != null && claim.getAccident().getLocation() != null) {
-      return claim.getAccident().getLocation();
-    }
-    return claim.getRegion() != null ? claim.getRegion() : "DEFAULT";
-  }
-
-  /*private String extractDamageTypeFromClaim(Claim claim) {
-    if (claim.getDamageType() != null) {
-      return claim.getDamageType();
-    }
-    if (claim.getAccident() != null && claim.getAccident().getDamageDescription() != null) {
-      String desc = claim.getAccident().getDamageDescription().toLowerCase();
-      if (desc.contains("pare-chocs") || desc.contains("carrosserie")) return "CARROSSERIE";
-      if (desc.contains("moteur") || desc.contains("mécanique")) return "MECANIQUE";
-      if (desc.contains("vitre") || desc.contains("pare-brise")) return "VITRAGE";
-    }
-    return "GENERAL";
-  }*/
-
-  private ExpertHassen findExpertById(Long id) {
-    return expertRepository.findById(id.intValue())
-      .orElseThrow(() -> new RuntimeException("Expert non trouvé"));
-  }
-
-  private String generateAssignmentReason(ExpertScore score) {
-    return String.format("Expert sélectionné avec un score de %.1f/100. Raisons: %s",
-      score.getScore(),
-      String.join(", ", score.getMatchReasons()));
   }
 
   private ExpertAssignmentResult handleNoExpertsAvailable(Claim claim) {
@@ -232,46 +222,39 @@ public class IntelligentExpertAssignmentService {
 
     return ExpertAssignmentResult.builder()
       .assignedExpertId(null)
+      .matchScore(0.0)
       .assignmentReason("Aucun expert disponible. Escalade au manager.")
       .estimatedResponseTime(LocalDateTime.now().plusHours(4))
       .build();
   }
 
-  public List<ExpertHassen> findTopExpertsForClaim(Long claimId, int limit) {
-    Claim claim = claimRepository.findById(claimId)
-      .orElseThrow(() -> new RuntimeException("Claim not found"));
+  // ===== Helpers =====
 
-    String region = extractRegionFromClaim(claim);
-
-    List<ExpertHassen> experts = expertRepository.findAvailableExpertsByRegion(region);
-
-    return experts.stream()
-      .map(expert -> {
-        double score = calculateSimpleScore(expert, region);
-        return new AbstractMap.SimpleEntry<>(expert, score);
-      })
-      .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
-      .limit(limit)
-      .map(Map.Entry::getKey)
-      .collect(Collectors.toList());
+  private ExpertHassen findExpertById(Long id) {
+    return expertRepository.findById(id.intValue())
+      .orElseThrow(() -> new RuntimeException("Expert non trouvé"));
   }
 
-  private double calculateSimpleScore(ExpertHassen expert, String region) {
-    double score = 0.0;
+  private String generateAssignmentReason(ExpertScore score) {
+    return String.format("Expert sélectionné avec un score de %.1f/100. Raisons: %s",
+      score.getScore(),
+      String.join(", ", score.getMatchReasons()));
+  }
 
-    if (expert.getInterventionZone() != null && expert.getInterventionZone().equals(region)) {
-      score += 30;
+  private String extractRegionFromClaim(Claim claim) {
+    if (claim.getAccident() != null && claim.getAccident().getLocation() != null) {
+      return claim.getAccident().getLocation();
     }
+    return claim.getRegion() != null ? claim.getRegion() : "DEFAULT";
+  }
 
-    if (expert.getPerformanceScore() != null) {
-      score += expert.getPerformanceScore() * 0.4;
+  private String extractDamageTypeFromClaim(Claim claim) {
+    if (claim.getAccident() != null && claim.getAccident().getObservations() != null) {
+      String desc = claim.getAccident().getObservations().toLowerCase();
+      if (desc.contains("pare-chocs") || desc.contains("carrosserie")) return "CARROSSERIE";
+      if (desc.contains("moteur") || desc.contains("mécanique")) return "MECANIQUE";
+      if (desc.contains("vitre") || desc.contains("pare-brise")) return "VITRAGE";
     }
-
-    if (expert.getMaxWorkload() != null && expert.getCurrentWorkload() != null) {
-      double availability = (expert.getMaxWorkload() - expert.getCurrentWorkload()) * 1.0 / expert.getMaxWorkload();
-      score += availability * 30;
-    }
-
-    return score;
+    return "GENERAL";
   }
 }

@@ -3,6 +3,7 @@ package org.example.salamainsurance.Entity.Report;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -26,16 +27,14 @@ public class Driver {
   private String policyNumber; // NumContrat
   private String licensePlate; // Immatriculation
   private String carMake; // MarqueVoiture
-  private String signature;
+  private String email;
 
-<<<<<<< HEAD
+
   @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 
-=======
   @Column(columnDefinition = "LONGTEXT")
   private String signature;
->>>>>>> f6b09055fbba76564032bd48ea21f4b7f3eeb3ea
   @ManyToOne
   @JoinColumn(name = "accident_id")
   @JsonBackReference
@@ -108,6 +107,7 @@ public class Driver {
     this.phoneNumber = phoneNumber;
   }
 
+
   public String getLicenseNumber() {
     return licenseNumber;
   }
@@ -148,12 +148,28 @@ public class Driver {
     this.carMake = carMake;
   }
 
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
   public String getSignature() {
     return signature;
   }
 
   public void setSignature(String signature) {
     this.signature = signature;
+  }
+
+  public LocalDate getDateOfBirth() {
+    return dateOfBirth;
+  }
+
+  public void setDateOfBirth(LocalDate dateOfBirth) {
+    this.dateOfBirth = dateOfBirth;
   }
 
   public Accident getAccident() {
@@ -163,4 +179,5 @@ public class Driver {
   public void setAccident(Accident accident) {
     this.accident = accident;
   }
+
 }

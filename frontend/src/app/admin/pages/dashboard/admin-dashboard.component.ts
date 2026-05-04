@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -30,15 +31,44 @@ type GrowthBar = {
   label: string;
   count: number;
   heightPct: number;
+  current: boolean;
+};
+
+export type DonutSegment = {
+  label: string;
+  value: number;
+  pct: number;
+  color: string;
+  /** stroke-dasharray length for the colored slice (in svg user units). */
+  dash: number;
+  /** stroke-dashoffset (negative = clockwise advance). */
+  offset: number;
 };
 
 const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+/** Brand palette for the role donut. */
+const ROLE_COLORS: Record<string, string> = {
+  CLIENT: '#2563eb',     // blue
+  EXPERT: '#8b5cf6',     // purple
+  ASSUREUR: '#14b8a6',   // teal
+  ADMIN: '#0f172a'       // fallback for any admin shown
+};
+
+/** Brand palette for the approval donut. */
+const APPROVAL_COLORS: Record<string, string> = {
+  APPROVED: '#16a34a',   // green
+  PENDING: '#f59e0b',    // orange
+  REJECTED: '#ef4444'    // red
+};
+
+const DEFAULT_PALETTE = ['#0ea5e9','#a855f7','#10b981','#f97316','#ef4444','#22d3ee','#facc15'];
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, MatProgressBarModule],
+  imports: [DecimalPipe, RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatChipsModule, MatProgressBarModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
@@ -72,14 +102,49 @@ export class AdminDashboardComponent implements OnInit {
     return 'neutral';
   });
 
+  /** SVG donut geometry. */
+  readonly DONUT_R = 56;
+  readonly DONUT_C = 2 * Math.PI * 56;
+  readonly DONUT_STROKE = 18;
+
+  readonly roleSegments = computed<DonutSegment[]>(() =>
+    this.toSegments(this.roleChart()?.points ?? [], ROLE_COLORS)
+  );
+
+  readonly approvalSegments = computed<DonutSegment[]>(() =>
+    this.toSegments(this.approvalChart()?.points ?? [], APPROVAL_COLORS)
+  );
+
+  /** Y-axis max rounded to a "nice" number for the growth chart. */
+  readonly chartYMax = computed<number>(() => {
+    const g = this.userGrowth();
+    const raw = Math.max(0, ...((g?.series ?? []).map((p) => p?.count ?? 0)));
+    return this.niceCeil(raw);
+  });
+
+  /** Five evenly-spaced ticks from 0 → chartYMax. */
+  readonly chartYTicks = computed<number[]>(() => {
+    const max = this.chartYMax();
+    if (max <= 0) return [0];
+    const step = max / 4;
+    return [0, 1, 2, 3, 4].map((i) => Math.round(i * step));
+  });
+
   readonly chartBars = computed<GrowthBar[]>(() => {
     const g = this.userGrowth();
     if (!g || !Array.isArray(g.series) || g.series.length === 0) return [];
-    const max = g.series.reduce((acc, p) => Math.max(acc, p?.count ?? 0), 0);
+    const max = this.chartYMax();
+    const current = this.currentPeriod();
     return g.series.map((p) => {
       const count = p?.count ?? 0;
-      const heightPct = max > 0 ? Math.max(2, Math.round((count / max) * 100)) : 0;
-      return { period: p?.period ?? '', label: this.formatPeriodShort(p?.period), count, heightPct };
+      const heightPct = max > 0 ? Math.max(count > 0 ? 4 : 0, Math.round((count / max) * 100)) : 0;
+      return {
+        period: p?.period ?? '',
+        label: this.formatPeriodShort(p?.period),
+        count,
+        heightPct,
+        current: !!p?.period && p.period === current
+      };
     });
   });
 
@@ -180,23 +245,53 @@ export class AdminDashboardComponent implements OnInit {
     return Math.max(0, Math.min(100, value));
   }
 
-  donutBackground(points: AdminMetricPoint[]): string {
-    const filtered = points.filter((p) => p.value > 0);
-    const total = filtered.reduce((acc, p) => acc + p.value, 0);
-    if (!total) return 'conic-gradient(#f4f1fa 0deg 360deg)';
+  /** Current YYYY-MM period (used to highlight the bar of the current month). */
+  currentPeriod(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
 
-    const colors = ['#A0C4FF','#FFADAD','#CAFFBF','#FFD6A5','#BDB2FF','#FFC6FF','#9BF6FF'];
-    let current = 0;
-    const stops: string[] = [];
-    filtered.forEach((p, idx) => {
-      const delta = (p.value / total) * 360;
-      const start = current;
-      const end = current + delta;
-      current = end;
-      stops.push(`${colors[idx % colors.length]} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`);
+  /** Round n up to a "nice" axis maximum (1, 2, 5, 10, 20, 50, 100, ...). */
+  private niceCeil(n: number): number {
+    if (!isFinite(n) || n <= 0) return 4;
+    const exp = Math.floor(Math.log10(n));
+    const pow = Math.pow(10, exp);
+    const f = n / pow;
+    let nice: number;
+    if (f <= 1) nice = 1;
+    else if (f <= 2) nice = 2;
+    else if (f <= 5) nice = 5;
+    else nice = 10;
+    return nice * pow;
+  }
+
+  /** Compute SVG-ready donut segments from raw points using the given color map. */
+  private toSegments(
+    points: AdminMetricPoint[],
+    palette: Record<string, string>
+  ): DonutSegment[] {
+    const C = this.DONUT_C;
+    const filtered = (points ?? []).filter((p) => p && p.value > 0);
+    const total = filtered.reduce((acc, p) => acc + p.value, 0);
+    if (!total) return [];
+
+    let cumulative = 0;
+    return filtered.map((p, idx) => {
+      const fraction = p.value / total;
+      const dash = fraction * C;
+      const offset = -cumulative;
+      cumulative += dash;
+      const key = (p.label ?? '').toUpperCase();
+      const color = palette[key] ?? DEFAULT_PALETTE[idx % DEFAULT_PALETTE.length];
+      return {
+        label: p.label,
+        value: p.value,
+        pct: fraction * 100,
+        color,
+        dash,
+        offset
+      };
     });
-    if (current < 360) stops.push(`#f4f1fa ${current.toFixed(2)}deg 360deg`);
-    return `conic-gradient(${stops.join(', ')})`;
   }
 
   private normalizeChart(title: string, res: unknown): ChartModel {

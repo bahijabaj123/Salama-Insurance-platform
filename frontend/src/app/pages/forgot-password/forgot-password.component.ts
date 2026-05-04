@@ -6,17 +6,21 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { HomeNavbarComponent } from '../../shared/home-navbar/home-navbar.component';
+import { SilkBackgroundComponent } from '../../shared/silk/silk-background.component';
 
 @Component({
   selector: 'app-forgot-password',
-    standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink, HomeNavbarComponent, SilkBackgroundComponent],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss'
 })
 export class ForgotPasswordComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly auth = inject(AuthService);
+
+  readonly currentYear = new Date().getFullYear();
 
   submitting = false;
   success = false;

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { HomeNavbarComponent } from '../../shared/home-navbar/home-navbar.component';
 import {
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [HomeNavbarComponent, MagicBentoComponent, SilkBackgroundComponent, LogoLoopComponent],
+  imports: [RouterLink, HomeNavbarComponent, MagicBentoComponent, SilkBackgroundComponent, LogoLoopComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -58,23 +59,25 @@ export class HomeComponent {
   readonly features: MagicBentoItem[] = [
     {
       label: '01',
-      title: 'Policy lifecycle',
-      description: 'Create, review, and maintain contracts with structured workflows.'
+      title: 'Instant Accident Report',
+      description:
+        'Report your accident quickly through a clear, guided digital form, without stressful paperwork.'
     },
     {
       label: '02',
-      title: 'Claims coordination',
-      description: 'Track claims with evidence trails and transparent status updates.'
+      title: '24/7 Assistance',
+      description: 'Get immediate guidance at any time and find the help you need after an accident.'
     },
     {
       label: '03',
-      title: 'Role governance',
-      description: 'Approvals and access boundaries built for regulated environments.'
+      title: 'Secure Data Protection',
+      description:
+        'Your personal information, reports, and accident documents are stored safely with strong data protection.'
     },
     {
       label: '04',
-      title: 'Client workspace',
-      description: 'A focused portal for insureds—simple where it should be.'
+      title: 'Smart Claim Tracking',
+      description: 'Track your claim status step by step and stay informed throughout the entire process.'
     }
   ];
 }

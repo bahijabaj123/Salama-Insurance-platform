@@ -5,7 +5,6 @@ import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimService;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimServiceImpl;
-import org.example.salamainsurance.Service.ClaimManagement.IntelligentExpertAssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.example.salamainsurance.Entity.Expert.ExpertHassen;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -35,9 +33,6 @@ public class ClaimController {
 
   @Autowired
   private ClaimServiceImpl claimServices;
-
-  @Autowired
-  private IntelligentExpertAssignmentService intelligentAssignmentService;
 
   // ========== CREATE ==========
 

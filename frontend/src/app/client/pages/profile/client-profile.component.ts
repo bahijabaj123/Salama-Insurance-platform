@@ -7,13 +7,8 @@ import { finalize } from 'rxjs/operators';
 
 import { AuthStorageService } from '../../../core/auth/auth-storage.service';
 import type { LoggedUser, LoginApiErrorBody } from '../../../core/auth/login.models';
+import type { DeviceResponse } from '../../../core/users/device.models';
 import { UserApiService } from '../../../core/users/user-api.service';
-
-type MockDevice = {
-  name: string;
-  detail: string;
-  badge: 'Current session' | 'Preview';
-};
 
 @Component({
   selector: 'app-client-profile',
@@ -187,40 +182,72 @@ type MockDevice = {
                     <div>
                       <h3 class="card__title">Connected devices</h3>
                       <p class="card__sub">
-                        Security-focused view of where your account is active. This section is UI-only until device APIs are
-                        connected.
+                        Devices recorded for your account, most recently used first.
                       </p>
                     </div>
-                  </div>
-
-                  <ul class="device-list" aria-label="Preview device list">
-                    @for (device of mockDevices; track device.name) {
-                      <li class="device">
-                        <div class="device__icon" aria-hidden="true">
-                          <svg viewBox="0 0 24 24">
-                            <path
-                              fill="currentColor"
-                              d="M4 6h16v10H4V6zm2 2v6h12V8H6zm8 10h2v2H6v-2h8z"
-                            />
-                          </svg>
-                        </div>
-                        <div class="device__body">
-                          <div class="device__top">
-                            <span class="device__name">{{ device.name }}</span>
-                            <span class="device__badge" [class.device__badge--accent]="device.badge === 'Current session'">
-                              {{ device.badge }}
-                            </span>
-                          </div>
-                          <p class="device__detail">{{ device.detail }}</p>
-                        </div>
-                      </li>
+                    @if (!devicesLoading() && !devicesError()) {
+                      <button
+                        type="button"
+                        class="btn btn--ghost btn--compact"
+                        (click)="loadDevices()"
+                        [disabled]="devicesLoading()"
+                      >
+                        Refresh
+                      </button>
                     }
-                  </ul>
-
-                  <div class="device-footnote">
-                    <strong>Coming next:</strong> register, rename, and revoke devices from a secured endpoint—without leaving
-                    this profile experience.
                   </div>
+
+                  @if (devicesLoading()) {
+                    <div class="device-state" aria-busy="true" aria-live="polite">
+                      <div class="skeleton skeleton--line"></div>
+                      <div class="skeleton skeleton--line skeleton--short"></div>
+                      <div class="skeleton skeleton--line"></div>
+                    </div>
+                  } @else if (devicesError()) {
+                    <div class="device-state device-state--error" role="alert">
+                      <p class="device-state__msg">{{ devicesError() }}</p>
+                      <button type="button" class="btn btn--primary btn--compact" (click)="loadDevices()">
+                        Try again
+                      </button>
+                    </div>
+                  } @else if (devices().length === 0) {
+                    <div class="device-state device-state--empty" role="status">
+                      <p class="device-state__msg">
+                        No devices recorded yet. Devices are recorded after password-based login.
+                      </p>
+                    </div>
+                  } @else {
+                    <ul class="device-list" aria-label="Connected devices">
+                      @for (device of devices(); track device.id) {
+                        <li class="device">
+                          <div class="device__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                              <path
+                                fill="currentColor"
+                                d="M4 6h16v10H4V6zm2 2v6h12V8H6zm8 10h2v2H6v-2h8z"
+                              />
+                            </svg>
+                          </div>
+                          <div class="device__body">
+                            <div class="device__top">
+                              <span class="device__name">{{ describeDevice(device.userAgent) }}</span>
+                              <span class="device__badge">IP {{ device.ipAddress }}</span>
+                            </div>
+                            <dl class="device__meta">
+                              <div class="device__meta-row">
+                                <dt>Last login</dt>
+                                <dd>{{ device.lastLoginAt | date: 'medium' }}</dd>
+                              </div>
+                              <div class="device__meta-row">
+                                <dt>First seen</dt>
+                                <dd>{{ device.createdAt | date: 'medium' }}</dd>
+                              </div>
+                            </dl>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  }
                 </section>
               </div>
             </form>
@@ -695,20 +722,77 @@ type MockDevice = {
       line-height: 1.45;
       font-size: 13.5px;
     }
-    
-    .device-footnote {
-      margin: 0.5rem 1.25rem 1.25rem;
-      padding: 0.85rem;
-      border-radius: 0.85rem;
-      border: 1px solid #dbe7f3;
-      background: linear-gradient(180deg, #fbfdff 0%, #f3f7ff 100%);
-      color: #334155;
-      line-height: 1.45;
-      font-size: 13px;
+
+    .device__meta {
+      margin: 0.5rem 0 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
     }
-    
-    .device-footnote strong {
+
+    @media (min-width: 520px) {
+      .device__meta {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem 1rem;
+      }
+    }
+
+    .device__meta-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .device__meta-row dt {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--s-muted);
+    }
+
+    .device__meta-row dd {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
       color: var(--s-text);
+    }
+
+    .device-state {
+      margin: 0.25rem 1.25rem 1.25rem;
+      padding: 1rem;
+      border-radius: 0.85rem;
+      border: 1px dashed #dbe7f3;
+      background: #fbfdff;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .device-state__msg {
+      margin: 0;
+      color: #334155;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .device-state--empty {
+      border-style: solid;
+      border-color: #eef2f7;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .device-state--error {
+      border-style: solid;
+      border-color: #f5c2c0;
+      background: #fdecea;
+    }
+
+    .device-state--error .device-state__msg {
+      color: #5c0f0a;
+      font-weight: 700;
     }
     
     .skeleton {
@@ -774,21 +858,13 @@ export class ClientProfileComponent implements OnInit, OnDestroy {
     fullName: this.fb.control('', { validators: [Validators.required] })
   });
 
-  readonly mockDevices: MockDevice[] = [
-    {
-      name: 'This browser',
-      detail: 'The session you are using right now. Revocation controls will appear here once available.',
-      badge: 'Current session'
-    },
-    {
-      name: 'Trusted device (example)',
-      detail: 'Placeholder for a registered phone or laptop. Data will sync from the server when device APIs ship.',
-      badge: 'Preview'
-    }
-  ];
+  readonly devices = signal<DeviceResponse[]>([]);
+  readonly devicesLoading = signal(false);
+  readonly devicesError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadProfile();
+    this.loadDevices();
   }
 
   ngOnDestroy(): void {
@@ -854,6 +930,56 @@ export class ClientProfileComponent implements OnInit, OnDestroy {
         },
         error: (err: unknown) => this.handleLoadError(err)
       });
+  }
+
+  loadDevices(): void {
+    this.devicesLoading.set(true);
+    this.devicesError.set(null);
+    this.userApi
+      .getCurrentUserDevices()
+      .pipe(finalize(() => this.devicesLoading.set(false)))
+      .subscribe({
+        next: (list) => this.devices.set(Array.isArray(list) ? list : []),
+        error: (err: unknown) => this.handleDevicesError(err)
+      });
+  }
+
+  /**
+   * Best-effort, dependency-free user-agent label.
+   * The raw UA is intentionally not displayed to keep the UI clean.
+   */
+  describeDevice(userAgent: string | null | undefined): string {
+    const ua = (userAgent ?? '').trim();
+    if (!ua) {
+      return 'Unknown device';
+    }
+
+    const browser =
+      /Edg\//i.test(ua) ? 'Edge'
+      : /OPR\/|Opera/i.test(ua) ? 'Opera'
+      : /Chrome\//i.test(ua) && !/Chromium/i.test(ua) ? 'Chrome'
+      : /Firefox\//i.test(ua) ? 'Firefox'
+      : /Safari\//i.test(ua) && !/Chrome\//i.test(ua) ? 'Safari'
+      : 'Browser';
+
+    const os =
+      /Windows NT 10/i.test(ua) ? 'Windows 10/11'
+      : /Windows NT/i.test(ua) ? 'Windows'
+      : /Mac OS X|Macintosh/i.test(ua) ? 'macOS'
+      : /Android/i.test(ua) ? 'Android'
+      : /iPhone|iPad|iPod/i.test(ua) ? 'iOS'
+      : /Linux/i.test(ua) ? 'Linux'
+      : 'Unknown OS';
+
+    return `${browser} on ${os}`;
+  }
+
+  private handleDevicesError(err: unknown): void {
+    if (this.isUnauthorized(err)) {
+      this.handleUnauthorized();
+      return;
+    }
+    this.devicesError.set('Unable to load devices right now.');
   }
 
   private handleLoadError(err: unknown): void {

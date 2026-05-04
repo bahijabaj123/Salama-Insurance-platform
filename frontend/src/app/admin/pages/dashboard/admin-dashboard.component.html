@@ -64,72 +64,242 @@
     }
   </section>
 
-  <section class="charts">
-    <mat-card class="card saas-card">
-      <div class="card__head">
-        <div>
-          <h3 class="card__title">Role distribution</h3>
-          <p class="card__sub">Breakdown of accounts by effective role</p>
-        </div>
-        <mat-chip-set>
-          <mat-chip>{{ roleChart()?.total ?? 0 }} total</mat-chip>
-        </mat-chip-set>
+  <!-- ============================================================ -->
+  <!-- ANALYTICS OVERVIEW                                          -->
+  <!-- ============================================================ -->
+  <section class="analytics" aria-labelledby="analytics-heading">
+    <header class="analytics__head">
+      <div>
+        <p class="page-eyebrow">Insights</p>
+        <h3 class="analytics__title" id="analytics-heading">Analytics Overview</h3>
+        <p class="analytics__sub">Activation, role mix, and growth trends powered by live admin metrics.</p>
       </div>
+    </header>
 
-      @if (roleChart(); as chart) {
-        <div class="chart">
-          <div class="donut" [style.background]="donutBackground(chart.points)">
-            <div class="donut__hole">
-              <span class="donut__value">{{ chart.total }}</span>
-              <span class="donut__label">users</span>
-            </div>
-          </div>
-          <div class="legend">
-            @for (p of chart.points; track p.label) {
-              <div class="legend__row">
-                <span class="legend__name">{{ p.label }}</span>
-                <span class="legend__val">{{ p.value }}</span>
-              </div>
-            }
-          </div>
-        </div>
+    @if (businessError()) {
+      <mat-card class="banner banner--error" role="alert">
+        <strong>Analytics couldn’t be refreshed</strong>
+        <span>{{ businessError() }}</span>
+      </mat-card>
+    }
+
+    <!-- Analytics KPIs -->
+    <div class="analytics-kpis">
+      @if (businessLoading()) {
+        @for (_ of [1, 2, 3]; track _) {
+          <mat-card class="akpi akpi--skeleton" aria-busy="true"></mat-card>
+        }
       } @else {
-        <div class="chart__empty">No chart data yet.</div>
+        <mat-card class="akpi akpi--good saas-card">
+          <div class="akpi__top">
+            <span class="akpi__label">Activation Rate</span>
+            <mat-icon class="akpi__icon" aria-hidden="true">verified_user</mat-icon>
+          </div>
+          <span class="akpi__value">{{ formatPercent(accountRates()?.activationRate) }}</span>
+          <span class="akpi__hint">Share of accounts that are enabled and unlocked.</span>
+          <div class="akpi__bar" aria-hidden="true">
+            <div class="akpi__bar-fill akpi__bar-fill--good" [style.width.%]="clampPercent(accountRates()?.activationRate)"></div>
+          </div>
+        </mat-card>
+
+        <mat-card class="akpi akpi--bad saas-card">
+          <div class="akpi__top">
+            <span class="akpi__label">Rejection Rate</span>
+            <mat-icon class="akpi__icon" aria-hidden="true">block</mat-icon>
+          </div>
+          <span class="akpi__value">{{ formatPercent(accountRates()?.rejectionRate) }}</span>
+          <span class="akpi__hint">Role requests declined out of all decisions.</span>
+          <div class="akpi__bar" aria-hidden="true">
+            <div class="akpi__bar-fill akpi__bar-fill--bad" [style.width.%]="clampPercent(accountRates()?.rejectionRate)"></div>
+          </div>
+        </mat-card>
+
+        <mat-card class="akpi saas-card" [class.akpi--good]="growthState() === 'up'" [class.akpi--bad]="growthState() === 'down'">
+          <div class="akpi__top">
+            <span class="akpi__label">Growth Rate</span>
+            <mat-icon class="akpi__icon" aria-hidden="true">
+              @switch (growthState()) {
+                @case ('up') { trending_up }
+                @case ('down') { trending_down }
+                @default { trending_flat }
+              }
+            </mat-icon>
+          </div>
+          <span class="akpi__value">
+            <span class="akpi__delta" [attr.data-state]="growthState()">{{ formatPercent(userGrowth()?.growthRate, true) }}</span>
+          </span>
+          <span class="akpi__hint">
+            New users this month vs. {{ formatPeriod(userGrowth()?.previousMonth?.period) }}.
+          </span>
+        </mat-card>
       }
-    </mat-card>
+    </div>
 
-    <mat-card class="card saas-card">
-      <div class="card__head">
-        <div>
-          <h3 class="card__title">Approval status</h3>
-          <p class="card__sub">Where role requests stand right now</p>
+    <!-- Donut row -->
+    <div class="analytics-donuts">
+      <!-- Users by role -->
+      <mat-card class="card chart-card saas-card">
+        <div class="card__head">
+          <div>
+            <h4 class="card__title">Users by Role</h4>
+            <p class="card__sub">Distribution of CLIENT, EXPERT and ASSUREUR accounts.</p>
+          </div>
+          <span class="chart-badge">{{ roleChart()?.total ?? 0 }} total</span>
         </div>
-        <mat-chip-set>
-          <mat-chip>{{ approvalChart()?.total ?? 0 }} total</mat-chip>
-        </mat-chip-set>
-      </div>
-    
-      @if (approvalChart(); as chart2) {
-        <div class="chart">
-          <div class="donut donut--alt" [style.background]="donutBackground(chart2.points)">
-            <div class="donut__hole">
-              <span class="donut__value">{{ chart2.total }}</span>
-              <span class="donut__label">users</span>
+
+        @if (loading()) {
+          <div class="chart-skeleton" aria-busy="true">
+            <div class="chart-skeleton__donut"></div>
+            <div class="chart-skeleton__lines">
+              <div class="chart-skeleton__row"></div>
+              <div class="chart-skeleton__row"></div>
+              <div class="chart-skeleton__row"></div>
             </div>
           </div>
-    
-          <div class="legend">
-            @for (p of chart2.points; track p.label) {
-              <div class="legend__row">
-                <span class="legend__name">{{ p.label  }}</span>
-                <span class="legend__val">{{ p.value }}</span>
-              </div>
+        } @else if (roleSegments().length === 0) {
+          <div class="chart-empty">No role data to display yet.</div>
+        } @else {
+          <div class="donut-chart">
+            <svg class="donut-svg" viewBox="0 0 140 140" role="img" aria-label="Donut chart of users by role">
+              <circle class="donut-svg__track" cx="70" cy="70" [attr.r]="DONUT_R" [attr.stroke-width]="DONUT_STROKE" />
+              @for (seg of roleSegments(); track seg.label) {
+                <circle
+                  class="donut-svg__seg"
+                  cx="70" cy="70"
+                  [attr.r]="DONUT_R"
+                  [attr.stroke]="seg.color"
+                  [attr.stroke-width]="DONUT_STROKE"
+                  [attr.stroke-dasharray]="seg.dash + ' ' + (DONUT_C - seg.dash)"
+                  [attr.stroke-dashoffset]="seg.offset"
+                >
+                  <title>{{ seg.label }} — {{ seg.value }} ({{ seg.pct | number:'1.0-1' }}%)</title>
+                </circle>
+              }
+              <text x="70" y="65" class="donut-svg__center-value" text-anchor="middle">{{ roleChart()?.total ?? 0 }}</text>
+              <text x="70" y="84" class="donut-svg__center-label" text-anchor="middle">USERS</text>
+            </svg>
+
+            <ul class="donut-legend">
+              @for (seg of roleSegments(); track seg.label) {
+                <li class="donut-legend__row">
+                  <span class="donut-legend__swatch" [style.background]="seg.color" aria-hidden="true"></span>
+                  <span class="donut-legend__name">{{ seg.label }}</span>
+                  <span class="donut-legend__pct">{{ seg.pct | number:'1.0-1' }}%</span>
+                  <span class="donut-legend__val">{{ seg.value }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </mat-card>
+
+      <!-- Approval status -->
+      <mat-card class="card chart-card saas-card">
+        <div class="card__head">
+          <div>
+            <h4 class="card__title">Approval Status</h4>
+            <p class="card__sub">Where role requests stand right now.</p>
+          </div>
+          <span class="chart-badge">{{ approvalChart()?.total ?? 0 }} total</span>
+        </div>
+
+        @if (loading()) {
+          <div class="chart-skeleton" aria-busy="true">
+            <div class="chart-skeleton__donut"></div>
+            <div class="chart-skeleton__lines">
+              <div class="chart-skeleton__row"></div>
+              <div class="chart-skeleton__row"></div>
+              <div class="chart-skeleton__row"></div>
+            </div>
+          </div>
+        } @else if (approvalSegments().length === 0) {
+          <div class="chart-empty">No approval data to display yet.</div>
+        } @else {
+          <div class="donut-chart">
+            <svg class="donut-svg" viewBox="0 0 140 140" role="img" aria-label="Donut chart of approval status">
+              <circle class="donut-svg__track" cx="70" cy="70" [attr.r]="DONUT_R" [attr.stroke-width]="DONUT_STROKE" />
+              @for (seg of approvalSegments(); track seg.label) {
+                <circle
+                  class="donut-svg__seg"
+                  cx="70" cy="70"
+                  [attr.r]="DONUT_R"
+                  [attr.stroke]="seg.color"
+                  [attr.stroke-width]="DONUT_STROKE"
+                  [attr.stroke-dasharray]="seg.dash + ' ' + (DONUT_C - seg.dash)"
+                  [attr.stroke-dashoffset]="seg.offset"
+                >
+                  <title>{{ seg.label }} — {{ seg.value }} ({{ seg.pct | number:'1.0-1' }}%)</title>
+                </circle>
+              }
+              <text x="70" y="65" class="donut-svg__center-value" text-anchor="middle">{{ approvalChart()?.total ?? 0 }}</text>
+              <text x="70" y="84" class="donut-svg__center-label" text-anchor="middle">USERS</text>
+            </svg>
+
+            <ul class="donut-legend">
+              @for (seg of approvalSegments(); track seg.label) {
+                <li class="donut-legend__row">
+                  <span class="donut-legend__swatch" [style.background]="seg.color" aria-hidden="true"></span>
+                  <span class="donut-legend__name">{{ seg.label }}</span>
+                  <span class="donut-legend__pct">{{ seg.pct | number:'1.0-1' }}%</span>
+                  <span class="donut-legend__val">{{ seg.value }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </mat-card>
+    </div>
+
+    <!-- Growth chart -->
+    <mat-card class="card chart-card chart-card--wide saas-card">
+      <div class="card__head">
+        <div>
+          <h4 class="card__title">User Growth (last 6 months)</h4>
+          <p class="card__sub">
+            New users per month. Current month is highlighted.
+          </p>
+        </div>
+        @if (userGrowth(); as g) {
+          <div class="growth-stats" aria-live="polite">
+            <span class="growth-stats__num">{{ g.currentMonth?.count ?? 0 }}</span>
+            <span class="growth-stats__lbl">{{ formatPeriod(g.currentMonth?.period) }}</span>
+          </div>
+        }
+      </div>
+
+      @if (businessLoading()) {
+        <div class="growth-skeleton" aria-busy="true">
+          @for (_ of [1, 2, 3, 4, 5, 6]; track _) {
+            <div class="growth-skeleton__bar"></div>
+          }
+        </div>
+      } @else if (chartBars().length === 0) {
+        <div class="chart-empty">No growth data to display yet.</div>
+      } @else {
+        <div class="growth-chart" role="img" aria-label="Bar chart of new users per month">
+          <div class="growth-chart__y" aria-hidden="true">
+            @for (t of chartYTicks().slice().reverse(); track $index) {
+              <span class="growth-chart__y-tick">{{ t }}</span>
             }
           </div>
-        </div>
-      } @else {
-        <div class="empty-state">
-          No approval data available.
+          <div class="growth-chart__plot">
+            <div class="growth-chart__grid" aria-hidden="true">
+              @for (_ of chartYTicks(); track $index) {
+                <span class="growth-chart__grid-line"></span>
+              }
+            </div>
+            <div class="growth-chart__bars">
+              @for (bar of chartBars(); track bar.period) {
+                <div class="growth-bar" [class.growth-bar--current]="bar.current">
+                  <div class="growth-bar__col">
+                    <span class="growth-bar__count">{{ bar.count }}</span>
+                    <div class="growth-bar__fill" [style.height.%]="bar.heightPct"></div>
+                  </div>
+                  <span class="growth-bar__label">{{ bar.label }}</span>
+                </div>
+              }
+            </div>
+          </div>
         </div>
       }
     </mat-card>
@@ -245,4 +415,3 @@
     </mat-card>
   </section>
 </div>
-

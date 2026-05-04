@@ -13,6 +13,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { HomeNavbarComponent } from '../../shared/home-navbar/home-navbar.component';
+import { SilkBackgroundComponent } from '../../shared/silk/silk-background.component';
 
 function confirmPasswordMatches(passwordControlName: string): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -33,8 +35,8 @@ function confirmPasswordMatches(passwordControlName: string): ValidatorFn {
 
 @Component({
   selector: 'app-reset-password',
-    standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink, HomeNavbarComponent, SilkBackgroundComponent],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss'
 })
@@ -42,6 +44,8 @@ export class ResetPasswordComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+
+  readonly currentYear = new Date().getFullYear();
 
   submitting = false;
   success = false;

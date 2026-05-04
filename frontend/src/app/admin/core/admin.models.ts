@@ -65,3 +65,27 @@ export interface AccountRatesResponse {
   rejectionRate: number;
 }
 
+/**
+ * Admin notification (returned by GET /api/admin/notifications).
+ *
+ * Backend field names are tolerated to be slightly different (e.g. `read`,
+ * `isRead`, `seen`) — the frontend service normalizes them into this shape.
+ */
+export interface AdminNotification {
+  id: number;
+  /** Optional title (some events may only send a message). */
+  title?: string;
+  message: string;
+  /** Backend event type; common values: NEW_USER_REGISTERED, ACCOUNT_LOCKED, etc. */
+  type?: string;
+  /** Whether this notification has been marked as read. */
+  read: boolean;
+  /** ISO-8601 creation timestamp from the server. */
+  createdAt: string;
+}
+
+/** Response shape for GET /api/admin/notifications/unread-count. */
+export interface UnreadCountResponse {
+  count: number;
+}
+
