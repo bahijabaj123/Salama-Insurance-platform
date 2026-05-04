@@ -1,6 +1,5 @@
 package org.example.salamainsurance.Controller;
 
-import org.example.salamainsurance.Entity.RepairShopLinda;
 import org.example.salamainsurance.Service.GarageProximityService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,18 +24,19 @@ public class GarageProximityController {
             @RequestParam double lng,
             @RequestParam(defaultValue = "3") int limit
     ) {
-        List<RepairShopLinda> garages = proximityService.findNearestGarages(lat, lng, limit);
+        var results = proximityService.findNearestGarages(lat, lng, limit);
 
-        return garages.stream()
-                .map(g -> new GarageDto(
-                        g.getId(),
-                        g.getName(),
-                        g.getLatitude(),
-                        g.getLongitude()
+        return results.stream()
+                .map(r -> new GarageDto(
+                        r.garage().getId(),
+                        r.garage().getName(),
+                        r.garage().getLatitude(),
+                        r.garage().getLongitude(),
+                        Math.round(r.distanceKm() * 100.0) / 100.0
                 ))
                 .toList();
     }
 
-    // DTO simple
-    public record GarageDto(Long id, String name, Double latitude, Double longitude) {}
+    // DTO avec distance en km
+    public record GarageDto(Long id, String name, Double latitude, Double longitude, Double distanceKm) {}
 }
