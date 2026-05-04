@@ -207,9 +207,6 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
 
   openEditModal(claim: Claim, event: Event): void {
     event.stopPropagation();
-    // #region agent log
-    fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H1', location: 'claims-list.component.ts:openEditModal', message: 'openEditModal', data: { claimId: claim.id, refLen: (claim.reference || '').length }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-    // #endregion
     this.claimToEdit = claim;
     this.editForm.patchValue({
       region: claim.region,
@@ -222,30 +219,19 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
 
   submitEdit(): void {
     if (this.editForm.invalid || !this.claimToEdit) { this.editForm.markAllAsTouched(); return; }
-    // #region agent log
-    fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H3', location: 'claims-list.component.ts:submitEdit', message: 'submitEdit start', data: { claimId: this.claimToEdit.id, invalid: this.editForm.invalid }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-    // #endregion
     this.saving = true;
     this.claimService.updateClaim(this.claimToEdit.id, this.editForm.value).pipe(
       takeUntil(this.destroy$),
       finalize(() => this.saving = false),
     ).subscribe({
       next: updated => {
-        // #region agent log
-        fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H4', location: 'claims-list.component.ts:submitEdit', message: 'submitEdit ok', data: { id: updated.id, status: updated.status, regionLen: (updated.region || '').length, urgency: updated.urgencyScore }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-        // #endregion
         const index = this.claims.findIndex(c => c.id === updated.id);
         if (index !== -1) this.claims[index] = updated;
         this.applyFilters();
         this.showEditModal = false;
         this.showSuccess('Sinistre mis à jour');
       },
-      error: err => {
-        // #region agent log
-        fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H3', location: 'claims-list.component.ts:submitEdit', message: 'submitEdit err', data: { status: err?.status }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-        // #endregion
-        this.showError(`Mise à jour impossible : ${err.error || err.message}`);
-      },
+      error: err => this.showError(`Mise à jour impossible : ${err.error || err.message}`),
     });
   }
 
@@ -253,38 +239,24 @@ export class ClaimsListComponent implements OnInit, OnDestroy {
 
   openDeleteModal(claim: Claim, event: Event): void {
     event.stopPropagation();
-    // #region agent log
-    fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H1', location: 'claims-list.component.ts:openDeleteModal', message: 'openDeleteModal', data: { claimId: claim.id }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-    // #endregion
     this.claimToDelete = claim;
     this.showDeleteModal = true;
   }
 
   confirmDelete(): void {
     if (!this.claimToDelete) return;
-    // #region agent log
-    fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H5', location: 'claims-list.component.ts:confirmDelete', message: 'confirmDelete start', data: { claimId: this.claimToDelete.id }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-    // #endregion
     this.deletingId = this.claimToDelete.id;
     this.claimService.deleteClaim(this.claimToDelete.id).pipe(
       takeUntil(this.destroy$),
       finalize(() => this.deletingId = undefined),
     ).subscribe({
       next: () => {
-        // #region agent log
-        fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H5', location: 'claims-list.component.ts:confirmDelete', message: 'confirmDelete ok', data: {}, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-        // #endregion
         this.claims = this.claims.filter(c => c.id !== this.claimToDelete!.id);
         this.applyFilters();
         this.showDeleteModal = false;
         this.showSuccess('Sinistre supprimé');
       },
-      error: err => {
-        // #region agent log
-        fetch('http://127.0.0.1:7458/ingest/2de376a7-a5d8-4b1c-9f1e-ec7e4eee686b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '1f08e1' }, body: JSON.stringify({ sessionId: '1f08e1', hypothesisId: 'H5', location: 'claims-list.component.ts:confirmDelete', message: 'confirmDelete err', data: { status: err?.status }, timestamp: Date.now(), runId: 'post-fix' }) }).catch(() => {});
-        // #endregion
-        this.showError(`Suppression impossible : ${err.error || err.message}`);
-      },
+      error: err => this.showError(`Suppression impossible : ${err.error || err.message}`),
     });
   }
 
