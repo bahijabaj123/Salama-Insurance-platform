@@ -1,0 +1,182 @@
+<div class="cps">
+  <header class="cps__head">
+    <div class="cps__head-row">
+      <button type="button" class="cps__back" (click)="goBack()">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        Back
+      </button>
+      <button type="button" class="cps__refresh" (click)="refresh()" [disabled]="loading()">
+        <mat-icon aria-hidden="true">sync</mat-icon>
+        Refresh data
+      </button>
+    </div>
+    <h1 class="cps__title">Claim processing duration</h1>
+    <p class="cps__sub">
+      Server KPIs refresh every 45s (and on refresh). Open claims show elapsed time every second. When you have no
+      closed history yet, the same cards show a <strong>local live benchmark</strong> (browser profile, illustrative).
+    </p>
+    @if (lastSyncedAt()) {
+      <p class="cps__sync">
+        Last sync: {{ lastSyncedAt()! | date: 'medium' }} · Live clock for open cases
+      </p>
+    }
+  </header>
+
+  @if (error()) {
+    <div class="cps__alert cps__alert--err">{{ error() }}</div>
+  }
+
+  @if (claimsUnmatched()) {
+    <div class="cps__alert cps__alert--info">
+      The server returned {{ serverClaimCount() }} claim(s), but none are linked to your client profile
+      (<code>client</code> id/email). KPIs below use the <strong>local live estimate</strong> until your files are
+      attached to this account.
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="cps__loading">Loading your statistics…</div>
+  } @else {
+    <div class="cps__kpis">
+      <article class="cps-kpi">
+        <div class="cps-kpi__icon" aria-hidden="true">
+          <mat-icon>timer</mat-icon>
+        </div>
+        <div class="cps-kpi__body">
+          <div class="cps-kpi__label">Closed processing (avg. or local live)</div>
+          <div class="cps-kpi__value">
+            @if (avgClosedDurationDays != null) {
+              {{ avgClosedDurationDays }} <span class="cps-kpi__unit">days</span>
+              <span class="cps-kpi__tag">server</span>
+            } @else {
+              {{ localLiveClosedBenchmark() }} <span class="cps-kpi__unit">days</span>
+              <span class="cps-kpi__tag">local · live</span>
+            }
+          </div>
+          <div class="cps-kpi__sub">
+            @if (avgClosedDurationDays != null) {
+              Based on {{ closedClaims.length }} closed file(s)
+            } @else {
+              Oscillates slightly every second — baseline stored in this browser until you have closed claims
+            }
+          </div>
+        </div>
+      </article>
+
+      <article class="cps-kpi">
+        <div class="cps-kpi__icon cps-kpi__icon--accent" aria-hidden="true">
+          <mat-icon>hourglass_top</mat-icon>
+        </div>
+        <div class="cps-kpi__body">
+          <div class="cps-kpi__label">Active age (avg. or local live)</div>
+          <div class="cps-kpi__value">
+            @if (avgOpenAgeDays != null) {
+              {{ avgOpenAgeDays }} <span class="cps-kpi__unit">days</span>
+              <span class="cps-kpi__tag">server</span>
+            } @else {
+              {{ localLiveOpenBenchmark() }} <span class="cps-kpi__unit">days</span>
+              <span class="cps-kpi__tag">local · live</span>
+            }
+          </div>
+          <div class="cps-kpi__sub">
+            @if (activeClaims.length > 0) {
+              {{ activeClaims.length }} active file(s)
+            } @else {
+              Live benchmark — no active files in your account
+            }
+          </div>
+        </div>
+      </article>
+
+      <article class="cps-kpi">
+        <div class="cps-kpi__icon cps-kpi__icon--neutral" aria-hidden="true">
+          <mat-icon>folder_open</mat-icon>
+        </div>
+        <div class="cps-kpi__body">
+          <div class="cps-kpi__label">Total files</div>
+          <div class="cps-kpi__value">{{ claims().length }}</div>
+          <div class="cps-kpi__sub">All statuses</div>
+        </div>
+      </article>
+    </div>
+
+    <section class="cps__local-strip" aria-label="Local real-time estimate">
+      <h2 class="cps__h2 cps__h2--inline">Local real-time estimate</h2>
+      <p class="cps__local-lead">
+        Uses a stable baseline saved in <code>localStorage</code> for this profile, then adds a tiny live motion so
+        you can see the clock working. For open claims in the table, “remaining” = (your closed average
+        <em>or</em> that baseline) minus elapsed time — heuristic only, not a promise.
+      </p>
+      <div class="cps__local-grid">
+        <div class="cps-local-metric">
+          <span class="cps-local-metric__label">Benchmark closed cadence (live)</span>
+          <span class="cps-local-metric__val">{{ localLiveClosedBenchmark() }} days</span>
+        </div>
+        <div class="cps-local-metric">
+          <span class="cps-local-metric__label">Benchmark active phase (live)</span>
+          <span class="cps-local-metric__val">{{ localLiveOpenBenchmark() }} days</span>
+        </div>
+        <div class="cps-local-metric">
+          <span class="cps-local-metric__label">Horizon used for ETA</span>
+          <span class="cps-local-metric__val">{{ targetHorizonDaysForDisplay() }} days</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cps__table-wrap" aria-label="Per-claim durations">
+      <h2 class="cps__h2">Per claim</h2>
+      @if (claims().length === 0) {
+        <p class="cps__empty">
+          No claims matched for your account. The strip above still gives a <strong>local live estimation</strong> so
+          the page stays useful in demo / before linkage.
+        </p>
+      } @else {
+        <table class="cps-table">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Status</th>
+              <th>Opened</th>
+              <th>Duration / elapsed</th>
+              <th>Est. remaining (local)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of claims(); track c.id) {
+              <tr>
+                <td class="cps-table__ref">{{ c.reference }}</td>
+                <td>
+                  <span class="cps-badge" [ngClass]="STATUS_BADGE_CSS[c.status]">
+                    {{ STATUS_LABELS[c.status] }}
+                  </span>
+                </td>
+                <td>{{ c.openingDate | date: 'short' }}</td>
+                <td>
+                  @if (isTerminal(c)) {
+                    <span class="cps-dur cps-dur--done">{{ closedProcessingLabel(c) }}</span>
+                    @if (c.closingDate) {
+                      <span class="cps-dur__hint">total until {{ c.closingDate | date: 'shortDate' }}</span>
+                    } @else {
+                      <span class="cps-dur__hint">closed / rejected</span>
+                    }
+                  } @else {
+                    <span class="cps-dur cps-dur--live">{{ openElapsedLabel(c) }}</span>
+                    <span class="cps-dur__hint">live since opening</span>
+                  }
+                </td>
+                <td>
+                  @if (isTerminal(c)) {
+                    <span class="cps-dur__hint">—</span>
+                  } @else {
+                    <span class="cps-dur cps-dur--eta">{{ openRemainingEstimateDays(c) }}</span>
+                    <span class="cps-dur__hint">vs {{ targetHorizonDaysForDisplay() }} d horizon</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  }
+</div>

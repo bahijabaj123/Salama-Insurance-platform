@@ -134,6 +134,584 @@
         <strong class="dmg-total-bar__sum">{{ formatEuro(entriesTotalTtc()) }}</strong>
       </div>
     </section>
+
+    <section class="dmg-fraud" aria-labelledby="dmg-fraud-title">
+      <div class="dmg-fraud__glow" aria-hidden="true"></div>
+      <div class="dmg-fraud__head">
+        <div class="dmg-fraud__badge">
+          <span class="dmg-fraud__shield" aria-hidden="true">🛡</span>
+          <div>
+            <h2 id="dmg-fraud-title" class="dmg-fraud__title">Détecteur de fraude automatique</h2>
+            <p class="dmg-fraud__intro">
+              Dès qu’au moins une zone est validée, le moteur <strong>estime comment l’accident a pu se produire</strong>
+              (répartition des zones), calcule un <strong>score 0–100</strong> et trace un <strong>profil radar</strong>.
+              @if (accidentAtIso) {
+                <span> L’<strong>heure déclarée</strong> affine le risque temporel (ex. nuit 22h–06h).</span>
+              }
+            </p>
+          </div>
+        </div>
+        <div class="dmg-fraud__scorebox">
+          <span class="dmg-fraud__score-num">{{ fraudSnapshot().score }}</span>
+          <span class="dmg-fraud__score-lbl">/ 100</span>
+          <span class="dmg-fraud__band" [class]="fraudBandClass(fraudSnapshot().band)">
+            {{ fraudBandLabelFr(fraudSnapshot().band) }}
+          </span>
+        </div>
+      </div>
+
+      <p class="dmg-fraud__rules-lead">
+        Le système attribue un score de risque à chaque dossier. Exemples de signaux&nbsp;:
+      </p>
+      <ul class="dmg-fraud__rules">
+        <li>
+          <strong>Accident déclaré la nuit</strong> (22h–06h) → risque <em>élevé</em> sur l’axe temporel.
+        </li>
+        <li><strong>Choc multi-faces</strong> ou <strong>très nombreuses zones</strong> → dispersion & complexité.</li>
+        <li><strong>Montant concentré</strong> sur peu de pièces → contrôle documentaire recommandé.</li>
+      </ul>
+
+      <div class="dmg-fraud__scenario" aria-labelledby="dmg-scenario-title">
+        <div
+          [attr.class]="'dmg-fraud__scenario-illu dmg-fraud__cinema dmg-fraud__cinema--' + fraudScenario().code"
+          aria-hidden="true"
+        >
+          @switch (fraudScenario().code) {
+            @case ('rear_struck') {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg" focusable="false">
+                <title>Tamponnement animé</title>
+                <defs>
+                  <g id="cinBerlineSide-rs">
+                    <ellipse cx="50" cy="56.5" rx="44" ry="2.2" fill="rgba(15,23,42,0.07)" />
+                    <circle cx="21" cy="52" r="5.8" fill="#1e293b" stroke="#0f172a" stroke-width="1.05" />
+                    <circle cx="21" cy="52" r="2.6" fill="#64748b" />
+                    <circle cx="79" cy="52" r="5.8" fill="#1e293b" stroke="#0f172a" stroke-width="1.05" />
+                    <circle cx="79" cy="52" r="2.6" fill="#64748b" />
+                    <path
+                      fill="#eef2f7"
+                      stroke="#0f172a"
+                      stroke-width="1.2"
+                      stroke-linejoin="round"
+                      d="M7 50h86a3 3 0 0 1 3 3v4.5H4v-4.5a3 3 0 0 1 3-3z"
+                    />
+                    <path
+                      class="dmg-cin-body"
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.35"
+                      stroke-linejoin="round"
+                      d="M5 50V33q0-14 10-19L27 10h46l12 4q10 5 10 19v17H5z"
+                    />
+                    <path
+                      class="dmg-cin-roof"
+                      fill="rgba(148,163,184,0.28)"
+                      stroke="#0f172a"
+                      stroke-width="1.05"
+                      stroke-linejoin="round"
+                      d="M24 11h52l-5.5 13H29.5z"
+                    />
+                    <line x1="50" y1="11" x2="50" y2="50" stroke="#0f172a" stroke-width="0.85" opacity="0.2" />
+                    <path
+                      fill="none"
+                      stroke="#475569"
+                      stroke-width="0.75"
+                      opacity="0.42"
+                      d="M12 31q38-4 76 0"
+                    />
+                    <rect x="58" y="37.5" width="9" height="1.8" rx="0.4" fill="#0f172a" opacity="0.28" />
+                    <path fill="#f8fafc" stroke="#0f172a" stroke-width="0.85" d="M91 27.5 L98 31 v11 l-7 3.5 z" />
+                    <path fill="#fecaca" stroke="#0f172a" stroke-width="0.8" d="M2 27.5 L9 31 v11 l-7 3.5 z" />
+                    <path fill="none" stroke="#94a3b8" stroke-width="0.9" d="M8 50h84" />
+                  </g>
+                </defs>
+                <line class="dmg-cin-road" x1="6" y1="78" x2="254" y2="78" />
+                <g class="dmg-cin-victim" transform="translate(14,22)">
+                  <use href="#cinBerlineSide-rs" />
+                </g>
+                <g transform="translate(148,22)">
+                  <g class="dmg-cin-slide dmg-cin-slide--rear">
+                    <use href="#cinBerlineSide-rs" />
+                  </g>
+                </g>
+                <g class="dmg-cin-burst" transform="translate(118,44)">
+                  <path
+                    fill="none"
+                    stroke="#0f172a"
+                    stroke-width="1.25"
+                    stroke-linejoin="miter"
+                    d="M0-14L3.2-4L13-4L5.2 3.2L8.5 13L0 7.2L-8.5 13L-5.2 3.2L-13-4L-3.2-4Z"
+                  />
+                </g>
+              </svg>
+            }
+            @case ('front_impact') {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg" focusable="false">
+                <title>Choc frontal animé</title>
+                <defs>
+                  <g id="cinBerlineSide-fi">
+                    <ellipse cx="50" cy="56.5" rx="44" ry="2.2" fill="rgba(15,23,42,0.07)" />
+                    <circle cx="21" cy="52" r="5.8" fill="#1e293b" stroke="#0f172a" stroke-width="1.05" />
+                    <circle cx="21" cy="52" r="2.6" fill="#64748b" />
+                    <circle cx="79" cy="52" r="5.8" fill="#1e293b" stroke="#0f172a" stroke-width="1.05" />
+                    <circle cx="79" cy="52" r="2.6" fill="#64748b" />
+                    <path
+                      fill="#eef2f7"
+                      stroke="#0f172a"
+                      stroke-width="1.2"
+                      stroke-linejoin="round"
+                      d="M7 50h86a3 3 0 0 1 3 3v4.5H4v-4.5a3 3 0 0 1 3-3z"
+                    />
+                    <path
+                      class="dmg-cin-body"
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.35"
+                      stroke-linejoin="round"
+                      d="M5 50V33q0-14 10-19L27 10h46l12 4q10 5 10 19v17H5z"
+                    />
+                    <path
+                      class="dmg-cin-roof"
+                      fill="rgba(148,163,184,0.28)"
+                      stroke="#0f172a"
+                      stroke-width="1.05"
+                      stroke-linejoin="round"
+                      d="M24 11h52l-5.5 13H29.5z"
+                    />
+                    <line x1="50" y1="11" x2="50" y2="50" stroke="#0f172a" stroke-width="0.85" opacity="0.2" />
+                    <path
+                      fill="none"
+                      stroke="#475569"
+                      stroke-width="0.75"
+                      opacity="0.42"
+                      d="M12 31q38-4 76 0"
+                    />
+                    <rect x="58" y="37.5" width="9" height="1.8" rx="0.4" fill="#0f172a" opacity="0.28" />
+                    <path fill="#f8fafc" stroke="#0f172a" stroke-width="0.85" d="M91 27.5 L98 31 v11 l-7 3.5 z" />
+                    <path fill="#fecaca" stroke="#0f172a" stroke-width="0.8" d="M2 27.5 L9 31 v11 l-7 3.5 z" />
+                    <path fill="none" stroke="#94a3b8" stroke-width="0.9" d="M8 50h84" />
+                  </g>
+                </defs>
+                <line class="dmg-cin-road" x1="6" y1="78" x2="254" y2="78" />
+                <g transform="translate(18,22) scale(-1,1) translate(-100,0)">
+                  <g class="dmg-cin-slide dmg-cin-slide--front-l">
+                    <use href="#cinBerlineSide-fi" />
+                  </g>
+                </g>
+                <g transform="translate(158,22)">
+                  <g class="dmg-cin-slide dmg-cin-slide--front-r">
+                    <use href="#cinBerlineSide-fi" />
+                  </g>
+                </g>
+                <g class="dmg-cin-burst" transform="translate(128,44)">
+                  <path
+                    fill="none"
+                    stroke="#0f172a"
+                    stroke-width="1.25"
+                    d="M0-14L3.2-4L13-4L5.2 3.2L8.5 13L0 7.2L-8.5 13L-5.2 3.2L-13-4L-3.2-4Z"
+                  />
+                </g>
+              </svg>
+            }
+            @case ('side_right') {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg dmg-cin-svg--top" focusable="false">
+                <title>Choc latéral droit (vue dessus)</title>
+                <defs>
+                  <g id="cinBerlineTop-wide-sr">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.3"
+                      stroke-linejoin="round"
+                      d="M4 8 Q4 3 9 3h74q5 0 5 5v16q0 5-5 5H9q-5 0-5-5V8z"
+                    />
+                    <path
+                      fill="rgba(148,163,184,0.28)"
+                      stroke="#0f172a"
+                      stroke-width="0.95"
+                      d="M18 3h52l-6 10H24z"
+                    />
+                    <line x1="44" y1="3" x2="44" y2="26" stroke="#0f172a" stroke-width="0.75" opacity="0.2" />
+                    <path fill="none" stroke="#94a3b8" stroke-width="0.85" d="M10 22h72" opacity="0.55" />
+                    <ellipse cx="18" cy="24" rx="4.5" ry="2.4" fill="#1e293b" opacity="0.88" />
+                    <ellipse cx="74" cy="24" rx="4.5" ry="2.4" fill="#1e293b" opacity="0.88" />
+                  </g>
+                  <g id="cinBerlineTop-narrow-sr">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.25"
+                      stroke-linejoin="round"
+                      d="M6 4 Q6 2 9 2h10q3 0 3 3v38q0 3-3 3H9q-3 0-3-3V4z"
+                    />
+                    <path fill="rgba(148,163,184,0.28)" stroke="#0f172a" stroke-width="0.85" d="M8 6h6v28H8z" opacity="0.9" />
+                    <ellipse cx="11" cy="38" rx="2.8" ry="4" fill="#1e293b" opacity="0.85" />
+                    <ellipse cx="11" cy="8" rx="2.8" ry="3.2" fill="#1e293b" opacity="0.85" />
+                  </g>
+                </defs>
+                <rect class="dmg-cin-pad" x="8" y="8" width="244" height="80" rx="10" />
+                <g class="dmg-cin-tb-victim" transform="translate(88,38)">
+                  <use href="#cinBerlineTop-wide-sr" />
+                </g>
+                <g transform="translate(198,32)">
+                  <g class="dmg-cin-slide dmg-cin-slide--tb-r">
+                    <use href="#cinBerlineTop-narrow-sr" />
+                  </g>
+                </g>
+                <g class="dmg-cin-burst" transform="translate(178,52)">
+                  <path
+                    fill="none"
+                    stroke="#0f172a"
+                    stroke-width="1.2"
+                    d="M0-11L2.8-3.2L11-3.2L4.2 2.8L7 11L0 6L-7 11L-4.2 2.8L-11-3.2L-2.8-3.2Z"
+                  />
+                </g>
+              </svg>
+            }
+            @case ('side_left') {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg dmg-cin-svg--top" focusable="false">
+                <title>Choc latéral gauche (vue dessus)</title>
+                <defs>
+                  <g id="cinBerlineTop-wide-sl">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.3"
+                      stroke-linejoin="round"
+                      d="M4 8 Q4 3 9 3h74q5 0 5 5v16q0 5-5 5H9q-5 0-5-5V8z"
+                    />
+                    <path
+                      fill="rgba(148,163,184,0.28)"
+                      stroke="#0f172a"
+                      stroke-width="0.95"
+                      d="M18 3h52l-6 10H24z"
+                    />
+                    <line x1="44" y1="3" x2="44" y2="26" stroke="#0f172a" stroke-width="0.75" opacity="0.2" />
+                    <path fill="none" stroke="#94a3b8" stroke-width="0.85" d="M10 22h72" opacity="0.55" />
+                    <ellipse cx="18" cy="24" rx="4.5" ry="2.4" fill="#1e293b" opacity="0.88" />
+                    <ellipse cx="74" cy="24" rx="4.5" ry="2.4" fill="#1e293b" opacity="0.88" />
+                  </g>
+                  <g id="cinBerlineTop-narrow-sl">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.25"
+                      stroke-linejoin="round"
+                      d="M6 4 Q6 2 9 2h10q3 0 3 3v38q0 3-3 3H9q-3 0-3-3V4z"
+                    />
+                    <path fill="rgba(148,163,184,0.28)" stroke="#0f172a" stroke-width="0.85" d="M8 6h6v28H8z" opacity="0.9" />
+                    <ellipse cx="11" cy="38" rx="2.8" ry="4" fill="#1e293b" opacity="0.85" />
+                    <ellipse cx="11" cy="8" rx="2.8" ry="3.2" fill="#1e293b" opacity="0.85" />
+                  </g>
+                </defs>
+                <rect class="dmg-cin-pad" x="8" y="8" width="244" height="80" rx="10" />
+                <g class="dmg-cin-tb-victim" transform="translate(88,38)">
+                  <use href="#cinBerlineTop-wide-sl" />
+                </g>
+                <g transform="translate(38,32)">
+                  <g class="dmg-cin-slide dmg-cin-slide--tb-l">
+                    <use href="#cinBerlineTop-narrow-sl" />
+                  </g>
+                </g>
+                <g class="dmg-cin-burst" transform="translate(88,52)">
+                  <path
+                    fill="none"
+                    stroke="#0f172a"
+                    stroke-width="1.2"
+                    d="M0-11L2.8-3.2L11-3.2L4.2 2.8L7 11L0 6L-7 11L-4.2 2.8L-11-3.2L-2.8-3.2Z"
+                  />
+                </g>
+              </svg>
+            }
+            @case ('front_rear') {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg" focusable="false">
+                <title>Chaîne de collisions</title>
+                <defs>
+                  <g id="cinBerlineSide-ch">
+                    <ellipse cx="50" cy="56.5" rx="44" ry="2.2" fill="rgba(15,23,42,0.07)" />
+                    <circle cx="21" cy="52" r="5.8" fill="#1e293b" stroke="#0f172a" stroke-width="1.05" />
+                    <circle cx="21" cy="52" r="2.6" fill="#64748b" />
+                    <circle cx="79" cy="52" r="5.8" fill="#1e293b" stroke="#0f172a" stroke-width="1.05" />
+                    <circle cx="79" cy="52" r="2.6" fill="#64748b" />
+                    <path
+                      fill="#eef2f7"
+                      stroke="#0f172a"
+                      stroke-width="1.2"
+                      stroke-linejoin="round"
+                      d="M7 50h86a3 3 0 0 1 3 3v4.5H4v-4.5a3 3 0 0 1 3-3z"
+                    />
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.35"
+                      stroke-linejoin="round"
+                      d="M5 50V33q0-14 10-19L27 10h46l12 4q10 5 10 19v17H5z"
+                    />
+                    <path
+                      fill="rgba(148,163,184,0.28)"
+                      stroke="#0f172a"
+                      stroke-width="1.05"
+                      stroke-linejoin="round"
+                      d="M24 11h52l-5.5 13H29.5z"
+                    />
+                    <line x1="50" y1="11" x2="50" y2="50" stroke="#0f172a" stroke-width="0.85" opacity="0.2" />
+                    <path fill="#f8fafc" stroke="#0f172a" stroke-width="0.85" d="M91 27.5 L98 31 v11 l-7 3.5 z" />
+                    <path fill="#fecaca" stroke="#0f172a" stroke-width="0.8" d="M2 27.5 L9 31 v11 l-7 3.5 z" />
+                    <path fill="none" stroke="#94a3b8" stroke-width="0.9" d="M8 50h84" />
+                  </g>
+                </defs>
+                <line class="dmg-cin-road" x1="6" y1="78" x2="254" y2="78" />
+                <g transform="translate(8,26) scale(0.58)">
+                  <g class="dmg-cin-slide dmg-cin-slide--ch-a">
+                    <use href="#cinBerlineSide-ch" />
+                  </g>
+                </g>
+                <g transform="translate(88,26) scale(0.58)">
+                  <g class="dmg-cin-slide dmg-cin-slide--ch-b">
+                    <use href="#cinBerlineSide-ch" />
+                  </g>
+                </g>
+                <g transform="translate(168,26) scale(0.58)">
+                  <g class="dmg-cin-slide dmg-cin-slide--ch-c">
+                    <use href="#cinBerlineSide-ch" />
+                  </g>
+                </g>
+                <g class="dmg-cin-burst dmg-cin-burst--sm" transform="translate(72,46)">
+                  <path fill="none" stroke="#0f172a" stroke-width="1.1" d="M0-9L2.5-2.5L9-2.5L3.5 2.5L6 9L0 5L-6 9L-3.5 2.5L-9-2.5L-2.5-2.5Z" />
+                </g>
+                <g class="dmg-cin-burst dmg-cin-burst--sm2" transform="translate(152,46)">
+                  <path fill="none" stroke="#0f172a" stroke-width="1.1" d="M0-9L2.5-2.5L9-2.5L3.5 2.5L6 9L0 5L-6 9L-3.5 2.5L-9-2.5L-2.5-2.5Z" />
+                </g>
+              </svg>
+            }
+            @case ('narrow_sides') {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg dmg-cin-svg--top" focusable="false">
+                <title>Pression latérale</title>
+                <defs>
+                  <g id="cinBerlineTop-ns">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.25"
+                      stroke-linejoin="round"
+                      d="M4 10 Q4 4 10 4h52q6 0 6 6v14q0 6-6 6H10q-6 0-6-6V10z"
+                    />
+                    <path
+                      fill="rgba(148,163,184,0.3)"
+                      stroke="#0f172a"
+                      stroke-width="0.95"
+                      d="M16 5h40l-5 9H21z"
+                    />
+                    <line x1="36" y1="5" x2="36" y2="28" stroke="#0f172a" stroke-width="0.75" opacity="0.22" />
+                    <path fill="none" stroke="#94a3b8" stroke-width="0.85" d="M8 24h56" opacity="0.6" />
+                    <ellipse cx="14" cy="26" rx="4" ry="2.2" fill="#1e293b" opacity="0.85" />
+                    <ellipse cx="58" cy="26" rx="4" ry="2.2" fill="#1e293b" opacity="0.85" />
+                  </g>
+                </defs>
+                <rect class="dmg-cin-pad" x="8" y="8" width="244" height="80" rx="10" />
+                <g transform="translate(48,34)">
+                  <g class="dmg-cin-slide dmg-cin-slide--par-a">
+                    <use href="#cinBerlineTop-ns" />
+                  </g>
+                </g>
+                <g transform="translate(140,34)">
+                  <g class="dmg-cin-slide dmg-cin-slide--par-b">
+                    <use href="#cinBerlineTop-ns" />
+                  </g>
+                </g>
+                <g class="dmg-cin-burst" transform="translate(128,50)">
+                  <path
+                    fill="none"
+                    stroke="#0f172a"
+                    stroke-width="1.1"
+                    opacity="0.85"
+                    d="M0-8L2.4-2.4L8.5-2.4L3.2 2.4L5.5 8L0 4.5L-5.5 8L-3.2 2.4L-8.5-2.4L-2.4-2.4Z"
+                  />
+                </g>
+              </svg>
+            }
+            @default {
+              <svg viewBox="0 0 260 96" class="dmg-cin-svg dmg-cin-svg--top" focusable="false">
+                <title>Cinématique multi-directions</title>
+                <defs>
+                  <g id="cinBerlineTop-mx-a">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.2"
+                      d="M3 6 Q3 2 7 2h42q4 0 4 4v12q0 4-4 4H7q-4 0-4-4V6z"
+                    />
+                    <path fill="rgba(148,163,184,0.28)" stroke="#0f172a" stroke-width="0.85" d="M12 2h24l-3 7H15z" />
+                    <ellipse cx="12" cy="20" rx="3.2" ry="1.8" fill="#1e293b" opacity="0.85" />
+                    <ellipse cx="44" cy="20" rx="3.2" ry="1.8" fill="#1e293b" opacity="0.85" />
+                  </g>
+                  <g id="cinBerlineTop-mx-b">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.2"
+                      d="M5 3 Q5 1 8 1h8q3 0 3 3v40q0 3-3 3H8q-3 0-3-3V3z"
+                    />
+                    <path fill="rgba(148,163,184,0.28)" stroke="#0f172a" stroke-width="0.8" d="M7 4h4v34H7z" opacity="0.9" />
+                    <ellipse cx="10" cy="40" rx="2.4" ry="3.6" fill="#1e293b" opacity="0.85" />
+                    <ellipse cx="10" cy="6" rx="2.4" ry="2.8" fill="#1e293b" opacity="0.85" />
+                  </g>
+                  <g id="cinBerlineTop-mx-c">
+                    <path
+                      fill="#fff"
+                      stroke="#0f172a"
+                      stroke-width="1.2"
+                      d="M3 4 Q3 1 6 1h36q3 0 3 3v14q0 3-3 3H6q-3 0-3-3V4z"
+                    />
+                    <path fill="rgba(148,163,184,0.28)" stroke="#0f172a" stroke-width="0.85" d="M10 1h20l-3 6H13z" />
+                    <ellipse cx="10" cy="18" rx="3" ry="1.7" fill="#1e293b" opacity="0.85" />
+                    <ellipse cx="38" cy="18" rx="3" ry="1.7" fill="#1e293b" opacity="0.85" />
+                  </g>
+                </defs>
+                <rect class="dmg-cin-pad" x="8" y="8" width="244" height="80" rx="10" />
+                <g class="dmg-cin-slide dmg-cin-slide--mx-a" transform="translate(40,40)">
+                  <use href="#cinBerlineTop-mx-a" />
+                </g>
+                <g class="dmg-cin-slide dmg-cin-slide--mx-b" transform="translate(118,28)">
+                  <use href="#cinBerlineTop-mx-b" />
+                </g>
+                <g class="dmg-cin-slide dmg-cin-slide--mx-c" transform="translate(178,44)">
+                  <use href="#cinBerlineTop-mx-c" />
+                </g>
+                <g transform="translate(130,50)">
+                  <g class="dmg-cin-diamond-spin">
+                    <path
+                      fill="rgba(99,102,241,0.12)"
+                      stroke="#6366f1"
+                      stroke-width="1.1"
+                      d="M0-18L18 0L0 18L-18 0Z"
+                    />
+                  </g>
+                </g>
+              </svg>
+            }
+          }
+        </div>
+        <div class="dmg-fraud__scenario-body">
+          <h3 id="dmg-scenario-title" class="dmg-fraud__scenario-title">Estimation de l’accident</h3>
+          <p class="dmg-fraud__scenario-headline">{{ fraudScenario().title }}</p>
+          <p class="dmg-fraud__scenario-text">{{ fraudScenario().narrative }}</p>
+          <div class="dmg-fraud__scenario-meta">
+            <span class="dmg-fraud__scenario-conf"
+              >Confiance cinématique : <strong>{{ fraudScenario().confidence }}</strong></span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="dmg-fraud__grid">
+        <div class="dmg-fraud__radar-card">
+          <h3 class="dmg-fraud__h3">Profil de risque (radar)</h3>
+          <p class="dmg-fraud__muted">Cinq axes normalisés (0 = rassurant, 100 = signal fort).</p>
+          <div class="dmg-fraud__svg-wrap">
+            <svg class="dmg-fraud__svg" viewBox="0 0 280 248" role="img" aria-label="Graphique radar du risque">
+              <defs>
+                <linearGradient id="dmgFraudFill" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(244, 114, 182, 0.35)" />
+                  <stop offset="100%" stop-color="rgba(99, 102, 241, 0.25)" />
+                </linearGradient>
+                <linearGradient id="dmgFraudStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#e11d48" />
+                  <stop offset="100%" stop-color="#6366f1" />
+                </linearGradient>
+              </defs>
+              @for (ring of [0.25, 0.5, 0.75, 1]; track ring) {
+                <polygon
+                  class="dmg-fraud__grid-poly"
+                  [attr.points]="fraudRadarRing(86 * ring)"
+                  fill="none"
+                />
+              }
+              <polygon class="dmg-fraud__fill" [attr.points]="fraudRadarMainPoly()" />
+              <polygon class="dmg-fraud__stroke" [attr.points]="fraudRadarMainPoly()" fill="none" />
+              <text class="dmg-fraud__axis" x="140" y="14" text-anchor="middle">Temps</text>
+              <text class="dmg-fraud__axis" x="252" y="92" text-anchor="end">Espaces</text>
+              <text class="dmg-fraud__axis" x="218" y="218" text-anchor="middle">Financier</text>
+              <text class="dmg-fraud__axis" x="62" y="218" text-anchor="middle">Motif</text>
+              <text class="dmg-fraud__axis" x="28" y="92" text-anchor="start">Complexité</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="dmg-fraud__signals">
+          <h3 class="dmg-fraud__h3">Signaux détectés</h3>
+          <p class="dmg-fraud__muted dmg-fraud__signals-lead">
+            Courbe cumulative du score (0–100) selon l’ordre d’apparition des signaux — le palier final correspond au
+            score affiché.
+          </p>
+          @let curveEnd = fraudSignalsCurveEndPoint();
+          <div
+            class="dmg-fraud__signals-chart"
+            role="img"
+            [attr.aria-label]="
+              'Courbe cumulative du risque : score actuel ' + fraudSnapshot().score + ' sur 100, selon les signaux listés ci-dessous.'
+            "
+          >
+            <svg
+              class="dmg-fraud__signals-svg"
+              viewBox="0 0 380 108"
+              preserveAspectRatio="xMidYMid meet"
+              focusable="false"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="dmgSignalsAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(99, 102, 241, 0.42)" />
+                  <stop offset="55%" stop-color="rgba(244, 114, 182, 0.14)" />
+                  <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+                </linearGradient>
+                <linearGradient id="dmgSignalsLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="55%" stop-color="#818cf8" />
+                  <stop offset="100%" stop-color="#e11d48" />
+                </linearGradient>
+              </defs>
+              <rect class="dmg-fraud__sig-frame" x="10" y="10" width="352" height="72" rx="10" />
+              <line class="dmg-fraud__sig-grid" x1="14" y1="48" x2="366" y2="48" />
+              <line class="dmg-fraud__sig-grid dmg-fraud__sig-grid--soft" x1="14" y1="34" x2="366" y2="34" />
+              <line class="dmg-fraud__sig-grid dmg-fraud__sig-grid--soft" x1="14" y1="62" x2="366" y2="62" />
+              <path class="dmg-fraud__sig-area" [attr.d]="fraudSignalsCurveAreaD()" fill="url(#dmgSignalsAreaGrad)" />
+              <path
+                class="dmg-fraud__sig-line"
+                pathLength="1"
+                [attr.d]="fraudSignalsCurveLineD()"
+                fill="none"
+                stroke="url(#dmgSignalsLineGrad)"
+              />
+              <circle class="dmg-fraud__sig-dot" r="4.5" [attr.cx]="curveEnd.x" [attr.cy]="curveEnd.y" />
+              <text class="dmg-fraud__sig-cap" x="22" y="24">Signal → score</text>
+              <text class="dmg-fraud__sig-axis" x="14" y="104">0</text>
+              <text class="dmg-fraud__sig-axis" x="188" y="104" text-anchor="middle">50</text>
+              <text class="dmg-fraud__sig-axis" x="354" y="104" text-anchor="end">100</text>
+            </svg>
+          </div>
+          <ul class="dmg-fraud__factors">
+            @for (f of fraudSnapshot().factorsList; track f.code) {
+              <li class="dmg-fraud__factor" [class]="'dmg-fraud__factor--' + f.severity">
+                <span class="dmg-fraud__factor-pt" aria-hidden="true"></span>
+                <div>
+                  <div class="dmg-fraud__factor-title">
+                    {{ f.label }}
+                    @if (f.points > 0) {
+                      <span class="dmg-fraud__factor-score">+{{ f.points }} pts</span>
+                    }
+                  </div>
+                  <p class="dmg-fraud__factor-detail">{{ f.detail }}</p>
+                </div>
+              </li>
+            }
+          </ul>
+          <p class="dmg-fraud__disclaimer">
+            Analyse <strong>locale</strong> au moment de la saisie des dégâts — à croiser avec photos, PV, et analyse
+            serveur sinistre si disponible.
+          </p>
+        </div>
+      </div>
+    </section>
   }
 
   <footer class="dmg-footer">

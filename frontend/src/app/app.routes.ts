@@ -60,6 +60,7 @@ import { ClientDashboardHomeComponent } from './features/client/client-dashboard
 import { ClientSosComponent } from './features/client/client-sos/client-sos.component';
 import { ClientExpertConsultationComponent } from './features/client/client-expert-consultation/client-expert-consultation.component';
 import { ClientExpertMessagesComponent } from './features/client/client-expert-messages/client-expert-messages.component';
+import { ClientProcessingStatsComponent } from './features/client/client-processing-stats/client-processing-stats.component';
 
 // ============================================================
 // COMPOSANT DE DÉCONNEXION SIMPLE (temporaire)
@@ -78,7 +79,7 @@ export class LogoutComponent {
     private authStorage: AuthStorageService,
     private router: Router
   ) {
-this.authStorage.clear()
+    this.authStorage.clear();
     this.router.navigate(['/login']);
   }
 }
@@ -148,9 +149,9 @@ component: MainLayoutComponent,
     { path: 'assistant', component: ClientAssistantComponent },
     { path: 'sos', component: ClientSosComponent },
     { path: 'garages', redirectTo: 'sos', pathMatch: 'full' },
-    { path: 'assistant', component: ClientAssistantComponent },
     { path: 'consultation-expert', component: ClientExpertConsultationComponent },
     { path: 'messages-expert', component: ClientExpertMessagesComponent },
+    { path: 'processing-stats', component: ClientProcessingStatsComponent },
     { path: 'profile', component: ClientProfileComponent },
     { path: 'create-contract', component: ClientSimplePageComponent },
     { path: 'history', component: ClientSimplePageComponent },

@@ -22,7 +22,7 @@ import { RouterModule } from '@angular/router';
           <span class="badge">3</span>
         </a>
         <a routerLink="/client/consultation-expert" routerLinkActive="active">
-          <i class="fas fa-user-tie"></i> Consultation d'expert
+          <i class="fas fa-user-tie"></i> Expert consultation
         </a>
         <a routerLink="/client/constat" routerLinkActive="active">
           <i class="fas fa-plus-circle"></i> Nouveau constat

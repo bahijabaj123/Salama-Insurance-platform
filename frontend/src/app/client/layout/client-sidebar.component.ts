@@ -24,7 +24,7 @@ export class ClientSidebarComponent {
     { label: 'Create Contract', path: '/client/create-contract', icon: 'contract' },
     { label: 'History', path: '/client/history', icon: 'history' },
     { label: 'Claims', path: '/client/claims', icon: 'claims' },
-    { label: "Consultation d'expert", path: '/client/consultation-expert', icon: 'expert' },
+    { label: 'Expert consultation', path: '/client/consultation-expert', icon: 'expert' },
     { label: 'Profile', path: '/client/profile', icon: 'profile' }
   ];
 

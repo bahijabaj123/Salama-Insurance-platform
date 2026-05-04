@@ -18,25 +18,22 @@ public class Driver {
   @Column(name = "driver_type", length = 50)
   private DriverType driverType;
 
-  private String name;
-  private String cin;
-  private String address;
-  private String phoneNumber;
-  private String licenseNumber;
-  private String insuranceCompany;
-  private String policyNumber;
-  private String licensePlate;
-  private String carMake;
+  private String name; // Nom
+  private String cin;  // National ID / CIN
+  private String address; // Adresse
+  private String phoneNumber; // Telephone
+  private String licenseNumber; // NumPermis
+  private String insuranceCompany; // Assurance
+  private String policyNumber; // NumContrat
+  private String licensePlate; // Immatriculation
+  private String carMake; // MarqueVoiture
 
-  // ✅ NOUVEAU champ email
-  private String email;
-
-  @Column(columnDefinition = "LONGTEXT")
-  private String signature;
 
   @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 
+  @Column(columnDefinition = "LONGTEXT")
+  private String signature;
   @ManyToOne
   @JoinColumn(name = "accident_id")
   @JsonBackReference
@@ -51,7 +48,15 @@ public class Driver {
   @Column(name = "circumstance")
   private List<Circumstances> circumstances;
 
-  // --- Getters & Setters ---
+  public List<Circumstances> getCircumstances() {
+    return circumstances;
+  }
+
+  public void setCircumstances(List<Circumstances> circumstances) {
+    this.circumstances = circumstances;
+  }
+
+// --- Getters & Setters ---
 
   public Long getId() {
     return id;
@@ -101,6 +106,7 @@ public class Driver {
     this.phoneNumber = phoneNumber;
   }
 
+
   public String getLicenseNumber() {
     return licenseNumber;
   }
@@ -141,14 +147,6 @@ public class Driver {
     this.carMake = carMake;
   }
 
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
   public String getSignature() {
     return signature;
   }
@@ -173,11 +171,4 @@ public class Driver {
     this.accident = accident;
   }
 
-  public List<Circumstances> getCircumstances() {
-    return circumstances;
-  }
-
-  public void setCircumstances(List<Circumstances> circumstances) {
-    this.circumstances = circumstances;
-  }
 }
