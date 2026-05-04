@@ -1,0 +1,342 @@
+$salama-blue: #0d4f8c;
+$salama-mid: #1565b8;
+$salama-ink: #0a1628;
+$salama-muted: #5c6b82;
+$salama-border: rgb(13 79 140 / 0.12);
+$salama-live: #0d7a4a;
+
+.cps {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.cps__head {
+  margin-bottom: 1.5rem;
+}
+
+.cps__head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cps__back,
+.cps__refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid $salama-border;
+  background: #fff;
+  color: $salama-blue;
+}
+
+.cps__back:hover,
+.cps__refresh:hover:not(:disabled) {
+  background: rgb(21 101 184 / 0.06);
+}
+
+.cps__refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cps__back mat-icon,
+.cps__refresh mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.cps__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 800;
+  color: $salama-ink;
+  letter-spacing: -0.02em;
+}
+
+.cps__sub {
+  margin: 0;
+  max-width: 52rem;
+  color: $salama-muted;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.cps__sync {
+  margin: 0.65rem 0 0;
+  font-size: 0.8rem;
+  color: $salama-muted;
+}
+
+.cps__alert {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.cps__alert--err {
+  background: #fdecea;
+  color: #611a15;
+  border: 1px solid #f5c6cb;
+}
+
+.cps__alert--info {
+  background: #e8f4fc;
+  color: #0a3d62;
+  border: 1px solid rgb(21 101 184 / 0.25);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.cps__alert--info code {
+  font-size: 0.82em;
+  padding: 0.05rem 0.25rem;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.7);
+}
+
+.cps__loading {
+  padding: 2rem;
+  text-align: center;
+  color: $salama-muted;
+}
+
+.cps__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.cps-kpi {
+  display: flex;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid $salama-border;
+  background: #fff;
+  box-shadow: 0 4px 18px rgb(13 79 140 / 0.06);
+}
+
+.cps-kpi__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(21 101 184 / 0.1);
+  color: $salama-blue;
+}
+
+.cps-kpi__icon--accent {
+  background: rgb(30 136 229 / 0.12);
+  color: $salama-mid;
+}
+
+.cps-kpi__icon--neutral {
+  background: rgb(10 22 40 / 0.06);
+  color: $salama-ink;
+}
+
+.cps-kpi__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $salama-muted;
+}
+
+.cps-kpi__value {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: $salama-ink;
+  line-height: 1.2;
+  margin-top: 0.2rem;
+}
+
+.cps-kpi__unit {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $salama-muted;
+}
+
+.cps-kpi__na {
+  color: $salama-muted;
+  font-weight: 600;
+}
+
+.cps-kpi__sub {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: $salama-muted;
+}
+
+.cps-kpi__tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  background: rgb(13 79 140 / 0.1);
+  color: $salama-blue;
+}
+
+.cps-kpi__value .cps-kpi__tag {
+  position: relative;
+  top: -0.1em;
+}
+
+.cps__h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $salama-ink;
+}
+
+.cps__h2--inline {
+  margin-bottom: 0.35rem;
+}
+
+.cps__local-strip {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  border: 1px dashed rgb(13 79 140 / 0.28);
+  background: linear-gradient(135deg, rgb(30 136 229 / 0.06), rgb(255 255 255 / 0.9));
+}
+
+.cps__local-lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: $salama-muted;
+}
+
+.cps__local-lead code {
+  font-size: 0.8em;
+}
+
+.cps__local-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+}
+
+.cps-local-metric {
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.85);
+  border: 1px solid $salama-border;
+}
+
+.cps-local-metric__label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $salama-muted;
+  margin-bottom: 0.25rem;
+}
+
+.cps-local-metric__val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: $salama-live;
+}
+
+.cps__empty {
+  color: $salama-muted;
+  margin: 0;
+}
+
+.cps__table-wrap {
+  background: #fff;
+  border: 1px solid $salama-border;
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1.25rem;
+  box-shadow: 0 4px 18px rgb(13 79 140 / 0.05);
+  overflow-x: auto;
+}
+
+.cps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.cps-table th {
+  text-align: left;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $salama-muted;
+  padding: 0.5rem 0.65rem 0.65rem;
+  border-bottom: 1px solid $salama-border;
+}
+
+.cps-table td {
+  padding: 0.65rem;
+  border-bottom: 1px solid rgb(10 22 40 / 0.06);
+  vertical-align: top;
+}
+
+.cps-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cps-table__ref {
+  font-weight: 700;
+  color: $salama-ink;
+}
+
+.cps-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.cps-dur {
+  display: block;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.cps-dur--live {
+  color: $salama-live;
+}
+
+.cps-dur--eta {
+  color: #6a1b9a;
+}
+
+.cps-dur--done {
+  color: $salama-blue;
+}
+
+.cps-dur__hint {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: $salama-muted;
+  margin-top: 0.15rem;
+}

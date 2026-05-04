@@ -1,0 +1,1445 @@
+/* Page : fond doux + halo discret (dashboard « intelligent ») */
+.dmg-page {
+  position: relative;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.35rem 1.15rem 2.5rem;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  color: #0f172a;
+  min-height: calc(100vh - 72px);
+}
+
+.dmg-page__bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(120% 80% at 50% -20%, rgba(99, 102, 241, 0.14) 0%, transparent 55%),
+    linear-gradient(180deg, #eef2ff 0%, #f1f5f9 38%, #e8edf5 100%);
+  pointer-events: none;
+}
+
+/* —— En-tête —— */
+.dmg-hero {
+  margin-bottom: 1.5rem;
+}
+
+.dmg-hero__strip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6366f1;
+}
+
+.dmg-hero__sep {
+  color: #a5b4fc;
+  font-weight: 400;
+}
+
+.dmg-hero__label {
+  color: #4f46e8;
+}
+
+.dmg-back {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4338ca;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 0.15rem 0;
+}
+
+.dmg-back:hover {
+  text-decoration: underline;
+  color: #3730a3;
+}
+
+.dmg-hero__title {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0f2744;
+  line-height: 1.2;
+}
+
+.dmg-lead {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 42rem;
+}
+
+.dmg-pricing-hint {
+  margin: 0.5rem 0 0;
+  max-width: 44rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.dmg-vehicle-pill {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+  margin-top: 0.85rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e0e7ff;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.08);
+}
+
+.dmg-vehicle-pill__k {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6366f1;
+}
+
+.dmg-vehicle-pill__v {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* —— Grille cartes —— */
+.dmg-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .dmg-grid2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.dmg-cell {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 18px;
+  padding: 1rem 1.05rem 1.1rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 14px 32px rgba(15, 23, 42, 0.07);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.dmg-cell:hover {
+  border-color: #e0e7ff;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 18px 40px rgba(79, 70, 229, 0.1);
+}
+
+.dmg-cell__title {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f2744;
+}
+
+/* Zone grise du schéma (comme maquette) */
+.dmg-canvas {
+  flex: 1;
+  min-height: 0;
+}
+
+.dmg-svg-wrap {
+  border-radius: 14px;
+  background: #e8ecf2;
+  border: 1px solid #dce1e9;
+  padding: 0.85rem 1rem 0.95rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.dmg-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+}
+
+.dmg-outline {
+  fill: none;
+  stroke: #334155;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* Zones : état repos = bord fin, pas de remplissage marquant */
+.dmg-hit {
+  fill: rgba(255, 255, 255, 0.04);
+  stroke: #9ca3af;
+  stroke-width: 1.15;
+  cursor: pointer;
+  transition:
+    fill 0.18s ease,
+    stroke 0.18s ease,
+    stroke-width 0.18s ease;
+}
+
+.dmg-hit:hover {
+  fill: rgba(99, 102, 241, 0.1);
+  stroke: #7c3aed;
+  stroke-width: 1.35;
+}
+
+/* Sélection en cours : violet (maquette 1) */
+.dmg-hit.dmg-hit--edit {
+  fill: rgba(99, 102, 241, 0.38) !important;
+  stroke: #5b21b6 !important;
+  stroke-width: 2.25 !important;
+}
+
+/* Dégâts enregistrés : rose / gris, semi-transparents (maquette 2) */
+.dmg-hit--enfonce {
+  fill: rgba(244, 63, 94, 0.38);
+  stroke: #e11d48;
+  stroke-width: 1.75;
+}
+
+.dmg-hit--raye {
+  fill: rgba(100, 116, 139, 0.42);
+  stroke: #475569;
+  stroke-width: 1.75;
+}
+
+.dmg-hit--both {
+  fill: rgba(217, 70, 239, 0.22);
+  stroke: #a21caf;
+  stroke-width: 1.85;
+}
+
+/* —— Panneau contextuel (type champ + cases) —— */
+.dmg-panel {
+  margin-top: 0.85rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1);
+  animation: dmg-panel-in 0.22s ease;
+}
+
+@keyframes dmg-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dmg-panel__chiprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.dmg-panel__chip {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f2744;
+  padding: 0.45rem 0.65rem;
+  border-radius: 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.dmg-panel__x {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.dmg-panel__x:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dmg-panel__checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dmg-estimate {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+  border: 1px solid #e0e7ff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+}
+
+.dmg-estimate__label {
+  display: block;
+  width: 100%;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5b21b6;
+}
+
+.dmg-estimate__value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #312e81;
+  letter-spacing: -0.02em;
+}
+
+.dmg-estimate__muted {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4338ca;
+}
+
+.dmg-estimate__sub {
+  display: block;
+  width: 100%;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dmg-check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.4rem 0.35rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  transition: background 0.15s ease;
+}
+
+.dmg-check:hover {
+  background: #f8fafc;
+}
+
+.dmg-check__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.dmg-check__box {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 4px;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.dmg-check__input:focus-visible + .dmg-check__box {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.dmg-check__input:checked + .dmg-check__box {
+  border-color: #4f46e5;
+  background: linear-gradient(145deg, #6366f1, #4f46e5);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+  position: relative;
+}
+
+.dmg-check__input:checked + .dmg-check__box::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 4px;
+  height: 7px;
+  margin: -4px 0 0 -2px;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.dmg-check__text {
+  user-select: none;
+}
+
+.dmg-panel__actions {
+  display: flex;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  justify-content: flex-end;
+}
+
+.dmg-btn {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.48rem 0.95rem;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease;
+}
+
+.dmg-btn:active {
+  transform: scale(0.98);
+}
+
+.dmg-btn--ghost {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+.dmg-btn--ghost:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.dmg-btn--primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+.dmg-btn--primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+}
+
+/* —— Résumé sous la vue —— */
+.dmg-list-wrap {
+  margin-top: 0.75rem;
+  min-height: 2.5rem;
+}
+
+.dmg-list-empty {
+  margin: 0;
+  padding: 0.5rem 0.35rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.dmg-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.dmg-list__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #eef2f6;
+  font-size: 0.8rem;
+}
+
+.dmg-list__amt {
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 5.5rem;
+}
+
+.dmg-list__euro {
+  display: block;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #312e81;
+  white-space: nowrap;
+}
+
+.dmg-list__tva {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 0.1rem;
+}
+
+.dmg-list__part {
+  display: block;
+  font-weight: 700;
+  color: #0f2744;
+}
+
+.dmg-list__types {
+  display: block;
+  color: #64748b;
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+
+.dmg-trash {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.dmg-trash:hover {
+  color: #dc2626;
+  background: rgba(254, 226, 226, 0.85);
+}
+
+/* —— Total global —— */
+.dmg-total-bar {
+  margin: 1.35rem 0 0;
+}
+
+.dmg-total-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e0e7ff;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    0 12px 32px rgba(79, 70, 229, 0.12);
+}
+
+.dmg-total-bar__title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f2744;
+}
+
+.dmg-total-bar__note {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.dmg-total-bar__sum {
+  font-size: clamp(1.25rem, 3vw, 1.55rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #4f46e5;
+}
+
+/* —— Pied —— */
+.dmg-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.dmg-footer__hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.dmg-continue {
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 0.85rem 1.85rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #4338ca 0%, #6366f1 48%, #7c3aed 100%);
+  box-shadow:
+    0 4px 16px rgba(67, 56, 202, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.dmg-continue:hover {
+  filter: brightness(1.05);
+  box-shadow:
+    0 8px 28px rgba(67, 56, 202, 0.42),
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+}
+
+.dmg-continue:active {
+  transform: scale(0.99);
+}
+
+/* —— Détecteur de fraude (après validation des zones) —— */
+.dmg-fraud {
+  position: relative;
+  margin-top: 1.75rem;
+  padding: 1.35rem 1.25rem 1.5rem;
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 20px 50px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.dmg-fraud__glow {
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 55%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(244, 114, 182, 0.2), transparent 60%);
+  pointer-events: none;
+}
+
+.dmg-fraud__head {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dmg-fraud__badge {
+  display: flex;
+  gap: 0.85rem;
+  max-width: min(100%, 38rem);
+}
+
+.dmg-fraud__shield {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(225, 29, 72, 0.12), rgba(99, 102, 241, 0.15));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.12);
+}
+
+.dmg-fraud__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.15rem, 2.8vw, 1.35rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.dmg-fraud__intro {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.dmg-fraud__intro code {
+  font-size: 0.78em;
+  padding: 0.08rem 0.28rem;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.dmg-fraud__scorebox {
+  flex-shrink: 0;
+  min-width: 8.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  text-align: center;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
+}
+
+.dmg-fraud__score-num {
+  font-size: 2.1rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+.dmg-fraud__score-lbl {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-left: 0.1rem;
+}
+
+.dmg-fraud__band {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.45rem;
+  border-radius: 999px;
+}
+
+.dmg-fraud__band--low {
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+}
+
+.dmg-fraud__band--med {
+  background: rgba(250, 204, 21, 0.2);
+  color: #fef9c3;
+}
+
+.dmg-fraud__band--high {
+  background: rgba(251, 113, 133, 0.25);
+  color: #ffe4e6;
+}
+
+.dmg-fraud__band--crit {
+  background: rgba(248, 113, 113, 0.35);
+  color: #fff;
+}
+
+.dmg-fraud__rules-lead {
+  position: relative;
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.dmg-fraud__scenario {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+  gap: 1rem 1.25rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(241, 245, 249, 0.95) 100%);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 640px) {
+  .dmg-fraud__scenario {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dmg-fraud__scenario-illu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px dashed rgba(99, 102, 241, 0.25);
+}
+
+.dmg-fraud__scenario-svg {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+}
+
+.dmg-fraud__scenario-svg-cap {
+  fill: #64748b;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dmg-fraud__scenario-body {
+  min-width: 0;
+}
+
+.dmg-fraud__scenario-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6366f1;
+}
+
+.dmg-fraud__scenario-headline {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.dmg-fraud__scenario-text {
+  margin: 0 0 0.55rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.dmg-fraud__scenario-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dmg-fraud__scenario-conf {
+  font-size: 0.78rem;
+  color: #475569;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.dmg-fraud__scenario-conf strong {
+  color: #312e81;
+}
+
+.dmg-fraud__rules {
+  position: relative;
+  margin: 0 0 1.15rem;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.dmg-fraud__rules li {
+  margin-bottom: 0.25rem;
+}
+
+.dmg-fraud__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.15rem;
+  align-items: start;
+}
+
+@media (max-width: 820px) {
+  .dmg-fraud__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dmg-fraud__radar-card {
+  padding: 0.85rem 0.75rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.dmg-fraud__h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f2744;
+}
+
+.dmg-fraud__muted {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.dmg-fraud__svg-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.dmg-fraud__svg {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+}
+
+.dmg-fraud__grid-poly {
+  stroke: rgba(148, 163, 184, 0.45);
+  stroke-width: 1;
+}
+
+.dmg-fraud__fill {
+  fill: url(#dmgFraudFill);
+  stroke: none;
+}
+
+.dmg-fraud__stroke {
+  stroke: url(#dmgFraudStroke);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.dmg-fraud__axis {
+  fill: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dmg-fraud__signals {
+  padding: 0.5rem 0.15rem 0;
+}
+
+.dmg-fraud__signals-lead {
+  margin: 0.15rem 0 0.5rem;
+  max-width: 42rem;
+}
+
+.dmg-fraud__signals-chart {
+  margin: 0 0 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95), rgba(255, 255, 255, 0.88));
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.dmg-fraud__signals-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 112px;
+}
+
+.dmg-fraud__sig-frame {
+  fill: rgba(255, 255, 255, 0.45);
+  stroke: rgba(226, 232, 240, 0.95);
+  stroke-width: 1;
+}
+
+.dmg-fraud__sig-grid {
+  stroke: rgba(148, 163, 184, 0.35);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+
+.dmg-fraud__sig-grid--soft {
+  stroke: rgba(148, 163, 184, 0.2);
+  stroke-dasharray: 2 8;
+}
+
+.dmg-fraud__sig-area {
+  opacity: 0;
+  animation: dmgFraudSigAreaIn 0.85s ease-out 0.12s forwards;
+}
+
+.dmg-fraud__sig-line {
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1.5px rgba(15, 23, 42, 0.12));
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dmgFraudSigLineDraw 1.15s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+.dmg-fraud__sig-dot {
+  fill: #fff;
+  stroke: #e11d48;
+  stroke-width: 1.6;
+  opacity: 0;
+  animation: dmgFraudSigDotIn 0.35s ease-out 0.95s forwards;
+}
+
+.dmg-fraud__sig-cap {
+  fill: #64748b;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dmg-fraud__sig-axis {
+  fill: #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+@keyframes dmgFraudSigLineDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dmgFraudSigAreaIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dmgFraudSigDotIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dmg-fraud__sig-line,
+  .dmg-fraud__sig-area,
+  .dmg-fraud__sig-dot {
+    animation: none !important;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.dmg-fraud__factors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.dmg-fraud__factor {
+  display: flex;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.dmg-fraud__factor--alert {
+  border-color: rgba(225, 29, 72, 0.35);
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.65), rgba(255, 255, 255, 0.9));
+}
+
+.dmg-fraud__factor--watch {
+  border-color: rgba(234, 179, 8, 0.35);
+  background: linear-gradient(135deg, rgba(254, 249, 195, 0.5), rgba(255, 255, 255, 0.92));
+}
+
+.dmg-fraud__factor--info {
+  border-color: rgba(59, 130, 246, 0.25);
+  background: rgba(239, 246, 255, 0.55);
+}
+
+.dmg-fraud__factor-pt {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: #6366f1;
+}
+
+.dmg-fraud__factor--alert .dmg-fraud__factor-pt {
+  background: #e11d48;
+}
+
+.dmg-fraud__factor--watch .dmg-fraud__factor-pt {
+  background: #ca8a04;
+}
+
+.dmg-fraud__factor--info .dmg-fraud__factor-pt {
+  background: #2563eb;
+}
+
+.dmg-fraud__factor-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.dmg-fraud__factor-score {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #b45309;
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(254, 243, 199, 0.9);
+}
+
+.dmg-fraud__factor--alert .dmg-fraud__factor-score {
+  color: #9f1239;
+  background: rgba(254, 205, 211, 0.85);
+}
+
+.dmg-fraud__factor-detail {
+  margin: 0.2rem 0 0;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.dmg-fraud__disclaimer {
+  margin: 0.85rem 0 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+/* —— Cinématique SVG (style plaquette accident + animation) —— */
+.dmg-fraud__cinema {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 104px;
+}
+
+.dmg-cin-svg {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.dmg-cin-road {
+  stroke: #94a3b8;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+}
+
+.dmg-cin-pad {
+  fill: rgba(255, 255, 255, 0.96);
+  stroke: rgba(15, 23, 42, 0.1);
+  stroke-width: 1.1;
+}
+
+.dmg-cin-slide {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dmg-fraud__cinema .dmg-cin-slide,
+  .dmg-fraud__cinema .dmg-cin-burst,
+  .dmg-fraud__cinema .dmg-cin-diamond-spin {
+    animation: none !important;
+  }
+}
+
+/* Tamponnement : véhicule arrière se rapproche + étoile d’impact */
+.dmg-fraud__cinema--rear_struck .dmg-cin-slide--rear {
+  animation: acc-rear-slide 3.4s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--rear_struck .dmg-cin-burst {
+  animation: acc-burst 3.4s ease-in-out infinite;
+}
+
+@keyframes acc-rear-slide {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  52% {
+    transform: translateX(-26px);
+  }
+}
+
+/* Face à face */
+.dmg-fraud__cinema--front_impact .dmg-cin-slide--front-l {
+  animation: acc-front-l 3.25s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--front_impact .dmg-cin-slide--front-r {
+  animation: acc-front-r 3.25s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--front_impact .dmg-cin-burst {
+  animation: acc-burst 3.25s ease-in-out infinite;
+}
+
+@keyframes acc-front-l {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(14px);
+  }
+}
+
+@keyframes acc-front-r {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-14px);
+  }
+}
+
+/* T-bone droite / gauche (vue dessus) */
+.dmg-fraud__cinema--side_right .dmg-cin-slide--tb-r {
+  animation: acc-tb-r 3.3s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--side_right .dmg-cin-burst {
+  animation: acc-burst-sm 3.3s ease-in-out infinite;
+}
+
+@keyframes acc-tb-r {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-32px);
+  }
+}
+
+.dmg-fraud__cinema--side_left .dmg-cin-slide--tb-l {
+  animation: acc-tb-l 3.3s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--side_left .dmg-cin-burst {
+  animation: acc-burst-sm 3.3s ease-in-out infinite;
+}
+
+@keyframes acc-tb-l {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(32px);
+  }
+}
+
+/* Chaîne 3 véhicules */
+.dmg-fraud__cinema--front_rear .dmg-cin-slide--ch-a {
+  animation: acc-chain-a 3.6s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--front_rear .dmg-cin-slide--ch-b {
+  animation: acc-chain-b 3.6s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--front_rear .dmg-cin-slide--ch-c {
+  animation: acc-chain-c 3.6s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--front_rear .dmg-cin-burst--sm {
+  animation: acc-burst-sm 3.6s ease-in-out infinite 0.1s;
+}
+
+.dmg-fraud__cinema--front_rear .dmg-cin-burst--sm2 {
+  animation: acc-burst-sm 3.6s ease-in-out infinite 0.35s;
+}
+
+@keyframes acc-chain-a {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes acc-chain-b {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+}
+
+@keyframes acc-chain-c {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+}
+
+/* Pression latérale deux véhicules */
+.dmg-fraud__cinema--narrow_sides .dmg-cin-slide--par-a {
+  animation: acc-par-a 3.1s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--narrow_sides .dmg-cin-slide--par-b {
+  animation: acc-par-b 3.1s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--narrow_sides .dmg-cin-burst {
+  animation: acc-burst-sm 3.1s ease-in-out infinite;
+}
+
+@keyframes acc-par-a {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes acc-par-b {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-6px);
+  }
+}
+
+/* Multi-directions + losange */
+.dmg-fraud__cinema--mixed .dmg-cin-slide--mx-a,
+.dmg-fraud__cinema--unknown .dmg-cin-slide--mx-a {
+  animation: acc-mx 3.5s ease-in-out infinite;
+}
+
+.dmg-fraud__cinema--mixed .dmg-cin-slide--mx-b,
+.dmg-fraud__cinema--unknown .dmg-cin-slide--mx-b {
+  animation: acc-mx 3.5s ease-in-out infinite 0.12s;
+}
+
+.dmg-fraud__cinema--mixed .dmg-cin-slide--mx-c,
+.dmg-fraud__cinema--unknown .dmg-cin-slide--mx-c {
+  animation: acc-mx 3.5s ease-in-out infinite 0.24s;
+}
+
+.dmg-fraud__cinema--mixed .dmg-cin-diamond-spin,
+.dmg-fraud__cinema--unknown .dmg-cin-diamond-spin {
+  animation: acc-dia-spin 12s linear infinite;
+  transform-origin: 0 0;
+}
+
+@keyframes acc-mx {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2px, -2px);
+  }
+}
+
+@keyframes acc-dia-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Étoiles d’impact */
+@keyframes acc-burst {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  50%,
+  62% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+}
+
+@keyframes acc-burst-sm {
+  0%,
+  38% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  48%,
+  58% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  68%,
+  100% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+}

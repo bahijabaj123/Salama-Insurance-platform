@@ -1,0 +1,337 @@
+<div class="page-wrapper">
+  <div class="expert-hero">
+    <div class="expert-hero__mesh" aria-hidden="true"></div>
+    <div class="expert-hero__orbit" aria-hidden="true"></div>
+    <span class="expert-hero__watermark expert-hero__watermark--main" aria-hidden="true">Experts</span>
+    <span class="expert-hero__watermark expert-hero__watermark--brand" aria-hidden="true">Salama</span>
+    <span class="expert-hero__watermark expert-hero__watermark--tag" aria-hidden="true">360</span>
+    <div class="expert-hero__glow expert-hero__glow--a" aria-hidden="true"></div>
+    <div class="expert-hero__glow expert-hero__glow--b" aria-hidden="true"></div>
+
+    <div class="page-header expert-hero__header">
+      <div class="header-left">
+        <p class="hero-eyebrow">
+          <span class="hero-eyebrow__pulse" aria-hidden="true"></span>
+          Command center · expert workforce
+        </p>
+        <h1 class="page-title">
+          <span class="title-icon title-icon--halo" aria-hidden="true">🧑‍💼</span>
+          <span class="page-title__text">
+            <em class="page-title__accent">Expert</em> management
+          </span>
+        </h1>
+        <p class="page-subtitle">
+          Real-time view of available capacity: smart filters, enriched table, and direct access to operational flows.
+        </p>
+      </div>
+      <div class="header-actions">
+        <a routerLink="/expert/reports/stats" class="btn btn-outline">Statistics</a>
+        <a routerLink="/expert/create" id="btn-add-expert" class="btn btn-primary btn-primary--glow">+ New expert</a>
+      </div>
+    </div>
+
+    <div class="expert-hero__intel" role="status">
+      <div class="intel-gauge" [attr.aria-label]="'Workforce health ' + activeSharePercent + ' percent'">
+        <div class="intel-gauge__track">
+          <div class="intel-gauge__fill" [style.width.%]="activeSharePercent"></div>
+        </div>
+        <div class="intel-gauge__meta">
+          <span class="intel-gauge__label">Availability index</span>
+          <span class="intel-gauge__val">{{ activeSharePercent }} %</span>
+        </div>
+      </div>
+      <p class="intel-summary">{{ rosterHealthLabel }}</p>
+      <div class="intel-chips">
+        <span class="intel-chip">{{ totalExperts }} profiles</span>
+        <span class="intel-chip intel-chip--ok">{{ activeExperts }} active</span>
+        @if (inactiveExperts > 0) {
+          <span class="intel-chip intel-chip--warn">{{ inactiveExperts }} inactive</span>
+        }
+      </div>
+    </div>
+
+    <div class="stats-grid stats-grid--rich">
+      <div class="stat-card stat-card--total">
+        <div class="stat-card__accent" aria-hidden="true"></div>
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalExperts }}</div>
+          <div class="stat-label">Total experts</div>
+          <p class="stat-hint">Headcount registered in the database</p>
+        </div>
+      </div>
+      <div class="stat-card stat-card--active">
+        <div class="stat-card__accent" aria-hidden="true"></div>
+        <div class="stat-icon stat-icon-green">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ activeExperts }}</div>
+          <div class="stat-label">Active & available</div>
+          <p class="stat-hint">{{ activeSharePercent }}% of operational workforce</p>
+        </div>
+      </div>
+      <div class="stat-card stat-card--inactive">
+        <div class="stat-card__accent" aria-hidden="true"></div>
+        <div class="stat-icon stat-icon-red">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ inactiveExperts }}</div>
+          <div class="stat-label">Inactive / unavailable</div>
+          <p class="stat-hint">Reactivate or track according to HR policy</p>
+        </div>
+      </div>
+      <div class="stat-card stat-card--filtered">
+        <div class="stat-card__accent" aria-hidden="true"></div>
+        <div class="stat-icon stat-icon-purple">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ filteredExperts().length }}</div>
+          <div class="stat-label">List shown</div>
+          <p class="stat-hint">{{ filteredSharePercent }}% of total with current filters</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="quick-nav-card quick-nav-card--max">
+    <div class="quick-nav-head">
+      <h3>Quick navigation</h3>
+      <span class="quick-nav-hint">Operational shortcuts</span>
+    </div>
+    <div class="quick-nav-links">
+      <a routerLink="/expert/consulter" class="quick-nav-link"><span class="quick-nav-ico">◇</span> Inbox</a>
+      <a routerLink="/expert/dashboard" class="quick-nav-link"><span class="quick-nav-ico">◇</span> Dashboard</a>
+      <a routerLink="/expert/create" class="quick-nav-link quick-nav-link--hot"><span class="quick-nav-ico">+</span> Create / edit</a>
+      <a routerLink="/expert/chat" class="quick-nav-link"><span class="quick-nav-ico">◇</span> Expertise chat</a>
+      <a routerLink="/expert/reports/new" class="quick-nav-link"><span class="quick-nav-ico">◇</span> New report</a>
+      <a routerLink="/expert/expertise/vehicule" class="quick-nav-link"><span class="quick-nav-ico">◇</span> ( car )</a>
+      <a routerLink="/expert/reports/stats" class="quick-nav-link quick-nav-link--accent"><span class="quick-nav-ico">▸</span> Report stats</a>
+    </div>
+  </section>
+
+  @if (successMessage()) {
+    <div class="alert alert-success" id="success-alert">{{ successMessage() }}</div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-error" id="error-alert">
+      {{ error() }}
+      <button class="btn-retry" (click)="loadExperts()">Retry</button>
+    </div>
+  }
+
+  <div class="filters-bar filters-bar--max">
+    <div class="search-wrapper">
+      <input
+        id="search-input"
+        type="text"
+        class="search-input"
+        placeholder="Search by name, email, specialty..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+      />
+    </div>
+    <select id="status-filter" class="filter-select" [(ngModel)]="selectedStatus" (change)="onStatusFilter()">
+      <option value="">All statuses</option>
+      <option value="ACTIVE">Active</option>
+      <option value="AVAILABLE">Available</option>
+      <option value="INACTIVE">Inactive</option>
+      <option value="UNAVAILABLE">Unavailable</option>
+    </select>
+    <button id="btn-refresh" class="btn btn-ghost" (click)="loadExperts()">Refresh</button>
+    <a routerLink="/expert/chat" class="btn btn-ghost">Expertise report chat</a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-wrapper" id="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading experts...</p>
+    </div>
+  }
+
+  @if (!loading()) {
+    <div class="table-card">
+      @if (filteredExperts().length === 0) {
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No experts found</h3>
+          <p>Change your filters or add a new expert.</p>
+          <a routerLink="/expert/create" class="btn btn-primary">Add the first expert</a>
+        </div>
+      } @else {
+        <div class="table-wrapper">
+          <table class="data-table" id="experts-table">
+            <thead>
+              <tr>
+                <th>Expert</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Specialty</th>
+                <th>Zone</th>
+                <th>Status</th>
+                <th>Experience</th>
+                <th>Performance</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (expert of filteredExperts(); track expert.idExpert) {
+                <tr
+                  class="table-row table-row--hover-stats"
+                  id="expert-row-{{ expert.idExpert }}"
+                  (mouseenter)="expertRowEnter(expert, $event)"
+                  (mouseleave)="expertRowLeave()"
+                >
+                  <td>
+                    <div class="expert-cell">
+                      <div class="avatar" [style.background]="getAvatarColor(expert.idExpert)">
+                        @if (getPhoto(expert); as photo) {
+                          <img [src]="photo" alt="Expert photo" class="avatar-photo" />
+                        } @else {
+                          {{ getInitials(expert) }}
+                        }
+                      </div>
+                      <div class="expert-info">
+                        <span class="expert-name">{{ expert.firstName }} {{ expert.lastName }}</span>
+                        <span class="expert-city">{{ expert.city || '—' }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-muted">{{ expert.email }}</td>
+                  <td class="text-muted">{{ expert.phone || '—' }}</td>
+                  <td>{{ expert.specialty || '—' }}</td>
+                  <td>
+                    @if (expert.interventionZone) {
+                      <span class="zone-badge">{{ expert.interventionZone }}</span>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="getStatusClass(expert.status)">
+                      {{ expert.status || 'N/A' }}
+                    </span>
+                  </td>
+                  <td>{{ expert.yearsOfExperience != null ? expert.yearsOfExperience + ' yrs' : '—' }}</td>
+                  <td>
+                    @if (expert.performanceScore != null) {
+                      <div class="score-bar-wrapper">
+                        <div class="score-bar">
+                          <div
+                            class="score-fill"
+                            [style.width.%]="expert.performanceScore"
+                            [class.score-high]="expert.performanceScore! >= 70"
+                            [class.score-med]="expert.performanceScore! >= 40 && expert.performanceScore! < 70"
+                            [class.score-low]="expert.performanceScore! < 40"
+                          ></div>
+                        </div>
+                        <span class="score-text">{{ expert.performanceScore }}%</span>
+                      </div>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                  <td>
+                    <div class="action-btns">
+                      <a [routerLink]="['/expert/edit', expert.idExpert]" class="action-btn btn-edit" title="Edit">✎</a>
+                      <button class="action-btn btn-delete" title="Delete" (click)="confirmDelete(expert)">🗑</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span>{{ filteredExperts().length }} expert(s) shown out of {{ totalExperts }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (hoveredExpert(); as he) {
+  @let espLines = hoverStatsLines(he);
+  <div
+    class="expert-stats-popover"
+    [class.expert-stats-popover--above]="popoverPlacement() === 'above'"
+    [style.top.px]="popoverTop()"
+    [style.left.px]="popoverLeft()"
+    role="tooltip"
+    (mouseenter)="expertRowEnterCancelLeave()"
+    (mouseleave)="expertRowLeave()"
+  >
+    <div class="esp-accent"></div>
+    <header class="esp-header">
+      <div class="esp-avatar" [style.background]="getAvatarColor(he.idExpert)">
+        @if (getPhoto(he); as photo) {
+          <img [src]="photo" alt="Expert photo" class="avatar-photo" />
+        } @else {
+          {{ getInitials(he) }}
+        }
+      </div>
+      <div class="esp-head-text">
+        <div class="esp-name">{{ he.firstName }} {{ he.lastName }}</div>
+        <div class="esp-sub">
+          <span>{{ he.specialty || 'Specialty not set' }}</span>
+          @if (he.interventionZone) {
+            <span class="esp-dot">·</span>
+            <span class="esp-zone">{{ he.interventionZone }}</span>
+          }
+        </div>
+        <div class="esp-status-row">
+          <span class="badge esp-chip" [ngClass]="getStatusClass(he.status)">{{ he.status || '—' }}</span>
+        </div>
+      </div>
+    </header>
+    <div class="esp-body">
+      @if (espLines.length > 0) {
+        <ul class="esp-stat-list">
+          @for (line of espLines; track line.label + $index) {
+            <li class="esp-stat-row" [class.esp-stat-row--accent]="line.accent">
+              <span class="esp-stat-label">{{ line.label }}</span>
+              <span class="esp-stat-value">{{ line.value }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="esp-empty">No detailed statistics for this expert.</p>
+      }
+    </div>
+    <footer class="esp-footer">
+      <a routerLink="/expert/reports/stats" class="esp-link-dash">Open global dashboard</a>
+    </footer>
+  </div>
+}
+
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" id="delete-modal" (click)="cancelDelete()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🗑️</div>
+      <h3 class="modal-title">Confirm deletion</h3>
+      <p class="modal-message">
+        Are you sure you want to delete expert
+        <strong>{{ expertToDelete()?.firstName }} {{ expertToDelete()?.lastName }}</strong>?
+      </p>
+      <div class="modal-actions">
+        <button id="btn-cancel-delete" class="btn btn-ghost" (click)="cancelDelete()">Cancel</button>
+        <button id="btn-confirm-delete" class="btn btn-danger" (click)="deleteExpert()" [disabled]="deleteLoading()">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}

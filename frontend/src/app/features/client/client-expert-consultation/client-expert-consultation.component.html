@@ -1,0 +1,52 @@
+<section class="expert-page" aria-labelledby="expert-consult-title">
+  <div class="expert-card">
+    <div class="expert-card__accent" aria-hidden="true"></div>
+
+    <header class="expert-card__header">
+      <span class="expert-card__eyebrow">Expert hub</span>
+      <h1 id="expert-consult-title" class="expert-card__title">Expert consultation</h1>
+      <p class="expert-card__lead">
+        Message your expert securely, or open live processing-time statistics for your claims (averages and
+        per-file durations).
+      </p>
+    </header>
+
+    <div class="expert-card__actions" role="group" aria-label="Expert actions">
+      <button
+        type="button"
+        class="action-tile action-tile--primary"
+        (click)="goCommunicateWithExpert()"
+        aria-describedby="expert-primary-hint"
+      >
+        <span class="action-tile__icon-wrap" aria-hidden="true">
+          <mat-icon>forum</mat-icon>
+        </span>
+        <span class="action-tile__text">
+          <span class="action-tile__label">Chat with your expert</span>
+          <span id="expert-primary-hint" class="action-tile__hint">
+            Open the conversation thread linked to your file
+          </span>
+        </span>
+        <mat-icon class="action-tile__chevron" aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+
+      <button
+        type="button"
+        class="action-tile action-tile--secondary"
+        (click)="goFollow()"
+        aria-describedby="expert-secondary-hint"
+      >
+        <span class="action-tile__icon-wrap" aria-hidden="true">
+          <mat-icon>query_stats</mat-icon>
+        </span>
+        <span class="action-tile__text">
+          <span class="action-tile__label">Processing duration stats</span>
+          <span id="expert-secondary-hint" class="action-tile__hint">
+            Real-time elapsed time and average treatment duration for your files
+          </span>
+        </span>
+        <mat-icon class="action-tile__chevron" aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Salama - Gestion des Plaintes</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      padding-top: 50px;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 450px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover { background: #219150; }
+    button:disabled { background: #95a5a6; }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+      text-align: center;
+      font-weight: bold;
+    }
+    .negatif { background: #fadbd8; border: 2px solid #e74c3c; color: #c0392b; }
+    .positif { background: #d4efdf; border: 2px solid #27ae60; color: #145a32; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>📩 Nouvelle Réclamation</h2>
+  <textarea id="claimText" placeholder="Saisissez le message du client..."></textarea>
+  <button id="btnSubmit" onclick="analyze()">Analyser & Enregistrer</button>
+  <div id="result"></div>
+</div>
+
+<script>
+  async function analyze() {
+    const text = document.getElementById('claimText').value;
+    const resDiv = document.getElementById('result');
+    const btn = document.getElementById('btnSubmit');
+
+    if(!text) {
+      alert("Veuillez saisir un texte");
+      return;
+    }
+
+    // Feedback visuel pendant le chargement
+    btn.disabled = true;
+    btn.innerText = "Analyse IA en cours...";
+
+    try {
+      const response = await fetch('http://localhost:8082/api/complaints/test-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: text
+      });
+
+      if (!response.ok) throw new Error('Erreur serveur');
+
+      const data = await response.json();
+
+      resDiv.style.display = 'block';
+      // On gère la casse (Majuscules/Minuscules) pour la classe CSS
+      resDiv.className = data.detectedSentiment === 'NÉGATIF' ? 'negatif' : 'positif';
+
+      // Correction des backticks pour l'affichage
+      resDiv.innerHTML = `Sentiment : ${data.detectedSentiment}<br>Priorité : ${data.priority}`;
+
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors de l'analyse. Vérifiez que le Backend est lancé.");
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Analyser & Enregistrer";
+    }
+  }
+</script>
+
+</body>
+</html>

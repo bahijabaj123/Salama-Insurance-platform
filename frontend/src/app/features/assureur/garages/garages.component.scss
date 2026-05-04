@@ -1,0 +1,176 @@
+.garages-page {
+  padding: 1.5rem;
+}
+
+.title-row h1 {
+  margin: 0;
+  color: #0f4c81;
+}
+
+.title-row p {
+  margin: 0.35rem 0 1.25rem;
+  color: #5b6978;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 1rem;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid #dce6f3;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 12px 30px rgb(15 76 129 / 0.08);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #144f86;
+}
+
+input,
+select,
+button {
+  border-radius: 10px;
+  border: 1px solid #c9d7eb;
+  padding: 0.58rem 0.7rem;
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: #1b67b3;
+  color: #fff;
+  border: none;
+}
+
+button.danger {
+  background: #be2b2b;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.garage-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.garage-card {
+  border: 1px solid #e6edf6;
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #f9fbff;
+}
+
+.garage-card h3 {
+  margin: 0;
+  color: #163f66;
+}
+
+.garage-card p,
+.garage-card small {
+  margin: 0.2rem 0;
+  color: #5e6f83;
+}
+
+.tags span {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  background: #f0f5fb;
+  color: #496279;
+  padding: 0.2rem 0.5rem;
+  border-radius: 99px;
+}
+
+.tags .partner {
+  background: #e2f7e7;
+  color: #25663a;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.garage-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+label {
+  display: grid;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: #325b81;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.map-hint {
+  color: #5f7184;
+  font-size: 0.92rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#garage-map {
+  height: 290px;
+  border: 1px solid #d7e4f4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detected {
+  font-size: 0.9rem;
+  color: #496279;
+}
+
+.alert {
+  border-radius: 10px;
+  margin-bottom: 0.8rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.alert.success {
+  background: #e4f8e8;
+  color: #25663a;
+}
+
+.alert.error {
+  background: #fde8e8;
+  color: #8e2020;
+}
+
+.empty,
+.loading {
+  text-align: center;
+  color: #607283;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,309 @@
+package org.example.salamainsurance.Entity.ClaimManagement;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.example.salamainsurance.Entity.Report.Accident;
+import jakarta.persistence.*;
+import org.example.salamainsurance.Entity.User;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "claims")
+public class Claim {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(unique = true, nullable = false)
+  private String reference;
+
+  @Enumerated(EnumType.STRING)
+  private ClaimStatus status = ClaimStatus.OPENED;
+
+  private LocalDateTime openingDate;
+  private LocalDateTime closingDate;
+  private LocalDateTime lastModifiedDate;
+
+  @Column(name = "assigned_date")
+  private LocalDateTime assignedDate;
+
+  // Scoring
+  private Integer urgencyScore;
+  private String severityLevel; // LOW, MEDIUM, HIGH, CRITICAL
+
+  @OneToOne
+  @JoinColumn(name = "accident_id", unique = true)
+  private Accident accident;
+
+  // Expert assigned
+  @ManyToOne
+  @JoinColumn(name = "expert_id")
+  @JsonIgnore
+  @JsonIgnoreProperties({"claims", "expertReports"})  // ← IGNORE CES CHAMPS pour eviter les boucles
+  private ExpertHassen expert;
+
+  // Insurer who created/manages
+  @ManyToOne
+  @JoinColumn(name = "insurer_id")
+  @JsonIgnore  // ← AJOUTE CECI
+  private Insurer insurer;
+
+  // Region extracted from accident location
+  private String region;
+
+  @Column(length = 1000)
+  private String notes;
+
+  // Action history
+  @ElementCollection
+  @CollectionTable(name = "claim_actions", joinColumns = @JoinColumn(name = "claim_id"))
+  private List<String> actionHistory = new ArrayList<>();
+
+  @PrePersist
+  protected void onCreate() {
+    this.reference = generateReference();
+    this.openingDate = LocalDateTime.now();
+    this.lastModifiedDate = LocalDateTime.now();
+    if (accident != null) {
+      this.region = accident.getLocation();
+    }
+    calculateUrgencyScore();
+    addAction("Claim created from accident");
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    this.lastModifiedDate = LocalDateTime.now();
+    // Ne pas réécraser region / urgency ici : sinon les mises à jour assureur (PUT) semblent « ne pas marcher ».
+    // La synchro depuis l’accident reste gérée à la création (@PrePersist) et dans les services métier si besoin.
+  }
+
+  private String generateReference() {
+    return "CLM-" + java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd")
+      .format(LocalDateTime.now()) + "-" + System.currentTimeMillis() % 10000;
+  }
+
+  private void calculateUrgencyScore() {
+    if (accident != null) {
+      int score = 0;
+
+      if (accident.getInjuries() != null && accident.getInjuries()) {
+        score += 30;
+      }
+
+      if (accident.getPropertyDamage() != null && accident.getPropertyDamage()) {
+        score += 20;
+      }
+
+      if (accident.getPhotos() != null) {
+        score += accident.getPhotos().size() * 2;
+      }
+
+      if (accident.getAccidentDate() != null) {
+        long daysSinceAccident = java.time.Duration.between(
+          accident.getAccidentDate().atStartOfDay(),
+          LocalDateTime.now()
+        ).toDays();
+
+        if (daysSinceAccident < 1) {
+          score += 25;
+        } else if (daysSinceAccident < 3) {
+          score += 15;
+        } else if (daysSinceAccident < 7) {
+          score += 5;
+        }
+      }
+
+      this.urgencyScore = Math.min(score, 100);
+
+      if (urgencyScore < 30) {
+        this.severityLevel = "LOW";
+      } else if (urgencyScore < 50) {
+        this.severityLevel = "MEDIUM";
+      } else if (urgencyScore < 70) {
+        this.severityLevel = "HIGH";
+      } else {
+        this.severityLevel = "CRITICAL";
+      }
+    }
+  }
+
+  public void addAction(String action) {
+    if (actionHistory == null) {
+      actionHistory = new ArrayList<>();
+    }
+    actionHistory.add(LocalDateTime.now() + " - " + action);
+  }
+
+  // ========== GETTERS & SETTERS ==========
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getReference() {
+    return reference;
+  }
+
+  public void setReference(String reference) {
+    this.reference = reference;
+  }
+
+  public ClaimStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(ClaimStatus status) {
+    this.status = status;
+    addAction("Status changed to: " + status);
+  }
+
+  public LocalDateTime getOpeningDate() {
+    return openingDate;
+  }
+
+  public void setOpeningDate(LocalDateTime openingDate) {
+    this.openingDate = openingDate;
+  }
+
+  public LocalDateTime getClosingDate() {
+    return closingDate;
+  }
+
+  public void setClosingDate(LocalDateTime closingDate) {
+    this.closingDate = closingDate;
+  }
+
+  public LocalDateTime getLastModifiedDate() {
+    return lastModifiedDate;
+  }
+
+  public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+    this.lastModifiedDate = lastModifiedDate;
+  }
+
+  // NOUVEAU GETTER/SETTER
+  public LocalDateTime getAssignedDate() {
+    return assignedDate;
+  }
+
+  public void setAssignedDate(LocalDateTime assignedDate) {
+    this.assignedDate = assignedDate;
+    addAction("Expert assigned on: " + assignedDate);
+  }
+
+  public Integer getUrgencyScore() {
+    return urgencyScore;
+  }
+
+  public void setUrgencyScore(Integer urgencyScore) {
+    this.urgencyScore = urgencyScore;
+  }
+
+  public String getSeverityLevel() {
+    return severityLevel;
+  }
+
+  public void setSeverityLevel(String severityLevel) {
+    this.severityLevel = severityLevel;
+  }
+
+  public Accident getAccident() {
+    return accident;
+  }
+
+  public void setAccident(Accident accident) {
+    this.accident = accident;
+    if (accident != null) {
+      this.region = accident.getLocation();
+    }
+  }
+
+  public ExpertHassen getExpert() {
+    return this.expert;  // ← retourne l'attribut, pas null
+  }
+
+  public void setExpert(ExpertHassen expert) {
+    this.expert = expert;
+    if (expert != null) {
+      this.assignedDate = LocalDateTime.now();
+    }
+  }
+
+  public Insurer getInsurer() {
+    return insurer;
+  }
+
+  public void setInsurer(Insurer insurer) {
+    this.insurer = insurer;
+  }
+
+  public String getRegion() {
+    return region;
+  }
+
+  public void setRegion(String region) {
+    this.region = region;
+  }
+
+  public String getNotes() {
+    return notes;
+  }
+
+  public void setNotes(String notes) {
+    this.notes = notes;
+  }
+
+  public List<String> getActionHistory() {
+    return actionHistory;
+  }
+
+  public void setActionHistory(List<String> actionHistory) {
+    this.actionHistory = actionHistory;
+  }
+
+  public int getEstimatedAmount() {
+    return 0;
+  }
+
+  @ManyToOne
+  @JoinColumn(name = "client_id")
+  private User client;
+
+  public User getClient() {
+    return client;
+  }
+
+  public void setClient(User client) {
+    this.client = client;
+  }
+
+  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private List<ClaimHistory> history = new ArrayList<>();
+
+  // Getter et Setter
+  public List<ClaimHistory> getHistory() {
+    return history;
+  }
+
+  public void setHistory(List<ClaimHistory> history) {
+    this.history = history;
+  }
+
+  // Méthode utilitaire pour ajouter une action
+  public void addHistory(String action, String description, String performedBy) {
+    ClaimHistory historyEntry = new ClaimHistory(this, action, description, performedBy);
+    this.history.add(historyEntry);
+  }
+
+
+}

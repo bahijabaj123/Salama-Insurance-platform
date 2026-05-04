@@ -1,0 +1,70 @@
+<div
+  #container
+  class="logoloop"
+  [class.logoloop--vertical]="isVertical()"
+  [class.logoloop--horizontal]="!isVertical()"
+  [class.logoloop--fade]="fadeOut()"
+  [class.logoloop--scale-hover]="scaleOnHover()"
+  [style.--logoloop-gap.px]="gap()"
+  [style.--logoloop-logoHeight.px]="logoHeight()"
+  [style.--logoloop-fadeColor]="fadeOutColor() || null"
+  [style.width]="widthCss()"
+  role="region"
+  [attr.aria-label]="ariaLabel()"
+>
+  <div
+    class="logoloop__track"
+    #track
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
+  >
+    @for (copyIndex of copies(); track copyIndex) {
+      <ul
+        class="logoloop__list"
+        role="list"
+        [attr.aria-hidden]="copyIndex > 0 ? 'true' : null"
+        #seqRef
+      >
+        @for (logo of logos(); track $index) {
+          <li class="logoloop__item" role="listitem">
+            @if (logo.href) {
+              <a
+                class="logoloop__link"
+                [href]="logo.href"
+                [attr.aria-label]="logo.alt || logo.title || 'logo link'"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <img
+                  [src]="logo.src"
+                  [attr.srcset]="logo.srcSet || null"
+                  [attr.sizes]="logo.sizes || null"
+                  [attr.width]="logo.width || null"
+                  [attr.height]="logo.height || null"
+                  [alt]="logo.alt || ''"
+                  [attr.title]="logo.title || null"
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                />
+              </a>
+            } @else {
+              <img
+                [src]="logo.src"
+                [attr.srcset]="logo.srcSet || null"
+                [attr.sizes]="logo.sizes || null"
+                [attr.width]="logo.width || null"
+                [attr.height]="logo.height || null"
+                [alt]="logo.alt || ''"
+                [attr.title]="logo.title || null"
+                loading="lazy"
+                decoding="async"
+                draggable="false"
+              />
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

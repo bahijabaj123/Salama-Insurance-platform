@@ -1,0 +1,217 @@
+<div class="consulter-page">
+  <div class="consulter-header">
+    <div class="header-title-block">
+      <h1>
+        @if (threadExpertName()) {
+          Thread with {{ threadExpertName() }}
+        } @else {
+          View client messages
+        }
+      </h1>
+      @if (threadExpertName()) {
+        <p class="header-sub">Conversation linked to the expert dashboard — same cases as on the dashboard.</p>
+      }
+    </div>
+    <div class="header-actions">
+      @if (threadExpertName()) {
+        <a routerLink="/expert/consulter" class="btn btn-ghost">Choose another expert</a>
+      }
+      <a routerLink="/expert/dashboard" class="btn btn-ghost">Back to dashboard</a>
+      <button type="button" class="btn btn-main" (click)="loadUserMessages()">Refresh</button>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert-success">{{ successMessage() }}</div>
+  }
+
+  @if (!threadExpertName()) {
+    <div class="hub-top">
+      <section class="expert-picker-card">
+        <div class="picker-card-head">
+          <span class="picker-badge">Step 1</span>
+          <h3>Choose an expert</h3>
+        </div>
+        <p class="expert-picker-hint">
+          Select an expert from the list, then open the dedicated conversation space (per-case thread, same logic as the dashboard).
+        </p>
+        @if (expertChoices().length === 0) {
+          <p class="messages-empty dark">No experts with a recorded client message yet.</p>
+        } @else {
+          <div class="expert-picker-body">
+            <div class="expert-select-wrap">
+              <label class="picker-label" for="expert-select">Experts with at least one client message</label>
+              <select id="expert-select" class="expert-select" [(ngModel)]="selectedExpertForNav" size="6">
+                <option value="" disabled>— Choose an expert —</option>
+                @for (name of expertChoices(); track name) {
+                  <option [value]="name">{{ name }}</option>
+                }
+              </select>
+            </div>
+            <div class="expert-picker-actions">
+              <button type="button" class="btn btn-main btn-open-thread" (click)="goToExpertThread()" [disabled]="!selectedExpertForNav.trim()">
+                Open conversation space
+              </button>
+              <p class="picker-footnote">You will be taken to the filtered view to reply to this expert’s clients.</p>
+            </div>
+          </div>
+        }
+      </section>
+
+      <aside class="hub-aside-card" aria-label="Dashboard shortcuts">
+        <h4>Expert dashboard</h4>
+        <p class="hub-aside-text">Overview of experts, indicators, and recent messages on one page.</p>
+        <a routerLink="/expert/dashboard" class="hub-aside-cta">Open dashboard</a>
+        <a routerLink="/expert/chat" class="hub-aside-link">Expertise report chat</a>
+      </aside>
+    </div>
+  }
+
+  @if (threadExpertName()) {
+    <div class="conversation-layout">
+      <aside class="conv-sidebar">
+        <div class="conv-avatar" [attr.aria-label]="'Initials ' + threadExpertName()">
+          {{ expertInitials(threadExpertName()) }}
+        </div>
+        <p class="conv-sidebar-name">{{ threadExpertName() }}</p>
+        <p class="conv-sidebar-role">Assigned expert</p>
+        <p class="conv-sidebar-desc">
+          Conversation space: each block is a client case. Your replies stay in the same thread as on the dashboard.
+        </p>
+        <nav class="conv-sidebar-links">
+          <a routerLink="/expert/dashboard" class="conv-link conv-link--primary">
+            <span class="conv-link-title">Expert dashboard</span>
+            <span class="conv-link-sub">Global view &amp; messages</span>
+          </a>
+          <a routerLink="/expert/chat" class="conv-link">
+            <span class="conv-link-title">Expertise report chat</span>
+            <span class="conv-link-sub">Case assistant</span>
+          </a>
+        </nav>
+      </aside>
+
+      <div class="conv-main">
+        <section class="messages-card messages-card--thread">
+          <div class="messages-head">
+            <div>
+              <h3>Conversation by case</h3>
+              <p class="messages-sub">Client messages and expert replies, chronological order.</p>
+            </div>
+            <button type="button" class="btn-refresh" (click)="loadUserMessages()">Refresh</button>
+          </div>
+
+          @if (userMessages().length === 0) {
+            <div class="empty-thread">
+              <p class="empty-thread-title">No client messages for this expert</p>
+              <p class="empty-thread-text">
+                Either no client is assigned in the thread yet, or expert names do not match. Go back to expert selection or check the dashboard.
+              </p>
+              <div class="empty-thread-actions">
+                <a routerLink="/expert/consulter" class="btn btn-outline-dark">Choose another expert</a>
+                <a routerLink="/expert/dashboard" class="btn btn-main">Dashboard</a>
+              </div>
+            </div>
+          } @else {
+            <ul class="chat-dossier-list">
+              @for (msg of userMessages(); track msg.id) {
+                <li class="chat-dossier">
+                  <header class="dossier-head">
+                    <div class="dossier-head-main">
+                      <span class="dossier-ref">{{ msg.dossierReference }}</span>
+                      <span class="dossier-sep">·</span>
+                      <span class="dossier-client">{{ msg.clientName }}</span>
+                    </div>
+                    <span class="dossier-time">{{ messageTimeLabel(msg.sentAt) }}</span>
+                  </header>
+
+                  <div class="bubble-stream">
+                    @for (line of dossierTimeline(msg); track line.id) {
+                      <div class="bubble-row" [class.bubble-row--client]="line.from === 'CLIENT'" [class.bubble-row--expert]="line.from === 'EXPERT'">
+                        <div class="bubble" [class.bubble--client]="line.from === 'CLIENT'" [class.bubble--expert]="line.from === 'EXPERT'">
+                          <span class="bubble-label">
+                            {{ line.from === 'CLIENT' ? 'Client' : 'Expert' }}
+                            @if (line.from === 'CLIENT') {
+                              <span class="bubble-name"> · {{ line.clientName }}</span>
+                            } @else {
+                              <span class="bubble-name"> · {{ line.expertName }}</span>
+                            }
+                          </span>
+                          <p class="bubble-text">{{ line.message }}</p>
+                          <span class="bubble-time">{{ messageTimeLabel(line.sentAt) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="composer">
+                    <input
+                      type="text"
+                      [ngModel]="getReplyDraft(msg.id)"
+                      (ngModelChange)="setReplyDraft(msg.id, $event)"
+                      placeholder="Reply to the client..."
+                    />
+                    <button type="button" (click)="sendReply(msg)" [disabled]="!getReplyDraft(msg.id).trim()">Reply</button>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      </div>
+    </div>
+  }
+
+  @if (!threadExpertName()) {
+    <section class="messages-card messages-card--hub">
+      <div class="messages-head">
+        <div>
+          <h3>Messages already sent by the user</h3>
+          <p class="messages-sub">Global preview — to filter by expert, use the panel above.</p>
+        </div>
+        <button type="button" class="btn-refresh" (click)="loadUserMessages()">Refresh</button>
+      </div>
+
+      @if (userMessages().length === 0) {
+        <p class="messages-empty">No client messages yet.</p>
+      } @else {
+        <ul class="messages-list">
+          @for (msg of userMessages(); track msg.id) {
+            <li class="message-item">
+              <div class="message-top">
+                <strong>{{ msg.clientName }}</strong>
+                <span>{{ messageTimeLabel(msg.sentAt) }}</span>
+              </div>
+              <p class="message-text">{{ msg.message }}</p>
+              <div class="message-meta">
+                <span>Case: {{ msg.dossierReference }}</span>
+                <span>Expert: {{ msg.expertName }}</span>
+              </div>
+              <div class="bubble-stream bubble-stream--compact">
+                @for (line of dossierTimeline(msg); track line.id) {
+                  <div class="bubble-row" [class.bubble-row--client]="line.from === 'CLIENT'" [class.bubble-row--expert]="line.from === 'EXPERT'">
+                    <div class="bubble" [class.bubble--client]="line.from === 'CLIENT'" [class.bubble--expert]="line.from === 'EXPERT'">
+                      <span class="bubble-label">
+                        {{ line.from === 'CLIENT' ? 'Client' : 'Expert' }}
+                      </span>
+                      <p class="bubble-text">{{ line.message }}</p>
+                      <span class="bubble-time">{{ messageTimeLabel(line.sentAt) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="message-reply">
+                <input
+                  type="text"
+                  [ngModel]="getReplyDraft(msg.id)"
+                  (ngModelChange)="setReplyDraft(msg.id, $event)"
+                  placeholder="Reply to the client..."
+                />
+                <button type="button" (click)="sendReply(msg)" [disabled]="!getReplyDraft(msg.id).trim()">Reply</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

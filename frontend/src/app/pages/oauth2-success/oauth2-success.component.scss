@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.oauth2-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.25rem 2rem;
+  box-sizing: border-box;
+  background: var(--s-bg, #f4f7fb);
+  color: var(--s-text, #0f172a);
+}
+
+.oauth2-card {
+  width: 100%;
+  max-width: 26rem;
+  background: #fff;
+  border: 1px solid var(--s-border, #e2e8f0);
+  border-radius: 16px;
+  padding: 2.25rem 2rem 1.75rem;
+  box-shadow:
+    0 1px 2px rgb(15 76 129 / 0.04),
+    0 12px 32px rgb(15 76 129 / 0.06);
+  text-align: center;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+  border: 3px solid rgb(15 76 129 / 0.18);
+  border-top-color: rgb(15 76 129 / 0.9);
+  animation: spin 0.85s linear infinite;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.sub {
+  margin: 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

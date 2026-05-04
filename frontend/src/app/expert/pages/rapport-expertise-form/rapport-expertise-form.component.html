@@ -1,0 +1,173 @@
+<div class="doc-page">
+  <div class="doc-top">
+    <button type="button" class="doc-back" (click)="onCancel()">Back to chat</button>
+  </div>
+
+  @if (successMessage()) {
+    <div class="doc-alert doc-alert-success">
+      <span>{{ successMessage() }}</span>
+      <button type="button" class="doc-pdf-btn" (click)="downloadReportPdf(createdReportId())" [disabled]="createdReportId() == null">Download PDF</button>
+    </div>
+  }
+  @if (error()) {
+    <div class="doc-alert doc-alert-error">{{ error() }}</div>
+  }
+
+  @if (loadingExperts()) {
+    <div class="doc-loading">Loading experts...</div>
+  } @else {
+    <form (ngSubmit)="onSubmit()" #f="ngForm">
+      <div class="doc-sheet">
+        <header class="doc-sheet-head">
+          <h1 class="doc-sheet-title">EXPERTISE REPORT</h1>
+          <p class="doc-sheet-sub">Automotive</p>
+        </header>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Header &amp; principal</h2>
+          <div class="doc-grid">
+            <label class="doc-field doc-span-2">
+              <span>Lead expert *</span>
+              <select name="expertId" [(ngModel)]="expertId" required class="doc-input">
+                <option [ngValue]="null">Choose an expert</option>
+                @for (e of experts(); track e.idExpert) {
+                  <option [ngValue]="e.idExpert">{{ e.firstName }} {{ e.lastName }} — {{ e.email }}</option>
+                }
+              </select>
+            </label>
+            <label class="doc-field">
+              <span>Our references *</span>
+              <input class="doc-input" name="numeroReference" [(ngModel)]="report.numeroReference" required />
+            </label>
+            <label class="doc-field">
+              <span>Report status</span>
+              <select class="doc-input" name="statutRapport" [(ngModel)]="report.statutRapport">
+                @for (s of statutsRapport; track s) {
+                  <option [value]="s">{{ s }}</option>
+                }
+              </select>
+            </label>
+            <label class="doc-field">
+              <span>Mission date</span>
+              <input type="date" class="doc-input" name="dateMission" [(ngModel)]="report.dateMission" />
+            </label>
+            <label class="doc-field">
+              <span>Accident date</span>
+              <input type="date" class="doc-input" name="dateAccident" [(ngModel)]="report.dateAccident" />
+            </label>
+          </div>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Accident location</h2>
+          <app-accident-location-picker
+            [initialLat]="report.accidentLatitude ?? null"
+            [initialLng]="report.accidentLongitude ?? null"
+            (picked)="onAccidentLocationPick($event)"
+          />
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Policyholder</h2>
+          <div class="doc-grid">
+            <label class="doc-field doc-span-2"><span>Name / legal entity</span><input class="doc-input" name="assureNom" [(ngModel)]="report.assureNom" /></label>
+            <label class="doc-field"><span>Policy</span><input class="doc-input" name="assureContrat" [(ngModel)]="report.assureContrat" /></label>
+            <label class="doc-field"><span>Registration</span><input class="doc-input" name="vehiculeImmatriculation" [(ngModel)]="report.vehiculeImmatriculation" /></label>
+          </div>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Vehicle under expertise</h2>
+          <div class="doc-grid">
+            <label class="doc-field"><span>Make</span><input class="doc-input" name="vehiculeMarque" [(ngModel)]="report.vehiculeMarque" /></label>
+            <label class="doc-field"><span>Type</span><input class="doc-input" name="vehiculeType" [(ngModel)]="report.vehiculeType" /></label>
+            <label class="doc-field"><span>Condition</span><select class="doc-input" name="vehiculeEtat" [(ngModel)]="report.vehiculeEtat">@for (x of etatsVehicule; track x) {<option [value]="x">{{ x }}</option>}</select></label>
+            <label class="doc-field"><span>Powertrain</span><select class="doc-input" name="vehiculeEnergie" [(ngModel)]="report.vehiculeEnergie">@for (x of energies; track x) {<option [value]="x">{{ x }}</option>}</select></label>
+          </div>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Parts &amp; supplies</h2>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead><tr><th>Point</th><th>Description</th><th>Amount</th><th>VAT</th><th>Qty</th><th></th></tr></thead>
+              <tbody>
+                @for (d of dommages; track $index; let i = $index) {
+                  <tr>
+                    <td><input class="doc-input doc-input-tight" [(ngModel)]="d.pointChoc" [name]="'pc' + i" /></td>
+                    <td><input class="doc-input doc-input-tight" [(ngModel)]="d.designation" [name]="'des' + i" /></td>
+                    <td><input class="doc-input doc-input-tight" [(ngModel)]="d.montant" [name]="'m' + i" /></td>
+                    <td><input class="doc-input doc-input-tight" [(ngModel)]="d.tauxTva" [name]="'tva' + i" /></td>
+                    <td><input class="doc-input doc-input-tight" type="number" [(ngModel)]="d.quantite" [name]="'q' + i" /></td>
+                    <td>@if (dommages.length > 1) {<button type="button" class="doc-icon-btn" (click)="removeDommageRow(i)">×</button>}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="doc-link-btn" (click)="addDommageRow()">+ Add row</button>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Photos &amp; AI analysis</h2>
+          <textarea class="doc-textarea" name="photos" rows="3" [(ngModel)]="expertPhotosText" placeholder="https://..."></textarea>
+          <div class="doc-ai-panel">
+            <label class="doc-field"><span>Import an image</span><input type="file" accept="image/*" (change)="onAiFileSelected($event)" /></label>
+            @if (aiImagePreviewUrl()) { <img [src]="aiImagePreviewUrl()!" alt="Preview" class="doc-ai-preview-img" /> }
+            @if (photoUrls().length > 0) {
+              <div class="doc-ai-url-btns">
+                @for (u of photoUrls(); track u) {
+                  <button type="button" class="doc-ai-url-btn" (click)="analyzePhotoUrl(u)" [disabled]="aiAnalysisLoading()">Analyze {{ u }}</button>
+                }
+              </div>
+            }
+            @if (aiAnalysisLoading()) { <div class="doc-ai-status">Analyzing...</div> }
+            @if (aiAnalysisError()) { <div class="doc-ai-status doc-ai-err">{{ aiAnalysisError() }}</div> }
+            @if (aiAnalysisInfo()) { <div class="doc-ai-status doc-ai-info">{{ aiAnalysisInfo() }}</div> }
+            @if (aiIdleHint()) { <div class="doc-ai-status">{{ aiIdleHint() }}</div> }
+            @if (aiAnalysisText()) {
+              <div class="doc-ai-result">
+                <button type="button" class="doc-ai-insert-btn" (click)="insertAiIntoNatureDegats()">Insert into damage description</button>
+                <pre class="doc-ai-pre">{{ aiAnalysisText() }}</pre>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Damage description</h2>
+          <textarea class="doc-textarea" name="natureDegats" rows="4" [(ngModel)]="report.natureDegats"></textarea>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Conclusions</h2>
+          <textarea class="doc-textarea" name="conclusions" rows="3" [(ngModel)]="report.conclusions"></textarea>
+        </section>
+
+        <section class="doc-block">
+          <h2 class="doc-block-title">Expert signature</h2>
+          <div class="doc-signature-wrap">
+            <canvas
+              #sigCanvas
+              class="doc-signature-canvas"
+              (pointerdown)="onSigPointerDown($event)"
+              (pointermove)="onSigPointerMove($event)"
+              (pointerup)="onSigPointerUp($event)"
+              (pointerleave)="onSigPointerUp($event)"
+              (pointercancel)="onSigPointerUp($event)"
+            ></canvas>
+          </div>
+          <div class="doc-signature-actions">
+            <button type="button" class="doc-btn-secondary" (click)="clearExpertSignature()">Clear signature</button>
+          </div>
+        </section>
+
+        <footer class="doc-footer-actions">
+          <button type="button" class="doc-pdf-btn" (click)="downloadReportPdf(createdReportId())" [disabled]="createdReportId() == null">Download PDF</button>
+          <button type="button" class="doc-btn-secondary" (click)="onCancel()" [disabled]="submitLoading()">Cancel</button>
+          <button type="submit" class="doc-btn-primary" [disabled]="submitLoading() || f.invalid">{{ submitLoading() ? 'Saving...' : 'Save report' }}</button>
+        </footer>
+      </div>
+    </form>
+  }
+</div>
