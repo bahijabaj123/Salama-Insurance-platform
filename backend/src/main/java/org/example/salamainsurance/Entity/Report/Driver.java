@@ -3,6 +3,7 @@ package org.example.salamainsurance.Entity.Report;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -17,25 +18,25 @@ public class Driver {
   @Column(name = "driver_type", length = 50)
   private DriverType driverType;
 
-  private String name; // Nom
-  private String cin;  // National ID / CIN
-  private String address; // Adresse
-  private String phoneNumber; // Telephone
-  private String licenseNumber; // NumPermis
-  private String insuranceCompany; // Assurance
-  private String policyNumber; // NumContrat
-  private String licensePlate; // Immatriculation
-  private String carMake; // MarqueVoiture
+  private String name;
+  private String cin;
+  private String address;
+  private String phoneNumber;
+  private String licenseNumber;
+  private String insuranceCompany;
+  private String policyNumber;
+  private String licensePlate;
+  private String carMake;
+
+  // ✅ NOUVEAU champ email
+  private String email;
+
+  @Column(columnDefinition = "LONGTEXT")
   private String signature;
 
-<<<<<<< HEAD
   @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 
-=======
-  @Column(columnDefinition = "LONGTEXT")
-  private String signature;
->>>>>>> f6b09055fbba76564032bd48ea21f4b7f3eeb3ea
   @ManyToOne
   @JoinColumn(name = "accident_id")
   @JsonBackReference
@@ -50,15 +51,7 @@ public class Driver {
   @Column(name = "circumstance")
   private List<Circumstances> circumstances;
 
-  public List<Circumstances> getCircumstances() {
-    return circumstances;
-  }
-
-  public void setCircumstances(List<Circumstances> circumstances) {
-    this.circumstances = circumstances;
-  }
-
-// --- Getters & Setters ---
+  // --- Getters & Setters ---
 
   public Long getId() {
     return id;
@@ -148,6 +141,14 @@ public class Driver {
     this.carMake = carMake;
   }
 
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
   public String getSignature() {
     return signature;
   }
@@ -156,11 +157,27 @@ public class Driver {
     this.signature = signature;
   }
 
+  public LocalDate getDateOfBirth() {
+    return dateOfBirth;
+  }
+
+  public void setDateOfBirth(LocalDate dateOfBirth) {
+    this.dateOfBirth = dateOfBirth;
+  }
+
   public Accident getAccident() {
     return accident;
   }
 
   public void setAccident(Accident accident) {
     this.accident = accident;
+  }
+
+  public List<Circumstances> getCircumstances() {
+    return circumstances;
+  }
+
+  public void setCircumstances(List<Circumstances> circumstances) {
+    this.circumstances = circumstances;
   }
 }

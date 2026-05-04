@@ -3,6 +3,8 @@ package org.example.salamainsurance.Entity.Report;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -24,7 +26,54 @@ public class Accident {
 
   private String location;
 
-  public Accident(Long id, LocalDate accidentDate, String location, LocalTime time, Boolean injuries, Boolean propertyDamage, String observations, String sketch, AccidentStatus status, List<Driver> drivers, List<Photo> photos, List<Integer> damagedZones) {
+  private Boolean injuries;
+
+  private Boolean propertyDamage;
+
+  @Column(length = 1000)
+  private String observations;
+
+  @Column(columnDefinition = "LONGTEXT")
+  private String sketch;
+
+  @Enumerated(EnumType.STRING)
+  private AccidentStatus status;
+
+  @ElementCollection
+  @CollectionTable(
+    name = "accident_damaged_zones",
+    joinColumns = @JoinColumn(name = "accident_id")
+  )
+  @Column(name = "zone")
+  private List<Integer> damagedZones;
+
+  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
+  private List<Driver> drivers = new ArrayList<>();
+
+  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
+  private List<Photo> photos = new ArrayList<>();
+
+  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonManagedReference
+  private List<Damage> damages = new ArrayList<>();
+
+  public Accident() {
+  }
+
+  public Accident(Long id,
+                  LocalDate accidentDate,
+                  String location,
+                  LocalTime time,
+                  Boolean injuries,
+                  Boolean propertyDamage,
+                  String observations,
+                  String sketch,
+                  AccidentStatus status,
+                  List<Driver> drivers,
+                  List<Photo> photos,
+                  List<Integer> damagedZones) {
     this.id = id;
     this.accidentDate = accidentDate;
     this.location = location;
@@ -39,12 +88,68 @@ public class Accident {
     this.damagedZones = damagedZones;
   }
 
-  private Boolean injuries;
+  public Long getId() {
+    return id;
+  }
 
-  private Boolean propertyDamage;
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-  public Accident() {
+  public LocalDate getAccidentDate() {
+    return accidentDate;
+  }
 
+  public void setAccidentDate(LocalDate accidentDate) {
+    this.accidentDate = accidentDate;
+  }
+
+  public LocalTime getTime() {
+    return time;
+  }
+
+  public void setTime(LocalTime time) {
+    this.time = time;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public Boolean getInjuries() {
+    return injuries;
+  }
+
+  public void setInjuries(Boolean injuries) {
+    this.injuries = injuries;
+  }
+
+  public Boolean getPropertyDamage() {
+    return propertyDamage;
+  }
+
+  public void setPropertyDamage(Boolean propertyDamage) {
+    this.propertyDamage = propertyDamage;
+  }
+
+  public String getObservations() {
+    return observations;
+  }
+
+  public void setObservations(String observations) {
+    this.observations = observations;
+  }
+
+  public String getSketch() {
+    return sketch;
+  }
+
+  public void setSketch(String sketch) {
+    this.sketch = sketch;
   }
 
   public AccidentStatus getStatus() {
@@ -55,38 +160,6 @@ public class Accident {
     this.status = status;
   }
 
-  @Column(length = 1000)
-  private String observations;
-
-  @Column(columnDefinition = "LONGTEXT")
-  private String sketch;
-
-
-  @Enumerated(EnumType.STRING)
-  private AccidentStatus status;
-
-
-  // ✅ zones endommagées (1 à 8)
-  @ElementCollection
-  @CollectionTable(name = "accident_damaged_zones",
-    joinColumns = @JoinColumn(name = "accident_id"))
-  @Column(name = "zone")
-  private List<Integer> damagedZones;
-
-  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Driver> drivers = new ArrayList<>();
-
-  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Photo> photos = new ArrayList<>();
-
-
-
-
-
-
-
   public List<Integer> getDamagedZones() {
     return damagedZones;
   }
@@ -95,49 +168,30 @@ public class Accident {
     this.damagedZones = damagedZones;
   }
 
-  public Long getId() { return id; }
-  public void setId(Long id) { this.id = id; }
+  public List<Driver> getDrivers() {
+    return drivers;
+  }
 
-  public LocalDate getAccidentDate() { return accidentDate; }
-  public void setAccidentDate(LocalDate accidentDate) { this.accidentDate = accidentDate; }
+  public void setDrivers(List<Driver> drivers) {
+    this.drivers = drivers;
+  }
 
-  public LocalTime getTime() { return time; }
-  public void setTime(LocalTime time) { this.time = time; }
+  public List<Photo> getPhotos() {
+    return photos;
+  }
 
-  public String getLocation() { return location; }
-  public void setLocation(String location) { this.location = location; }
+  public void setPhotos(List<Photo> photos) {
+    this.photos = photos;
+  }
 
-  public Boolean getInjuries() { return injuries; }
-  public void setInjuries(Boolean injuries) { this.injuries = injuries; }
+  public List<Damage> getDamages() {
+    return damages;
+  }
 
-  public Boolean getPropertyDamage() { return propertyDamage; }
-  public void setPropertyDamage(Boolean propertyDamage) { this.propertyDamage = propertyDamage; }
+  public void setDamages(List<Damage> damages) {
+    this.damages = damages;
+  }
 
-  public String getObservations() { return observations; }
-  public void setObservations(String observations) { this.observations = observations; }
-
-  public String getSketch() { return sketch; }
-  public void setSketch(String sketch) { this.sketch = sketch; }
-
-  public List<Driver> getDrivers() { return drivers; }
-  public void setDrivers(List<Driver> drivers) { this.drivers = drivers; }
-
-  public List<Photo> getPhotos() { return photos; }
-  public void setPhotos(List<Photo> photos) { this.photos = photos; }
-
-  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Damage> damages = new ArrayList<>();
-
-  public List<Damage> getDamages() { return damages; }
-<<<<<<< HEAD
-  public void setDamages(List<Damage> damages) { this.damages = damages; }
-
-    public void setClaim(Claim savedClaim) {
-    }
+  public void setClaim(Claim savedClaim) {
+  }
 }
-=======
-  public void setDamages(List<Damage> damages) { this.damages = damages; } }
->>>>>>> f6b09055fbba76564032bd48ea21f4b7f3eeb3ea
-
-

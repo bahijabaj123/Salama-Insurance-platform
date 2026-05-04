@@ -1,37 +1,3 @@
-<mat-toolbar class="topbar">
-  <div class="topbar__left">
-    <div class="topbar__titles">
-      <span class="topbar__eyebrow">Admin console</span>
-      <span class="topbar__title">{{ pageTitle() }}</span>
-    </div>
-  </div>
-
-  <div class="topbar__search" role="search" aria-label="Global search (UI only)">
-    <mat-icon class="topbar__search-icon" aria-hidden="true">search</mat-icon>
-    <input class="topbar__search-input" type="search" placeholder="Search…" />
-    <span class="topbar__search-kbd" aria-hidden="true">Ctrl K</span>
-  </div>
-
-  <div class="topbar__right">
-    <button mat-icon-button type="button" class="topbar__icon-btn" aria-label="Notifications" (click)="onNotifications()">
-      <mat-icon>notifications</mat-icon>
-    </button>
-    <button mat-icon-button type="button" class="topbar__icon-btn" aria-label="Settings" (click)="onSettings()">
-      <mat-icon>settings</mat-icon>
-    </button>
-
-    @if (identity(); as id) {
-      <div class="topbar__identity" [attr.title]="id.name">
-        <div class="avatar" aria-hidden="true">{{ id.initials }}</div>
-        <div class="identity">
-          <span class="identity__name">{{ id.name }}</span>
-          <span class="identity__role">Administrator</span>
-        </div>
-      </div>
-    }
-  </div>
-</mat-toolbar>
-
 <header class="entry__nav" aria-label="Admin primary">
   <div class="entry__nav-inner">
     <div class="home-nav" role="navigation" aria-label="Admin primary navigation">
@@ -44,6 +10,7 @@
       </a>
 
       <div class="topbar__title-block" aria-live="polite">
+        <span class="topbar__eyebrow">Admin console</span>
         <span class="topbar__title">{{ pageTitle() }}</span>
       </div>
 
@@ -61,19 +28,119 @@
           <span class="topbar__search-kbd" aria-hidden="true">Ctrl K</span>
         </div>
 
-        <button
-          type="button"
-          class="nav-icon-btn"
-          aria-label="Notifications"
-          (click)="onNotifications()"
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path
-              fill="currentColor"
-              d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-            />
-          </svg>
-        </button>
+        <div class="notif-wrap">
+          <button
+            type="button"
+            class="nav-icon-btn notif-btn"
+            [class.notif-btn--active]="notifOpen()"
+            [attr.aria-label]="badgeText() ? badgeText() + ' unread notifications' : 'Notifications'"
+            [attr.aria-expanded]="notifOpen()"
+            aria-haspopup="dialog"
+            (click)="toggleNotifications($event)"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+              />
+            </svg>
+            @if (badgeText()) {
+              <span class="notif-badge" aria-hidden="true">{{ badgeText() }}</span>
+            }
+          </button>
+
+          @if (notifOpen()) {
+            <div
+              class="notif-panel"
+              role="dialog"
+              aria-label="Notifications"
+              (click)="$event.stopPropagation()"
+            >
+              <header class="notif-panel__head">
+                <div>
+                  <h3 class="notif-panel__title">Notifications</h3>
+                  <p class="notif-panel__sub">
+                    @if (unreadCount() > 0) {
+                      {{ unreadCount() }} unread
+                    } @else {
+                      You're all caught up
+                    }
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="notif-panel__action"
+                  [disabled]="markingAll() || unreadCount() === 0"
+                  (click)="markAllRead($event)"
+                >
+                  @if (markingAll()) {
+                    Marking…
+                  } @else {
+                    Mark all as read
+                  }
+                </button>
+              </header>
+
+              <div class="notif-panel__body">
+                @if (notifLoading() && notifications().length === 0) {
+                  <div class="notif-state" aria-busy="true">
+                    <div class="notif-skel"></div>
+                    <div class="notif-skel"></div>
+                    <div class="notif-skel"></div>
+                  </div>
+                } @else if (notifError()) {
+                  <div class="notif-state notif-state--error" role="alert">
+                    <p>{{ notifError() }}</p>
+                    <button type="button" class="notif-retry" (click)="loadNotifications()">
+                      Try again
+                    </button>
+                  </div>
+                } @else if (notifications().length === 0) {
+                  <div class="notif-state notif-state--empty" role="status">
+                    <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
+                      <path
+                        fill="currentColor"
+                        d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                      />
+                    </svg>
+                    <p>No notifications</p>
+                    <span>You'll see admin alerts here as they happen.</span>
+                  </div>
+                } @else {
+                  <ul class="notif-list">
+                    @for (n of notifications(); track n.id) {
+                      <li
+                        class="notif-item"
+                        [class.notif-item--unread]="!n.read"
+                        [class.notif--blue]="(n.type ?? '').toUpperCase() === 'NEW_USER_REGISTERED'"
+                        [class.notif--red]="(n.type ?? '').toUpperCase() === 'ACCOUNT_LOCKED'"
+                        [class.notif--neutral]="!((n.type ?? '').toUpperCase() === 'NEW_USER_REGISTERED' || (n.type ?? '').toUpperCase() === 'ACCOUNT_LOCKED')"
+                      >
+                        <button type="button" class="notif-item__btn" (click)="onNotificationClick(n, $event)">
+                          <span class="notif-item__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18">
+                              <path fill="currentColor" [attr.d]="notificationIcon(n.type)" />
+                            </svg>
+                          </span>
+                          <span class="notif-item__body">
+                            @if (n.title) {
+                              <span class="notif-item__title">{{ n.title }}</span>
+                            }
+                            <span class="notif-item__msg">{{ n.message }}</span>
+                            <span class="notif-item__time">{{ n.createdAt | date: 'short' }}</span>
+                          </span>
+                          @if (!n.read) {
+                            <span class="notif-item__dot" aria-label="Unread"></span>
+                          }
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            </div>
+          }
+        </div>
 
         <button
           type="button"

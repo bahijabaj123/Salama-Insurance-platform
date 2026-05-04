@@ -10,8 +10,22 @@
         <span class="magic-bento-card__label">{{ item.label }}</span>
       </div>
       <div class="magic-bento-card__content">
-        <h3 class="magic-bento-card__title">{{ item.title }}</h3>
-        <p class="magic-bento-card__description">{{ item.description }}</p>
+        <h3 class="magic-bento-card__title">
+          <span class="magic-bento-card__title-text">{{ item.title }}</span>
+          <span class="magic-bento-card__title-underline" aria-hidden="true"></span>
+        </h3>
+        <p class="magic-bento-card__description">
+          <app-gradient-text
+            [colors]="['#5227FF', '#FF9FFC', '#B497CF']"
+            [animationSpeed]="8"
+            [showBorder]="false"
+            direction="horizontal"
+            [pauseOnHover]="false"
+            [yoyo]="true"
+          >
+            {{ item.description }}
+          </app-gradient-text>
+        </p>
       </div>
     </article>
   }

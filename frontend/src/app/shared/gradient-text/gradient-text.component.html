@@ -1,0 +1,18 @@
+<div
+  class="agt"
+  [class.agt--border]="showBorder()"
+  [class.agt--pause-on-hover]="pauseOnHover()"
+  [style.--agt-image]="backgroundImage()"
+  [style.--agt-size]="backgroundSize()"
+  [style.--agt-duration]="animationDuration()"
+  [style.--agt-direction]="animationDirection()"
+  [style.--agt-name]="animationName()"
+>
+  @if (showBorder()) {
+    <div class="agt__overlay"></div>
+  }
+
+  <span class="agt__text">
+    <ng-content />
+  </span>
+</div>

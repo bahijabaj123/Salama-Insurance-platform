@@ -12,6 +12,8 @@ import {
   input
 } from '@angular/core';
 
+import { GradientTextComponent } from '../gradient-text/gradient-text.component';
+
 export interface MagicBentoItem {
   label: string;
   title: string;
@@ -19,7 +21,7 @@ export interface MagicBentoItem {
   color?: string;
 }
 
-const DEFAULT_PARTICLE_COUNT = 12;
+const DEFAULT_PARTICLE_COUNT = 6;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
 const DEFAULT_GLOW_COLOR = '132, 0, 255';
 const MOBILE_BREAKPOINT = 768;
@@ -27,7 +29,7 @@ const MOBILE_BREAKPOINT = 768;
 @Component({
   selector: 'app-magic-bento',
   standalone: true,
-  imports: [],
+  imports: [GradientTextComponent],
   templateUrl: './magic-bento.component.html',
   styleUrl: './magic-bento.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -58,6 +60,8 @@ export class MagicBentoComponent implements AfterViewInit, OnDestroy {
   private resizeHandler?: () => void;
   private isMobile = false;
   private cardCleanups: Array<() => void> = [];
+  private spotlightRafId: number | null = null;
+  private lastMouseEvent: MouseEvent | null = null;
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
@@ -318,7 +322,7 @@ export class MagicBentoComponent implements AfterViewInit, OnDestroy {
 
     const proximityOf = (r: number) => ({ proximity: r * 0.5, fadeDistance: r * 0.75 });
 
-    const handleMove = (e: MouseEvent) => {
+    const processMove = (e: MouseEvent) => {
       if (this.shouldDisable || !this.spotlightEl) {
         return;
       }
@@ -368,6 +372,24 @@ export class MagicBentoComponent implements AfterViewInit, OnDestroy {
       this.spotlightEl.style.opacity = `${targetOp}`;
     };
 
+    /**
+     * mousemove can fire 100s of times per second on fast devices. We coalesce
+     * all events that happened during the current frame and only run the layout
+     * work once per rAF tick — keeps the page at 60 fps.
+     */
+    const handleMove = (e: MouseEvent) => {
+      this.lastMouseEvent = e;
+      if (this.spotlightRafId !== null) {
+        return;
+      }
+      this.spotlightRafId = requestAnimationFrame(() => {
+        this.spotlightRafId = null;
+        if (this.lastMouseEvent) {
+          processMove(this.lastMouseEvent);
+        }
+      });
+    };
+
     const handleLeave = () => {
       if (this.spotlightEl) {
         this.spotlightEl.style.opacity = '0';
@@ -390,6 +412,11 @@ export class MagicBentoComponent implements AfterViewInit, OnDestroy {
     if (this.docMouseLeave) {
       document.removeEventListener('mouseleave', this.docMouseLeave);
     }
+    if (this.spotlightRafId !== null) {
+      cancelAnimationFrame(this.spotlightRafId);
+      this.spotlightRafId = null;
+    }
+    this.lastMouseEvent = null;
     this.spotlightEl?.remove();
     this.spotlightEl = undefined;
   }

@@ -7,6 +7,7 @@ import { adminAuthGuard } from './admin/guards/admin-auth.guard';
 import { AdminLayoutComponent } from './admin/layout/admin-layout.component';
 import { AdminDashboardComponent } from './admin/pages/dashboard/admin-dashboard.component';
 import { AdminRoleRequestsComponent } from './admin/pages/role-requests/admin-role-requests.component';
+import { AdminUserDevicesComponent } from './admin/pages/user-devices/admin-user-devices.component';
 import { AdminUsersComponent } from './admin/pages/users/admin-users.component';
 import { clientAuthGuard } from './client/guards/client-auth.guard';
 import { ClientProfileComponent } from './client/pages/profile/client-profile.component';
@@ -107,7 +108,8 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard' } },
       { path: 'users', component: AdminUsersComponent, data: { title: 'Users' } },
-      { path: 'role-requests', component: AdminRoleRequestsComponent, data: { title: 'Role Requests' } }
+      { path: 'role-requests', component: AdminRoleRequestsComponent, data: { title: 'Role Requests' } },
+      { path: 'user-devices', component: AdminUserDevicesComponent, data: { title: 'User Devices' } }
     ]
   },
 

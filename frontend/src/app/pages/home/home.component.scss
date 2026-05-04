@@ -17,15 +17,21 @@
     radial-gradient(900px 500px at 85% 30%, rgb(60 120 255 / 0.22), transparent 60%),
     radial-gradient(900px 600px at 50% 95%, rgb(110 87 255 / 0.22), transparent 60%),
     linear-gradient(180deg, #05040b 0%, #0a0720 45%, #07061a 100%);
+  /* Hard guard: nothing in the home page should ever produce a horizontal
+     scrollbar. The marquees inside (logo loop) have their own clipping, this
+     is just a safety net for any future absolutely-positioned decoration. */
+  overflow-x: hidden;
 }
 
 .hero--home {
+  position: relative;
   min-height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 6.25rem 1.25rem 4.75rem;
+  overflow: hidden;
 }
 
 .hero__bg {
@@ -55,6 +61,11 @@
   z-index: 3;
   pointer-events: none;
   padding: 0.5rem 0;
+  /* Force the marquee to stay within the hero / viewport bounds so the long
+     car-logo strip never causes horizontal page scroll. */
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
 }
 
 .hero__brands > * {
@@ -84,13 +95,13 @@
 
 .home-title {
   margin: 0 auto;
-  font-size: clamp(2.35rem, 5vw, 4.25rem);
-  font-weight: 950;
-  letter-spacing: -0.05em;
-  line-height: 1.03;
-  text-shadow: 0 14px 44px rgb(0 0 0 / 0.5);
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  text-shadow: 0 10px 32px rgb(0 0 0 / 0.45);
   text-align: center;
-  max-width: 18ch;
+  max-width: 28ch;
 }
 
 .home-cta {
@@ -194,3 +205,241 @@
   color: rgb(248 250 252 / 0.72);
 }
 
+/* === "Features" section heading — premium SaaS look === */
+
+.section__head--features {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 2.25rem;
+  text-align: center;
+}
+
+.features-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #d6c9ff;
+  background: rgb(110 87 255 / 0.14);
+  border: 1px solid rgb(110 87 255 / 0.36);
+  border-radius: 999px;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.3);
+}
+
+.features-title {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  font-size: clamp(2rem, 1.5rem + 2.4vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.features-title__text {
+  background-image: linear-gradient(
+    120deg,
+    #ffffff 0%,
+    #c8b8ff 38%,
+    #6e57ff 65%,
+    #ffffff 100%
+  );
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: features-title-shine 9s ease-in-out infinite alternate;
+  /* Compositor-friendly: only background-position changes. */
+  will-change: background-position;
+}
+
+.features-title__underline {
+  display: block;
+  width: 96px;
+  height: 4px;
+  margin-top: 0.6rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent 0%, #6e57ff 30%, #c8b8ff 70%, transparent 100%);
+  box-shadow: 0 0 18px rgb(110 87 255 / 0.55);
+}
+
+.features-title {
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes features-title-shine {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .features-title__text {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+
+/* === About — platform overview card === */
+
+.about-card {
+  position: relative;
+  max-width: 880px;
+  margin: 1rem auto 0;
+  padding: 2.4rem 2.2rem 2rem;
+  border-radius: 22px;
+  background:
+    radial-gradient(720px 280px at 0% 0%, rgb(110 87 255 / 0.18), transparent 60%),
+    radial-gradient(720px 280px at 100% 100%, rgb(60 120 255 / 0.14), transparent 60%),
+    rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.05) inset,
+    0 30px 80px rgb(0 0 0 / 0.45);
+  color: rgb(248 250 252 / 0.92);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Subtle gradient accent on the left edge — branded but discreet. */
+.about-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    #6e57ff 30%,
+    #c8b8ff 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 16px rgb(110 87 255 / 0.55);
+  z-index: 1;
+}
+
+.about-card__quote {
+  position: absolute;
+  top: -0.55rem;
+  left: 1.6rem;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 6.5rem;
+  line-height: 1;
+  color: rgb(110 87 255 / 0.32);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+.about-card__lead {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  line-height: 1.78;
+  letter-spacing: 0.005em;
+  text-align: left;
+  color: rgb(248 250 252 / 0.86);
+  text-wrap: pretty;
+}
+
+.about-card__hl {
+  display: inline;
+  background-image: linear-gradient(
+    120deg,
+    #ffffff 0%,
+    #c8b8ff 45%,
+    #6e57ff 75%,
+    #ffffff 100%
+  );
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  animation: features-title-shine 9s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+.about-pills {
+  position: relative;
+  z-index: 2;
+  list-style: none;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.7rem;
+}
+
+.about-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #f1ecff;
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
+}
+
+.about-pill:hover {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.22);
+  transform: translateY(-1px);
+}
+
+.about-pill__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6e57ff;
+  box-shadow: 0 0 10px rgb(110 87 255 / 0.85);
+  flex: 0 0 auto;
+}
+
+.about-pill__dot--alt   { background: #45c4ff; box-shadow: 0 0 10px rgb(69 196 255 / 0.85); }
+.about-pill__dot--alt2  { background: #4ade80; box-shadow: 0 0 10px rgb(74 222 128 / 0.8); }
+.about-pill__dot--alt3  { background: #f59e0b; box-shadow: 0 0 10px rgb(245 158 11 / 0.85); }
+
+@media (max-width: 640px) {
+  .about-card {
+    padding: 1.85rem 1.4rem 1.5rem;
+    border-radius: 18px;
+  }
+  .about-card__quote { font-size: 4.5rem; left: 1rem; }
+  .about-card__lead  { font-size: 1rem; line-height: 1.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-card__hl {
+    animation: none;
+    background-position: 50% 50%;
+  }
+  .about-pill {
+    transition: none;
+  }
+}

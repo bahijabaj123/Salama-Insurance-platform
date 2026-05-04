@@ -12,7 +12,6 @@
 }
 
 .admin-layout__sidenav {
-  width: 15.25rem;
   width: 16.5rem;
   border-right: none;
   background: transparent;
@@ -25,13 +24,13 @@
 }
 
 .admin-layout__content {
-  padding: 1.25rem 1.25rem 1.75rem;
+  padding: 0.5rem 1.25rem 1.75rem;
   box-sizing: border-box;
 }
 
 @media (min-width: 960px) {
   .admin-layout__content {
-    padding: 1.5rem 1.75rem 2rem;
+    padding: 0.75rem 1.75rem 2rem;
   }
 }
 

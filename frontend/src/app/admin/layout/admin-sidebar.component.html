@@ -1,10 +1,12 @@
-<aside class="sidebar">
+<aside class="sidebar" [class.sidebar--collapsed]="collapsed()">
   <div class="sidebar__brand">
     <div class="sidebar__mark" aria-hidden="true">S</div>
-    <div class="sidebar__brand-text">
-      <span class="sidebar__brand-title">Salama</span>
-      <span class="sidebar__brand-sub">Admin</span>
-    </div>
+    @if (!collapsed()) {
+      <div class="sidebar__brand-text">
+        <span class="sidebar__brand-title">Salama</span>
+        <span class="sidebar__brand-sub">Admin</span>
+      </div>
+    }
   </div>
 
   <nav class="sidebar__nav" aria-label="Admin primary">
@@ -14,6 +16,7 @@
         [routerLink]="item.path"
         routerLinkActive="sidebar__link--active"
         [routerLinkActiveOptions]="{ exact: item.path === '/admin/dashboard' }"
+        [attr.title]="collapsed() ? item.label : null"
       >
         <span class="sidebar__icon" aria-hidden="true">
           @switch (item.icon) {
@@ -41,15 +44,25 @@
                 />
               </svg>
             }
+            @case ('devices') {
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M4 6h11v9H4V6zm15 4h2v8h-7v-2h5v-6zm-9 11h2v2h-2v-2zM6 8v5h7V8H6z"
+                />
+              </svg>
+            }
           }
         </span>
-        <span class="sidebar__label">{{ item.label }}</span>
+        @if (!collapsed()) {
+          <span class="sidebar__label">{{ item.label }}</span>
+        }
       </a>
     }
   </nav>
 
   <div class="sidebar__footer">
-    <button type="button" class="sidebar__logout" (click)="onLogout()">
+    <button type="button" class="sidebar__logout" (click)="onLogout()" [attr.title]="collapsed() ? 'Logout' : null">
       <span class="sidebar__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path
@@ -58,7 +71,9 @@
           />
         </svg>
       </span>
-      <span class="sidebar__label">Logout</span>
+      @if (!collapsed()) {
+        <span class="sidebar__label">Logout</span>
+      }
     </button>
   </div>
 </aside>
