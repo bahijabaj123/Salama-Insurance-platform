@@ -27,6 +27,7 @@ public class Driver {
   private String policyNumber; // NumContrat
   private String licensePlate; // Immatriculation
   private String carMake; // MarqueVoiture
+  private String email;
 
 
   @Column(name = "date_of_birth")
@@ -145,6 +146,14 @@ public class Driver {
 
   public void setCarMake(String carMake) {
     this.carMake = carMake;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
   }
 
   public String getSignature() {
