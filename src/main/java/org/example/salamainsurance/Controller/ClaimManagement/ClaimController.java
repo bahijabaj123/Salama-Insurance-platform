@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/claims")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class ClaimController {
 
   @Autowired
@@ -346,4 +347,17 @@ public class ClaimController {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
+
+  @PostMapping("/{claimId}/upload-final-invoice")
+  public ResponseEntity<?> uploadFinalInvoice(
+    @PathVariable Long claimId,
+    @RequestParam("file") MultipartFile file) {
+    try {
+      Claim claim = claimService.uploadFinalInvoice(claimId, file);
+      return ResponseEntity.ok(claim);
+    } catch (Exception e) {
+      return ResponseEntity.status(500).body("Erreur: " + e.getMessage());
+    }
+  }
+
 }

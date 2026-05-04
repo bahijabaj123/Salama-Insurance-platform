@@ -9,9 +9,11 @@ import org.example.salamainsurance.Entity.ClaimManagement.Insurer;
 import org.example.salamainsurance.Entity.Report.Accident;
 import org.example.salamainsurance.Exception.ResourceNotFoundException;
 import org.example.salamainsurance.Repository.ClaimManagement.ClaimRepository;
-import org.example.salamainsurance.Repository.Expert.ExpertHassenRepository;  // ← CORRIGÉ
+import org.example.salamainsurance.Repository.Expert.ExpertHassenRepository;
 import org.example.salamainsurance.Repository.ClaimManagement.InsurerRepository;
 import org.example.salamainsurance.Repository.Report.AccidentRepository;
+import org.example.salamainsurance.Service.DocumentService;
+import org.example.salamainsurance.Service.Fraud.FraudDetectionService;
 import org.example.salamainsurance.Service.Notification.EnhancedEmailService;
 import org.example.salamainsurance.Service.Notification.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.example.salamainsurance.Entity.Document;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -49,9 +54,15 @@ public class ClaimServiceImpl implements ClaimService {
   @Autowired
   private EnhancedEmailService enhancedEmailService;
 
+  @Autowired
+  private FraudDetectionService fraudDetectionService;
 
   @Autowired
   private IntelligentExpertAssignmentService intelligentAssignmentService;
+
+
+  @Autowired
+  private DocumentService documentService;
 
   // ========== BASIC CRUD OPERATIONS ==========
 
@@ -93,12 +104,19 @@ public class ClaimServiceImpl implements ClaimService {
 
     notificationService.sendToInsurer(insurer, "New claim created: " + savedClaim.getReference());
 
+    try {
+      fraudDetectionService.analyzeClaimWithAlert(savedClaim.getId());
+      log.info("✅ Analyse de fraude déclenchée pour le sinistre: {}", savedClaim.getReference());
+    } catch (Exception e) {
+      log.error("❌ Erreur lors de l'analyse de fraude: {}", e.getMessage());
+    }
+
     return savedClaim;
   }
 
   @Override
   public Claim getClaimById(Long id) {
-    return claimRepository.findById(id)
+    return claimRepository.findByIdWithClient(id)
       .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
   }
 
@@ -133,22 +151,48 @@ public class ClaimServiceImpl implements ClaimService {
       claim.setNotes(claimDetails.getNotes());
     }
 
+    if (claimDetails.getUrgencyScore() != null) {
+      claim.setUrgencyScore(claimDetails.getUrgencyScore());
+    }
+
+    if (claimDetails.getRegion() != null && !claimDetails.getRegion().isEmpty()) {
+      claim.setRegion(claimDetails.getRegion());
+    }
+
     if (claimDetails.getExpert() != null) {
       claim.setExpert(claimDetails.getExpert());
     }
 
-    if (claim.getAccident() != null) {
+    if (claimDetails.getRegion() == null && claim.getAccident() != null) {
       claim.setRegion(claim.getAccident().getLocation());
     }
 
-    claim.addAction("Claim updated by insurer");
+    claim.setLastModifiedDate(LocalDateTime.now());
+    claim.addAction("Claim updated");
     return claimRepository.save(claim);
   }
 
   @Override
+  @Transactional
   public void deleteClaim(Long id) {
     Claim claim = getClaimById(id);
-    claim.addAction("Claim deleted");
+
+    if (claim.getExpert() != null) {
+      ExpertHassen expert = claim.getExpert();
+      expert.setCurrentWorkload(Math.max(0, expert.getCurrentWorkload() - 1));
+      expertRepository.save(expert);
+      claim.setExpert(null);
+    }
+
+    if (claim.getActionHistory() != null) {
+      claim.getActionHistory().clear();
+    }
+
+    if (claim.getExpertiseReports() != null) {
+      claim.getExpertiseReports().clear();
+    }
+
+    claimRepository.save(claim);
     claimRepository.delete(claim);
   }
 
@@ -166,7 +210,6 @@ public class ClaimServiceImpl implements ClaimService {
     ExpertHassen expert = expertRepository.findById(expertId.intValue())
       .orElseThrow(() -> new ResourceNotFoundException("Expert not found with id: " + expertId));
 
-    // 1. Vérifier que l'expert est assignable (AVAILABLE, BUSY ou ACTIVE)
     Set<ExpertStatus> assignableStatuses = Set.of(
       ExpertStatus.AVAILABLE,
       ExpertStatus.BUSY,
@@ -176,15 +219,12 @@ public class ClaimServiceImpl implements ClaimService {
       throw new IllegalStateException("Expert is not available. Status: " + expert.getStatus());
     }
 
-    // 2. Vérifier la charge de travail (gérer les null)
     int currentWorkload = expert.getCurrentWorkload() != null ? expert.getCurrentWorkload() : 0;
     int maxWorkload = expert.getMaxWorkload() != null ? expert.getMaxWorkload() : 10;
     if (currentWorkload >= maxWorkload) {
       throw new IllegalStateException("Expert has reached maximum workload");
     }
 
-
-    // 3. Désassigner l'ancien expert si nécessaire
     if (claim.getExpert() != null) {
       ExpertHassen previousExpert = claim.getExpert();
       int prevWorkload = previousExpert.getCurrentWorkload() != null ? previousExpert.getCurrentWorkload() : 0;
@@ -195,13 +235,11 @@ public class ClaimServiceImpl implements ClaimService {
       expertRepository.save(previousExpert);
     }
 
-    // 4. Assigner le nouvel expert
     claim.setExpert(expert);
     claim.setStatus(ClaimStatus.ASSIGNED_TO_EXPERT);
     claim.setAssignedDate(LocalDateTime.now());
     claim.addAction("Assigned to expert: " + expert.getFirstName() + " " + expert.getLastName());
 
-    // 5. Mettre à jour la charge de l'expert
     expert.setCurrentWorkload(currentWorkload + 1);
     expert.setLastAssignmentDate(LocalDateTime.now());
 
@@ -209,21 +247,17 @@ public class ClaimServiceImpl implements ClaimService {
       expert.setStatus(ExpertStatus.BUSY);
     }
     expertRepository.save(expert);
-    // 6. Sauvegarder le sinistre
     Claim savedClaim = claimRepository.save(claim);
 
-    // 7. Envoyer l'email de notification
     try {
       enhancedEmailService.sendExpertAssignmentEmail(expert, claim);
       System.out.println("✅ Email d'assignation envoyé à: " + expert.getEmail());
     } catch (Exception e) {
       System.err.println("❌ Erreur envoi email: " + e.getMessage());
-      e.printStackTrace();
     }
 
     return savedClaim;
   }
-
 
   @Override
   public Claim autoAssignExpert(Long claimId) {
@@ -270,8 +304,6 @@ public class ClaimServiceImpl implements ClaimService {
     }
 
     ExpertHassen expert = claim.getExpert();
-
-    // Gérer les valeurs null
     int currentWorkload = expert.getCurrentWorkload() != null ? expert.getCurrentWorkload() : 0;
     int maxWorkload = expert.getMaxWorkload() != null ? expert.getMaxWorkload() : 10;
 
@@ -289,7 +321,6 @@ public class ClaimServiceImpl implements ClaimService {
 
     return claimRepository.save(claim);
   }
-
 
   // ========== STATUS MANAGEMENT ==========
 
@@ -351,7 +382,7 @@ public class ClaimServiceImpl implements ClaimService {
   @Override
   public List<Claim> searchClaims(String reference, ClaimStatus status, String region,
                                   Long expertId, LocalDateTime startDate, LocalDateTime endDate) {
-    return claimRepository.searchClaims(reference, status, region, expertId != null ? expertId.intValue() : null , startDate, endDate);
+    return claimRepository.searchClaims(reference, status, region, expertId != null ? expertId.intValue() : null, startDate, endDate);
   }
 
   @Override
@@ -468,6 +499,47 @@ public class ClaimServiceImpl implements ClaimService {
     }
   }
 
+  @Override
+  public List<Claim> findByClientId(Long clientId) {
+    return List.of();
+  }
+
+  @Override
+  public Claim uploadFinalInvoice(Long claimId, MultipartFile file) throws Exception {
+    Claim claim = getClaimById(claimId);
+
+    // Sauvegarder le document via DocumentService
+// Sauvegarder le document via DocumentService
+    Document document = documentService.saveDocument(claimId, file);
+    // ✅ Utiliser un chemin absolu ou relatif au projet
+    String projectDir = System.getProperty("user.dir");
+    String uploadDir = projectDir + File.separator + "uploads" + File.separator + "invoices" + File.separator;
+
+    // Créer le répertoire s'il n'existe pas
+    File directory = new File(uploadDir);
+    if (!directory.exists()) {
+      boolean created = directory.mkdirs();
+      if (!created) {
+        throw new Exception("Impossible de créer le répertoire: " + uploadDir);
+      }
+    }
+
+    // Générer un nom de fichier unique
+    String fileName = "invoice_claim_" + claimId + "_" + System.currentTimeMillis() + ".pdf";
+    String filePath = uploadDir + fileName;
+
+    // Sauvegarder le fichier
+    file.transferTo(new File(filePath));
+
+    // Mettre à jour le statut du sinistre (fermer le sinistre)
+    claim.setStatus(ClaimStatus.CLOSED);
+    claim.setClosingDate(LocalDateTime.now());
+    claim.setNotes(claim.getNotes() + "\n[Invoice uploaded: " + fileName + "]");
+    claim.addAction("Final invoice uploaded - Claim closed");
+
+    return claimRepository.save(claim);
+  }
+
   // ========== PRIVATE HELPER METHODS ==========
 
   private void validateStatusTransition(ClaimStatus current, ClaimStatus next) {
@@ -502,4 +574,6 @@ public class ClaimServiceImpl implements ClaimService {
 
     expertRepository.save(expert);
   }
+
+
 }

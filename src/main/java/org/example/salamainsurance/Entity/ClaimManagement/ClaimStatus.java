@@ -6,6 +6,7 @@ public enum ClaimStatus {
   IN_PROGRESS,            // expert travaille dessus
   WAITING_FOR_INFORMATION,
   EXPERT_REPORT_SUBMITTED,
+  UNDER_EXPERTISE,
   APPROVED_BY_INSURER,
   REJECTED_BY_INSURER,
   CANCELLED,       // Annulé

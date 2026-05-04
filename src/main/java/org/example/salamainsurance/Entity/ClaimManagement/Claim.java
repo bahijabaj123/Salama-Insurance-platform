@@ -9,6 +9,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.example.salamainsurance.Entity.ClaimManagement.ClaimHistory;
+import org.example.salamainsurance.Entity.User;
+
 
 @Entity
 @Table(name = "claims")
@@ -40,9 +43,8 @@ public class Claim {
   private Accident accident;
 
   // Expert assigned
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "expert_id")
-  @JsonIgnore
   @JsonIgnoreProperties({"claims", "expertReports"})  // ← IGNORE CES CHAMPS pour eviter les boucles
   private ExpertHassen expert;
 
@@ -51,6 +53,12 @@ public class Claim {
   @JoinColumn(name = "insurer_id")
   @JsonIgnore  // ← AJOUTE CECI
   private Insurer insurer;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "client_id")
+  @JsonIgnoreProperties({"password", "resetToken", "verificationToken", "claims"})
+  private User client;
+
 
   // Expertise reports
   @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL)
@@ -296,7 +304,26 @@ public class Claim {
     return 0;
   }
 
-  public Claim getClient() {
-    return null;
+  public User getClient() {
+    return client;
   }
+
+  public void setClient(User client) {
+    this.client = client;
+  }
+
+
+  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<ClaimHistory> claimHistory = new ArrayList<>();
+
+  // Getter et Setter
+  public List<ClaimHistory> getClaimHistory() {
+    return claimHistory;
+  }
+
+  public void setClaimHistory(List<ClaimHistory> claimHistory) {
+    this.claimHistory = claimHistory;
+  }
+
 }

@@ -6,6 +6,7 @@ import org.example.salamainsurance.Entity.Fraud.FraudAnalysis;
 import org.example.salamainsurance.Entity.Fraud.RiskLevel;
 import org.example.salamainsurance.Repository.Fraud.FraudAnalysisRepository;
 import org.example.salamainsurance.Service.Fraud.FraudDetectionService;
+import org.example.salamainsurance.Service.Fraud.PatternDetectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,10 @@ public class FraudController {
 
   @Autowired
   private FraudAnalysisRepository fraudAnalysisRepository;
+
+  @Autowired
+  private PatternDetectionService patternDetectionService;
+
 
   // ============================================================
   // ANALYSE FRAUDE
@@ -222,4 +227,36 @@ public class FraudController {
 
     return ResponseEntity.ok(config);
   }
+
+  // ============================================================
+// PATTERN DETECTION
+// ============================================================
+
+  @GetMapping("/patterns")
+  public ResponseEntity<Map<String, Object>> getDetectedPatterns() {
+    try {
+      // Lancer la détection manuelle
+      patternDetectionService.runManualDetection();
+
+      Map<String, Object> response = new HashMap<>();
+      response.put("message", "Pattern detection executed successfully");
+      response.put("timestamp", LocalDateTime.now());
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      Map<String, Object> error = new HashMap<>();
+      error.put("error", e.getMessage());
+      return ResponseEntity.status(500).body(error);
+    }
+  }
+
+  @GetMapping("/patterns/stats")
+  public ResponseEntity<Map<String, Object>> getPatternStats() {
+    Map<String, Object> stats = new HashMap<>();
+    stats.put("analysisDate", LocalDateTime.now());
+    stats.put("status", "active");
+    stats.put("description", "Pattern detection service for fraud prevention");
+    return ResponseEntity.ok(stats);
+  }
+
+
 }

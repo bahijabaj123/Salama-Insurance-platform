@@ -153,7 +153,7 @@ public class EnhancedEmailService {
   /**
    * Envoi d'email personnalisé à un client pour mise à jour de sinistre
    */
-  public void sendCustomClientNotification(String clientEmail, String clientName,
+  /*public void sendCustomClientNotification(String clientEmail, String clientName,
                                            Claim claim, String customMessage) {
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -185,6 +185,60 @@ public class EnhancedEmailService {
     } catch (MessagingException e) {
       log.error("❌ Erreur envoi email personnalisé: {}", e.getMessage());
       throw new RuntimeException("Échec envoi email personnalisé", e);
+    }
+  }*/
+
+  public void sendCustomClientNotification(String to, String clientName, Claim claim, String message) {
+    log.info("Sending custom notification to: {}", to);
+    try {
+      MimeMessage mimeMessage = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+      // ⭐ Construction HTML simple sans template
+      String html = String.format("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #185FA5; color: white; padding: 20px; text-align: center; }
+                    .content { padding: 20px; border: 1px solid #ddd; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h2>Salama Insurance</h2>
+                    </div>
+                    <div class="content">
+                        <h3>Dear %s,</h3>
+                        <p>Your claim <strong>%s</strong> has been updated.</p>
+                        <p><strong>Message:</strong> %s</p>
+                        <br/>
+                        <p>Best regards,<br/>Salama Insurance Team</p>
+                    </div>
+                    <div class="footer">
+                        <p>&copy; 2026 Salama Insurance. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, clientName, claim.getReference(), message);
+
+      helper.setFrom(fromEmail);
+      helper.setTo(to);
+      helper.setSubject("Update on your claim " + claim.getReference());
+      helper.setText(html, true);
+
+      mailSender.send(mimeMessage);
+      log.info("✅ Email sent successfully to: {}", to);
+
+    } catch (MessagingException e) {
+      log.error("❌ Failed to send email: {}", e.getMessage());
+      throw new RuntimeException("Email sending failed", e);
     }
   }
 
