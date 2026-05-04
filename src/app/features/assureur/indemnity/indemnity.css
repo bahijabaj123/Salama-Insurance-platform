@@ -1,0 +1,213 @@
+/* src/app/features/assureur/indemnity/indemnity.css */
+.indemnity-page {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* États */
+.loading-state, .error-state, .empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border: 4px solid #e0e0e0;
+  border-top-color: #0066cc;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+/* Carte d'indemnité */
+.indemnity-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.indemnity-card h2 {
+  background: #0066cc;
+  color: white;
+  margin: 0;
+  padding: 1.2rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.info-row:last-of-type {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.value {
+  font-size: 1.05rem;
+  color: #222;
+}
+
+.net-amount {
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #2c7a4d;
+}
+
+.status-badge {
+  background: #e9ecef;
+  padding: 0.2rem 0.8rem;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-validated {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Signature */
+.signature-area {
+  padding: 1.2rem 1.5rem;
+  background: #f8f9fc;
+  border-top: 1px solid #e2e6ea;
+  border-bottom: 1px solid #e2e6ea;
+}
+
+.signature-area label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.signature-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+
+.signature-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+}
+
+/* Boutons */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.5rem;
+  background: #fff;
+}
+
+.btn-back, .btn-pdf, .btn-retry {
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 40px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-back {
+  background: #6c757d;
+  color: white;
+}
+.btn-back:hover {
+  background: #5a6268;
+}
+
+.btn-pdf {
+  background: #28a745;
+  color: white;
+}
+.btn-pdf:hover:not(:disabled) {
+  background: #218838;
+}
+.btn-pdf:disabled {
+  background: #b0dfc3;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-retry {
+  background: #dc3545;
+  color: white;
+  margin-right: 0.5rem;
+}
+.btn-retry:hover {
+  background: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .indemnity-page {
+    margin: 1rem;
+  }
+  .actions {
+    flex-direction: column;
+  }
+  .btn-back, .btn-pdf {
+    text-align: center;
+  }
+  /* Signature canvas */
+.signature-canvas {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  /* Ne pas fixer width/height en px ici */
+}
+
+.signature-buttons {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+.btn-clear { background: #adb5bd; color: white; border: none; padding: 8px 20px; border-radius: 8px; }
+.btn-validate { background: #2c3e50; color: white; border: none; padding: 8px 20px; border-radius: 8px; }
+}

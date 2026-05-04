@@ -1,0 +1,336 @@
+// ─── Palette Salama ───────────────────────────────────────────────────────────
+$dark:    #0C1B35;
+$primary: #185FA5;
+$surface: #F4F6FA;
+$border:  #E2E6EA;
+$text:    #1A2332;
+$muted:   #6B7A8E;
+$radius:  8px;
+$radius-lg: 12px;
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+.client-app {
+  display: flex;
+  height: 100vh;
+  background: $surface;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+.sidebar {
+  width: 240px;
+  background: $dark;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.logo-zone {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.logo-row { display: flex; align-items: center; gap: 12px; }
+.logo-s {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: $primary; color: white;
+  font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.logo-name { font-size: 14px; font-weight: 600; color: white; }
+.logo-sub  { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 1px; }
+
+.nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+.nav-label {
+  font-size: 10px; color: rgba(255,255,255,.25);
+  letter-spacing: .8px; text-transform: uppercase;
+  padding: 10px 8px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: $radius;
+  text-decoration: none;
+  font-size: 13px; color: rgba(255,255,255,.55);
+  margin-bottom: 2px; transition: all .15s; cursor: pointer;
+
+  .nav-icon { font-size: 18px; width: 18px; height: 18px; }
+
+  &:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+  &.active { background: rgba($primary,.45); color: white; }
+}
+.nav-badge {
+  margin-left: auto; background: #E24B4A; color: white;
+  font-size: 10px; font-weight: 600; padding: 1px 7px;
+  border-radius: 20px; min-width: 20px; text-align: center;
+}
+
+.user-zone {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 10px;
+}
+.user-av {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: $primary; color: white;
+  font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.user-name { font-size: 13px; color: white; font-weight: 500; }
+.user-role { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 1px; }
+
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+// Topbar
+.topbar {
+  background: white;
+  border-bottom: 1px solid $border;
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.topbar-title { font-size: 16px; font-weight: 600; color: $text; }
+.topbar-sub   { font-size: 12px; color: $muted; margin-top: 2px; }
+.topbar-right { display: flex; gap: 10px; align-items: center; }
+
+.notif-btn {
+  width: 36px; height: 36px; border-radius: $radius;
+  background: $surface; border: 1px solid $border;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; color: $muted;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+.notif-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 8px; height: 8px; background: #E24B4A;
+  border-radius: 50%; border: 2px solid white;
+}
+
+.chat-fab {
+  background: $primary; color: white; border: none;
+  border-radius: $radius; padding: 8px 16px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: background .15s;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  &:hover { background: #0e4a82; }  // ← Corrigé (valeur fixe)
+}
+
+// Contenu scrollable
+.content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+// ─── HERO CARD ────────────────────────────────────────────────────────────────
+.hero-card {
+  background: $dark; border-radius: 16px;
+  padding: 24px 28px; margin-bottom: 20px; color: white;
+}
+.hero-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.hero-greeting { font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 4px; }
+.hero-title    { font-size: 22px; font-weight: 600; }
+.hero-contract { font-size: 12px; color: rgba(255,255,255,.35); margin-top: 4px; }
+.hero-badge {
+  background: rgba($primary,.5);
+  color: #7bb5e0;  // ← Corrigé (valeur fixe)
+  font-size: 11px; padding: 4px 12px; border-radius: 20px;
+  border: 1px solid rgba($primary,.4); flex-shrink: 0;
+}
+.hero-stats {
+  display: flex; gap: 32px;
+  padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08);
+}
+.hero-stat-val { font-size: 24px; font-weight: 700; line-height: 1; }
+.hero-stat-lbl { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 3px; }
+
+// ─── KPI GRID ─────────────────────────────────────────────────────────────────
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.kpi-card {
+  background: white; border-radius: $radius-lg;
+  border: 1px solid $border; border-left: 4px solid transparent;
+  padding: 16px; transition: box-shadow .15s;
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+}
+.kpi-val { font-size: 26px; font-weight: 700; line-height: 1; }
+.kpi-lbl { font-size: 12px; color: $muted; margin-top: 4px; }
+.kpi-sub { font-size: 11px; color: $muted; margin-top: 2px; }
+
+// ─── LAYOUT 2 COLONNES ───────────────────────────────────────────────────────
+.two-col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+
+// ─── CARD ─────────────────────────────────────────────────────────────────────
+.card {
+  background: white; border: 1px solid $border;
+  border-radius: $radius-lg; padding: 18px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title { font-size: 14px; font-weight: 600; color: $text; }
+.card-ref   {
+  font-family: 'Courier New', monospace; font-size: 11px;
+  color: $primary; background: rgba($primary,.08);
+  padding: 2px 8px; border-radius: 4px;
+}
+.see-all {
+  background: none; border: none; font-size: 12px;
+  color: $primary; cursor: pointer;
+  &:hover { text-decoration: underline; }
+}
+
+.center-card {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 200px; color: $muted;
+  mat-icon { font-size: 36px; width: 36px; height: 36px; opacity: .3; margin-bottom: 8px; }
+  p { margin: 0; font-size: 13px; }
+}
+
+// ─── SINISTRES LIST ───────────────────────────────────────────────────────────
+.sinistre-item {
+  padding: 12px 0; border-bottom: 1px solid rgba($border,.6);
+  cursor: pointer; transition: background .1s;
+  border-radius: 6px; padding-left: 6px;
+  &:last-child { border-bottom: none; }
+  &:hover { background: $surface; }
+}
+.sin-row1 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.sin-ref  {
+  font-family: 'Courier New', monospace; font-size: 12px;
+  font-weight: 700; color: $primary;
+}
+.sin-badge {
+  display: inline-flex; padding: 2px 9px; border-radius: 20px;
+  font-size: 10px; font-weight: 600;
+}
+.b-opened    { background: #E6F1FB; color: #0C447C; }
+.b-assigned  { background: #FAEEDA; color: #633806; }
+.b-expertise { background: #E1F5EE; color: #085041; }
+.b-closed    { background: #EAF3DE; color: #27500A; }
+.b-rejected  { background: #FCEBEB; color: #791F1F; }
+
+.sin-row2 { display: flex; align-items: center; gap: 8px; }
+.sin-type { font-size: 12px; color: $muted; }
+.sin-date { font-size: 11px; color: #9aabb8; margin-left: auto; }  // ← Corrigé
+.sin-urgency { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.urg-bar { flex: 1; height: 3px; background: #e8e8e8; border-radius: 2px; overflow: hidden; }
+.urg-fill { height: 100%; border-radius: 2px; }
+.u-high { background: #A32D2D; }
+.u-mid  { background: #FF8C00; }
+.u-low  { background: #3B6D11; }
+.urg-val { font-size: 10px; color: $muted; min-width: 26px; }
+
+// ─── TIMELINE ────────────────────────────────────────────────────────────────
+.timeline { padding: 4px 0; }
+.tl-item {
+  display: flex; gap: 14px;
+  &.tl-last .tl-left { padding-bottom: 0; }
+}
+.tl-left {
+  display: flex; flex-direction: column;
+  align-items: center; width: 28px; flex-shrink: 0;
+}
+.tl-circle {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; z-index: 1;
+  mat-icon { font-size: 13px; width: 13px; height: 13px; }
+}
+.tl-done    { background: #3B6D11; color: white; }
+.tl-active  {
+  background: $primary; color: white;
+  box-shadow: 0 0 0 4px rgba($primary,.15);
+  animation: pulse-ring 2s infinite;
+}
+.tl-pending { background: $surface; border: 2px solid $border; color: $muted; }
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba($primary,.3); }
+  70%  { box-shadow: 0 0 0 8px rgba($primary,0); }
+  100% { box-shadow: 0 0 0 0 rgba($primary,0); }
+}
+
+.tl-line {
+  width: 2px; flex: 1; background: $border;
+  margin: 3px auto 0; min-height: 20px;
+}
+.tl-line-done { background: #3B6D11; }
+
+.tl-content {
+  padding-bottom: 18px; flex: 1;
+  &.tl-active-content .tl-title { color: $primary; font-weight: 600; }
+}
+.tl-title      { font-size: 13px; font-weight: 500; color: $text; }
+.tl-meta       { font-size: 11px; color: $muted; margin-top: 2px; }
+.tl-pending-lbl { font-size: 11px; color: #a0aec0; font-style: italic; margin-top: 2px; }  // ← Corrigé
+
+// Expert inline card
+.expert-card {
+  display: flex; align-items: center; gap: 10px;
+  background: $surface; border-radius: $radius;
+  padding: 8px 12px; margin-top: 8px; border: 1px solid $border;
+}
+.exp-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #E6F1FB; color: $primary;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.exp-name  { font-size: 13px; font-weight: 500; color: $text; }
+.exp-spec  { font-size: 11px; color: $muted; margin-top: 1px; }
+.exp-contact {
+  margin-left: auto; background: none;
+  border: 1px solid $border; border-radius: 6px;
+  padding: 4px 10px; font-size: 11px; cursor: pointer; color: $primary;
+  &:hover { background: #E6F1FB; }
+}
+
+// ─── CHATBOT CARD ─────────────────────────────────────────────────────────────
+.chatbot-card { margin-bottom: 0; }
+.chat-bubble  { display: flex; gap: 14px; align-items: flex-start; }
+.chat-av-big  {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: $primary; color: white;
+  font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.chat-msg {
+  font-size: 13px; color: $text; line-height: 1.6;
+  background: $surface; border-radius: 0 10px 10px 10px;
+  padding: 10px 14px; border: 1px solid $border; margin-bottom: 10px;
+}
+.chat-suggestions { display: flex; gap: 6px; flex-wrap: wrap; }
+.sugg {
+  background: white; border: 1px solid $border; border-radius: 20px;
+  padding: 5px 12px; font-size: 11px; color: $muted; cursor: pointer; transition: all .15s;
+  &:hover { background: #E6F1FB; color: $primary; border-color: $primary; }
+}
+
+// ─── États ────────────────────────────────────────────────────────────────────
+.center-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 80px; gap: 14px; color: $muted;
+  p { margin: 0; font-size: 14px; }
+}
+.error-state {
+  @extend .center-state;
+  mat-icon { font-size: 40px; width: 40px; height: 40px; color: #A32D2D; opacity: .5; }
+}
+.retry-btn {
+  border: 1px solid $border; background: white; border-radius: $radius;
+  padding: 8px 16px; cursor: pointer; font-size: 13px; color: $text;
+  &:hover { background: $surface; }
+}
+.empty-mini {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 32px; gap: 8px; color: $muted;
+  mat-icon { font-size: 28px; width: 28px; height: 28px; opacity: .3; }
+  p { margin: 0; font-size: 13px; }
+}

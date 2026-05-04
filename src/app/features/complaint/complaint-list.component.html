@@ -1,0 +1,159 @@
+<div class="complaint-container">
+  <!-- Header avec cloche -->
+  <div class="page-header">
+    <h2>📋 Complaints Management</h2>
+    <div class="header-actions">
+      <div class="notification-bell" (click)="toggleNotifications()">
+        <span class="bell-icon">🔔</span>
+        <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      </div>
+      <button class="stats-btn" (click)="openStatsModal()">
+        📊 View Statistics
+      </button>
+      <button class="delete-selected-btn" (click)="bulkDelete()" [disabled]="selectedIds.size === 0">
+        🗑️ Supprimer la sélection ({{ selectedIds.size }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Dropdown des notifications -->
+  <div class="notification-dropdown" *ngIf="showNotifications" (click)="$event.stopPropagation()">
+    <div class="dropdown-header">
+      <span>Notifications</span>
+      <button (click)="markAllAsRead()">Mark all as read</button>
+    </div>
+    <div class="dropdown-body">
+      <div *ngFor="let notif of notifications" class="notification-item" [class.unread]="!notif.read">
+        <div class="notif-icon">{{ notif.type === 'info' ? '📋' : '⚠️' }}</div>
+        <div class="notif-content">
+          <div class="notif-title">{{ notif.title }}</div>
+          <div class="notif-message">{{ notif.message }}</div>
+          <div class="notif-time">{{ notif.timestamp | date:'HH:mm' }}</div>
+        </div>
+        <button class="mark-read" (click)="markAsRead(notif.id)" *ngIf="!notif.read">●</button>
+      </div>
+      <div *ngIf="notifications.length === 0" class="empty-state">
+        📭 No notifications
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-cards">
+    <div class="stat-card" (click)="filterByStatus('ALL')">
+      <div class="stat-value">{{ getTotalComplaints() }}</div>
+      <div class="stat-label">Total Tickets</div>
+    </div>
+    <div class="stat-card pending" (click)="filterByStatus('PENDING')">
+      <div class="stat-value">{{ getPendingCount() }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card in-progress" (click)="filterByStatus('IN_PROGRESS')">
+      <div class="stat-value">{{ getInProgressCount() }}</div>
+      <div class="stat-label">In Progress</div>
+    </div>
+    <div class="stat-card resolved" (click)="filterByStatus('RESOLVED')">
+      <div class="stat-value">{{ getResolvedCount() }}</div>
+      <div class="stat-label">Resolved</div>
+    </div>
+    <div class="stat-card high-priority" (click)="filterByPriority('HIGH')">
+      <div class="stat-value">{{ getHighPriorityCount() }}</div>
+      <div class="stat-label">High Priority</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <input type="text" 
+           placeholder="🔍 Search by ID, title or description..." 
+           (input)="applyFilter($event)" 
+           class="search-input">
+    
+    <div class="filters">
+      <select (change)="statusFilter = $any($event.target).value; applyFilters()">
+        <option value="ALL">📋 All statuses</option>
+        <option value="PENDING">⏳ Pending</option>
+        <option value="IN_PROGRESS">▶️ In Progress</option>
+        <option value="RESOLVED">✅ Resolved</option>
+        <option value="REJECTED">❌ Rejected</option>
+      </select>
+
+      <select (change)="priorityFilter = $any($event.target).value; applyFilters()">
+        <option value="ALL">🎯 All priorities</option>
+        <option value="HIGH">🔴 High</option>
+        <option value="MEDIUM">🟠 Medium</option>
+        <option value="LOW">🟢 Low</option>
+      </select>
+
+      <select (change)="sentimentFilter = $any($event.target).value; applyFilters()">
+        <option value="ALL">😐 All sentiments</option>
+        <option value="POSITIVE">😊 Positive</option>
+        <option value="NEUTRAL">😐 Neutral</option>
+        <option value="NEGATIVE">😞 Negative</option>
+      </select>
+
+      <button (click)="resetAllFilters()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table class="complaint-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" (change)="toggleSelectAll($event)" [checked]="isAllSelected()" /></th>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Date</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let complaint of filteredData" [ngClass]="{'high-priority-row': complaint.priority === 'HIGH'}">
+          <td class="checkbox-cell">
+            <input type="checkbox" [checked]="isSelected(complaint.idComplaint)" (change)="toggleSelection(complaint.idComplaint, $event)" />
+          </td>
+          <td class="id-cell">
+            <span class="id-icon">
+              <span class="icon">🎫</span>
+              <span class="number">{{ complaint.idComplaint }}</span>
+            </span>
+          </td>
+          <td class="title-cell">
+            <strong>{{ complaint.title || 'Untitled' }}</strong>
+            <div class="description-preview">{{ (complaint.description || '').substring(0, 60) }}{{ (complaint.description || '').length > 60 ? '...' : '' }}</div>
+          </td>
+          <td class="date-cell">{{ complaint.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="priority-cell">
+            <span class="priority-badge" [ngClass]="getPriorityClass(complaint.priority)">
+              {{ complaint.priority === 'HIGH' ? '🔴 High' : 
+                 complaint.priority === 'LOW' ? '🟢 Low' : '🟠 Medium' }}
+            </span>
+          </td>
+          <td class="status-cell">
+            <select class="status-select" (change)="updateStatus(complaint, $any($event.target).value)">
+              <option value="PENDING" [selected]="complaint.status === 'PENDING'">⏳ Pending</option>
+              <option value="IN_PROGRESS" [selected]="complaint.status === 'IN_PROGRESS'">▶️ In Progress</option>
+              <option value="RESOLVED" [selected]="complaint.status === 'RESOLVED'">✅ Resolved</option>
+              <option value="REJECTED" [selected]="complaint.status === 'REJECTED'">❌ Rejected</option>
+            </select>
+          </td>
+          <td class="actions-cell">
+            <button class="action-btn view" (click)="viewDetails(complaint)" title="View details">👁️</button>
+            <button class="action-btn delete" (click)="deleteComplaint(complaint.idComplaint)" title="Delete complaint">🗑️</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredData.length === 0">
+          <td colspan="7" class="no-data">📭 No complaints found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 50, 100]" 
+                 showFirstLastButtons 
+                 aria-label="Select page">
+  </mat-paginator>
+</div>

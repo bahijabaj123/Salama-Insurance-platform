@@ -1,0 +1,84 @@
+<!-- src/app/features/assureur/indemnity/indemnity.html -->
+<div class="indemnity-page">
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Calculating indemnity...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="!isLoading && errorMessage" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="retry()">🔄 Retry</button>
+    <button class="btn-back" (click)="goBack()">← Back to list</button>
+  </div>
+
+  <!-- Data display state -->
+  <div *ngIf="!isLoading && !errorMessage && paymentData" class="indemnity-card">
+    <h2>Indemnity Receipt</h2>
+
+    <div class="card-body">
+      <div class="info-row">
+        <span class="label">Claim #</span>
+        <span class="value">{{ paymentData.claimId }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Calculation date</span>
+        <span class="value">{{ paymentData.calculationDate | date:'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Gross amount</span>
+        <span class="value">{{ paymentData.grossAmount | number:'1.2-2' }} DT</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Liability</span>
+        <span class="value">{{ paymentData.responsibility }}%</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Deductible</span>
+        <span class="value">{{ paymentData.deductibleValue | number:'1.2-2' }} DT</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Net amount</span>
+        <span class="value net-amount">{{ paymentData.netAmount | number:'1.2-2' }} DT</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Status</span>
+        <span class="value status-badge" [ngClass]="{'status-validated': paymentData.status === 'VALIDATED'}">
+          {{ paymentData.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ========== SIGNATURE PAD ========== -->
+    <div class="signature-area">
+  <label>✍️ Digital signature :</label>
+  <canvas #signatureCanvas class="signature-canvas" width="500" height="200" style="border: 1px solid #ccc; background: white; touch-action: none;"></canvas>
+  <div class="signature-buttons">
+    <button type="button" class="btn-clear" (click)="clearSignature()">🗑️ Clear</button>
+    <button type="button" class="btn-validate" (click)="saveSignature()">✅ Validate</button>
+  </div>
+</div>
+
+
+    <!-- Action buttons -->
+    <div class="actions">
+      <button class="btn-back" (click)="goBack()">← Back</button>
+      <button
+        class="btn-pdf"
+        (click)="downloadPDF()"
+        [disabled]="!signatureData"
+        [title]="!signatureData ? 'Please validate your signature first' : ''"
+      >
+        📄 Download receipt (PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- No data fallback -->
+  <div *ngIf="!isLoading && !errorMessage && !paymentData" class="empty-state">
+    <p>No indemnity data available.</p>
+    <button class="btn-retry" (click)="retry()">Retry</button>
+  </div>
+</div>
