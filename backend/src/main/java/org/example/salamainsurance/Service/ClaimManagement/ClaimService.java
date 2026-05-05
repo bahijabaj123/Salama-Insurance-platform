@@ -4,6 +4,8 @@ import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +19,6 @@ public interface ClaimService {
   List<Claim> getAllClaims();
   Page<Claim> getAllClaimsPaginated(Pageable pageable);
   Claim updateClaim(Long id, Claim claimDetails);
-
-  /** Mise à jour des notes uniquement (évite la désérialisation JSON d’un {@link Claim} partiel). */
-  Claim updateClaimNotes(Long id, String notes);
-
   void deleteClaim(Long id);
   void deleteClaimByReference(String reference);
 
@@ -41,8 +39,7 @@ public interface ClaimService {
 
   List<Claim> findByStatus(ClaimStatus status);
   List<Claim> findByExpertId(Integer expertId);
-
-    List<Claim> findByRegion(String region);
+  List<Claim> findByRegion(String region);
   List<Claim> findByDateRange(LocalDateTime start, LocalDateTime end);
 
   // ========== STATISTICS & REPORTING ==========
@@ -54,9 +51,13 @@ public interface ClaimService {
 
   // ========== SYNC OPERATIONS ==========
   Claim syncWithAccident(Long claimId);
-  List<Claim> processNewValidAccidents(); // Auto-create claims from valid accidents
+  List<Claim> processNewValidAccidents();
 
   // ========== BATCH OPERATIONS ==========
   List<Claim> createClaimsBatch(List<Long> accidentIds, Long insurerId);
   void deleteClaimsBatch(List<Long> claimIds);
+
+  List<Claim> findByClientId(Long clientId);
+
+  Claim uploadFinalInvoice(Long claimId, MultipartFile file) throws Exception;
 }

@@ -8,15 +8,15 @@ import java.util.Optional;
 public interface IIndemnitySarraService  {
 
 
-    List<IndemnitySarra> getAll();
+  List<IndemnitySarra> getAll();
 
-    Optional<IndemnitySarra> getById(Long id);
+  Optional<IndemnitySarra> getById(Long id);
 
-    void delete(Long id);
+  void delete(Long id);
 
   IndemnitySarra calculateAndSave(Double gross, Integer resp, Double fixedDed);
 
   IndemnitySarra calculateAdvancedPayout(Long id, Double marketValueAtExpertise, Double insuredValueInContract);
-    IndemnitySarra saveInitialData(Double gross, Integer resp, Double deductible);
+  IndemnitySarra saveInitialData(Double gross, Integer resp, Double deductible);
 }
 

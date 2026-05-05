@@ -3,13 +3,15 @@ package org.example.salamainsurance.Entity.ClaimManagement;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
 import org.example.salamainsurance.Entity.Report.Accident;
 import jakarta.persistence.*;
-import org.example.salamainsurance.Entity.User;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.example.salamainsurance.Entity.ClaimManagement.ClaimHistory;
+import org.example.salamainsurance.Entity.User;
+
 
 @Entity
 @Table(name = "claims")
@@ -41,9 +43,8 @@ public class Claim {
   private Accident accident;
 
   // Expert assigned
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "expert_id")
-  @JsonIgnore
   @JsonIgnoreProperties({"claims", "expertReports"})  // ← IGNORE CES CHAMPS pour eviter les boucles
   private ExpertHassen expert;
 
@@ -52,6 +53,17 @@ public class Claim {
   @JoinColumn(name = "insurer_id")
   @JsonIgnore  // ← AJOUTE CECI
   private Insurer insurer;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "client_id")
+  @JsonIgnoreProperties({"password", "resetToken", "verificationToken", "claims"})
+  private User client;
+
+
+  // Expertise reports
+  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL)
+  @JsonIgnore
+  private List<ExpertReportHassen> expertiseReports = new ArrayList<>();
 
   // Region extracted from accident location
   private String region;
@@ -249,6 +261,14 @@ public class Claim {
     this.insurer = insurer;
   }
 
+  public List<ExpertReportHassen> getExpertiseReports() {
+    return expertiseReports;
+  }
+
+  public void setExpertiseReports(List<ExpertReportHassen> expertiseReports) {
+    this.expertiseReports = expertiseReports;
+  }
+
   public String getRegion() {
     return region;
   }
@@ -273,13 +293,16 @@ public class Claim {
     this.actionHistory = actionHistory;
   }
 
+  public ExpertReportHassen getLatestExpertiseReport() {
+    if (expertiseReports == null || expertiseReports.isEmpty()) {
+      return null;
+    }
+    return expertiseReports.get(expertiseReports.size() - 1);
+  }
+
   public int getEstimatedAmount() {
     return 0;
   }
-
-  @ManyToOne
-  @JoinColumn(name = "client_id")
-  private User client;
 
   public User getClient() {
     return client;
@@ -289,23 +312,18 @@ public class Claim {
     this.client = client;
   }
 
-  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-  private List<ClaimHistory> history = new ArrayList<>();
+
+  @OneToMany(mappedBy = "claim", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<ClaimHistory> claimHistory = new ArrayList<>();
 
   // Getter et Setter
-  public List<ClaimHistory> getHistory() {
-    return history;
+  public List<ClaimHistory> getClaimHistory() {
+    return claimHistory;
   }
 
-  public void setHistory(List<ClaimHistory> history) {
-    this.history = history;
+  public void setClaimHistory(List<ClaimHistory> claimHistory) {
+    this.claimHistory = claimHistory;
   }
-
-  // Méthode utilitaire pour ajouter une action
-  public void addHistory(String action, String description, String performedBy) {
-    ClaimHistory historyEntry = new ClaimHistory(this, action, description, performedBy);
-    this.history.add(historyEntry);
-  }
-
 
 }

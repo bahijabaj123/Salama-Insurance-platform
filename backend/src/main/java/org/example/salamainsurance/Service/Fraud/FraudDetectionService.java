@@ -402,4 +402,68 @@ public class FraudDetectionService {
     }
   }
 
+  // ============================================================
+// NOUVELLES MÉTHODES À AJOUTER
+// ============================================================
+
+  /**
+   * Récupère l'analyse de fraude par ID de sinistre
+   * Si aucune analyse n'existe, en crée une automatiquement
+   */
+  public FraudAnalysis findByClaimId(Long claimId) {
+    log.info("🔍 Recherche analyse fraude pour claimId: {}", claimId);
+
+    // Vérifier si une analyse existe déjà
+    FraudAnalysis existingAnalysis = fraudAnalysisRepository.findByClaimId(claimId);
+
+    if (existingAnalysis != null) {
+      log.info("✅ Analyse existante trouvée pour claimId: {}", claimId);
+      return existingAnalysis;
+    } else {
+      log.info("⚠️ Aucune analyse trouvée, création automatique...");
+      // Créer une nouvelle analyse
+      return analyzeClaimWithAlert(claimId);
+    }
+  }
+
+  /**
+   * Récupère toutes les analyses de fraude
+   */
+  public List<FraudAnalysis> getAllAnalyses() {
+    log.info("📊 Récupération de toutes les analyses de fraude");
+    return fraudAnalysisRepository.findAll();
+  }
+
+  /**
+   * Récupère les analyses par niveau de risque
+   */
+  public List<FraudAnalysis> getAnalysesByRiskLevel(RiskLevel riskLevel) {
+    log.info("📊 Récupération des analyses par risque: {}", riskLevel);
+    return fraudAnalysisRepository.findByRiskLevel(riskLevel);
+  }
+
+  /**
+   * Récupère les statistiques du dashboard fraude
+   */
+  public Map<String, Object> getFraudDashboardStats() {
+    log.info("📊 Génération des statistiques du dashboard fraude");
+
+    Map<String, Object> stats = new HashMap<>();
+
+    long total = fraudAnalysisRepository.count();
+    long highRisk = fraudAnalysisRepository.countByRiskLevel(RiskLevel.HIGH);
+    long mediumRisk = fraudAnalysisRepository.countByRiskLevel(RiskLevel.MEDIUM);
+    long lowRisk = fraudAnalysisRepository.countByRiskLevel(RiskLevel.LOW);
+    Double averageScore = fraudAnalysisRepository.averageFraudScore();
+
+    stats.put("totalAnalyses", total);
+    stats.put("highRisk", highRisk);
+    stats.put("mediumRisk", mediumRisk);
+    stats.put("lowRisk", lowRisk);
+    stats.put("averageScore", averageScore != null ? averageScore : 0);
+    stats.put("latestAnalyses", fraudAnalysisRepository.findTop5ByOrderByAnalysisDateDesc());
+
+    return stats;
+  }
+
 }

@@ -1,10 +1,11 @@
 package org.example.salamainsurance.Entity.Report;
 
+import ch.qos.logback.core.net.server.Client;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -60,20 +61,16 @@ public class Accident {
   @Column(length = 1000)
   private String observations;
 
-  @Column(columnDefinition = "LONGTEXT")
   private String sketch;
-
 
   @Enumerated(EnumType.STRING)
   private AccidentStatus status;
 
 
-  // ✅ zones endommagées (1 à 8)
+  // zones endommagées (1 à 8)
   @ElementCollection
-  @CollectionTable(
-    name = "accident_damaged_zones",
-    joinColumns = @JoinColumn(name = "accident_id")
-  )
+  @CollectionTable(name = "accident_damaged_zones",
+    joinColumns = @JoinColumn(name = "accident_id"))
   @Column(name = "zone")
   private List<Integer> damagedZones;
 
@@ -86,12 +83,8 @@ public class Accident {
   private List<Photo> photos = new ArrayList<>();
 
 
-  @OneToOne(mappedBy = "accident")
-  @JsonIgnore
-  private Claim claim;
-  @OneToMany(mappedBy = "accident", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonManagedReference
-  private List<Damage> damages = new ArrayList<>();
+
+
 
   public List<Integer> getDamagedZones() {
     return damagedZones;
@@ -125,18 +118,22 @@ public class Accident {
   public String getSketch() { return sketch; }
   public void setSketch(String sketch) { this.sketch = sketch; }
 
-  public List<Driver> getDrivers() { return drivers; }
+  // Dans Accident.java, assurez-vous que getDrivers() retourne une List
+  public List<Driver> getDrivers() {
+    return drivers;  // drivers doit être de type List<Driver>
+  }
+
   public void setDrivers(List<Driver> drivers) { this.drivers = drivers; }
 
   public List<Photo> getPhotos() { return photos; }
   public void setPhotos(List<Photo> photos) { this.photos = photos; }
 
-  public Claim getClaim() { return claim; }
-  public void setClaim(Claim claim) { this.claim = claim; }
+  //bahija
+  @OneToOne(mappedBy = "accident", cascade = CascadeType.ALL)
+  private Claim claim;// Relation vers Claim (optionnelle)
 
-  public List<Damage> getDamages() { return damages; }
-  public void setDamages(List<Damage> damages) { this.damages = damages; }
+  public void setClaim(Claim savedClaim) {
+  }
 }
-
 
 

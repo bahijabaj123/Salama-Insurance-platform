@@ -3,13 +3,10 @@ package org.example.salamainsurance.Exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.example.salamainsurance.security.PendingApprovalException;
-import org.example.salamainsurance.security.RejectedApprovalException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -67,36 +64,6 @@ public class GlobalExceptionHandler {
         body.put("message", "Invalid email or password");
         body.put("timestamp", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
-    }
-
-    @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<Map<String, Object>> handleDisabledAccount(DisabledException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", 403);
-        body.put("error", "Forbidden");
-        body.put("message", "Email not verified. Please verify your email before logging in.");
-        body.put("timestamp", LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
-    }
-
-    @ExceptionHandler(PendingApprovalException.class)
-    public ResponseEntity<Map<String, Object>> handlePendingApproval(PendingApprovalException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", 403);
-        body.put("error", "Forbidden");
-        body.put("message", "Account pending admin approval. You cannot log in yet.");
-        body.put("timestamp", LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
-    }
-
-    @ExceptionHandler(RejectedApprovalException.class)
-    public ResponseEntity<Map<String, Object>> handleRejectedApproval(RejectedApprovalException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", 403);
-        body.put("error", "Forbidden");
-        body.put("message", "Role request rejected by admin. You cannot log in.");
-        body.put("timestamp", LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     @ExceptionHandler(LockedException.class)

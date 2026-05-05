@@ -1,132 +1,105 @@
 package org.example.salamainsurance.Service;
 
 import org.example.salamainsurance.Ai.NaiveBayesClassifier;
+import org.example.salamainsurance.DTO.ResponsibilityResult;
+import org.example.salamainsurance.Entity.ClaimManagement.Claim;
+import org.example.salamainsurance.Entity.Expert.ExpertReportHassen;
 import org.example.salamainsurance.Entity.IndemnitySarra;
 import org.example.salamainsurance.Entity.SettlementStatus;
+import org.example.salamainsurance.Repository.ClaimManagement.ClaimRepository;
 import org.example.salamainsurance.Repository.IndemnityRepository;
+import org.example.salamainsurance.Service.Report.AccidentServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class IndemnitySarraService implements IIndemnitySarraService {
+public class IndemnitySarraService {
 
   @Autowired
   private IndemnityRepository indemnityRepository;
 
   @Autowired
-  private NaiveBayesClassifier classifier;
+  private ClaimRepository claimRepository;
+
+  @Autowired
+  private AccidentServiceImpl accidentService;
 
   /**
-   * Méthode appelée par ton Controller pour le calcul immédiat et l'enregistrement
+   * Génère ou met à jour l'indemnité pour un sinistre donné.
+   * Transactionnelle pour assurer la cohérence.
    */
-  @Override
-  public IndemnitySarra calculateAndSave(Double gross, Integer resp, Double fixedDed) {
-    IndemnitySarra indemnity = new IndemnitySarra();
+  @Transactional
+  public IndemnitySarra genererQuittanceOfficielle(Long claimId) {
 
-    // 1. Assignation des valeurs d'entrée
-    indemnity.setGrossAmount(gross);
-    indemnity.setResponsibility(resp);
-    indemnity.setDeductibleValue(fixedDed);
+    // 1. Récupération du sinistre
+    Claim claim = claimRepository.findById(claimId)
+      .orElseThrow(() -> new RuntimeException("Sinistre introuvable avec id: " + claimId));
 
-    // 2. Logique de calcul :
-    // Montant Net = [Montant Brut * (1 - Taux de Responsabilité)] - Franchise Fixe
-    double respRate = resp / 100.0;
-    double amountAfterResponsibility = gross * (1 - respRate);
-    double finalNet = amountAfterResponsibility - fixedDed;
-
-    // 3. Sécurité : On ne paie pas un montant négatif
-    indemnity.setNetAmount(Math.max(0.0, finalNet));
-
-    // 4. Initialisation des métadonnées
-    indemnity.setCalculationDate(LocalDate.now());
-    indemnity.setStatus(SettlementStatus.PENDING);
-
-    // 5. Sauvegarde en base de données
-    return indemnityRepository.save(indemnity);
-  }
-
-  /**
-   * Calcul avancé (incluant la valeur vénale et contractuelle)
-   */
-  @Override
-  public IndemnitySarra calculateAdvancedPayout(Long id, Double marketValueAtExpertise, Double insuredValueInContract) {
-    IndemnitySarra indemnity = indemnityRepository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Dossier introuvable pour l'ID : " + id));
-
-    double gross = (indemnity.getGrossAmount() != null) ? indemnity.getGrossAmount() : 0.0;
-    double respRate = (indemnity.getResponsibility() != null) ? indemnity.getResponsibility() / 100.0 : 0.0;
-
-    // Part couverte selon la responsabilité
-    double coveredByInsurer = gross * (1 - respRate);
-
-    // Application de la règle proportionnelle si sous-assurance
-    double proportionalFactor = 1.0;
-    if (marketValueAtExpertise != null && marketValueAtExpertise > insuredValueInContract) {
-      proportionalFactor = insuredValueInContract / marketValueAtExpertise;
+    if (claim.getAccident() == null) {
+      throw new RuntimeException("Aucun accident lié au sinistre id: " + claimId);
     }
 
-    double afterProportional = coveredByInsurer * proportionalFactor;
-    double deductible = (indemnity.getDeductibleValue() != null) ? indemnity.getDeductibleValue() : 0.0;
+    // 2. Calcul du pourcentage de responsabilité (conducteur A)
+    int respA = 0;
+    try {
+      ResponsibilityResult respResult = accidentService.calculateResponsibility(claim.getAccident().getId());
+      if (respResult != null) {
+        // À adapter selon le nom réel de la méthode. Exemple : getDriverAResponsibility()
+        respA = respResult.getDriverAResponsibility();
+        if (respA < 0) respA = 0;
+        if (respA > 100) respA = 100;
+      }
+    } catch (Exception e) {
+      System.err.println("⚠️ Responsabilité non calculable, défaut 0% : " + e.getMessage());
+    }
 
-    double finalNet = Math.max(0.0, afterProportional - deductible);
+    // 3. Montant expert
+    double montantExpert;
+    try {
+      ExpertReportHassen rapport = claim.getLatestExpertiseReport();
+      if (rapport != null && rapport.getTotalNet() != null) {
+        montantExpert = rapport.getTotalNet().doubleValue();
+      } else {
+        // Fallback : estimation basée sur urgencyScore (si présent)
+        if (claim.getUrgencyScore() != null) {
+          montantExpert = claim.getUrgencyScore() * 50.0;
+        } else {
+          montantExpert = 1000.0; // valeur par défaut
+        }
+        System.err.println("⚠️ Pas de rapport expert, montant estimé = " + montantExpert);
+      }
+    } catch (Exception e) {
+      montantExpert = 1000.0;
+      System.err.println("⚠️ Erreur lors de la récupération du rapport expert : " + e.getMessage());
+    }
 
-    indemnity.setNetAmount(finalNet);
+    // 4. Calculs indemnitaires
+    double tauxResp = respA / 100.0;
+    double baseCalcul = montantExpert * (1 - tauxResp);
+    double franchise = (respA > 0) ? Math.max(150.0, montantExpert * 0.10) : 0.0;
+    double netFinal = Math.max(0, baseCalcul - franchise);
+
+    // 5. Création ou mise à jour de l'entité IndemnitySarra
+    IndemnitySarra indemnity = indemnityRepository.findByClaimId(claimId)
+      .orElse(new IndemnitySarra());
+
+    indemnity.setClaimId(claimId);
+    indemnity.setGrossAmount(montantExpert);
+    indemnity.setResponsibility(respA);
+    indemnity.setDeductibleValue(franchise);
+    indemnity.setNetAmount(netFinal);
+    indemnity.setCalculationDate(LocalDate.now());
     indemnity.setStatus(SettlementStatus.VALIDATED);
-    indemnity.setCalculationDate(LocalDate.now());
 
     return indemnityRepository.save(indemnity);
   }
 
-  /**
-   * Ta logique spécifique de Facture avec analyse de sentiment IA
-   */
-  public String genererFactureSeule(String texteSinistre, double montantDommage, double franchiseBase) {
-    // 1. Analyse IA du sentiment du client
-    String sentiment = classifier.predict(texteSinistre);
-    boolean estNegatif = sentiment.equalsIgnoreCase("NÉGATIF");
-
-    // 2. Calcul avec bonus commercial IA
-    double remiseIA = estNegatif ? (franchiseBase * 0.20) : 0.0;
-    double franchiseFinale = franchiseBase - remiseIA;
-    double montantNetALiberer = montantDommage - franchiseFinale;
-
-    // 3. Génération du texte de la facture
-    StringBuilder sb = new StringBuilder();
-    sb.append("===========================================\n");
-    sb.append("        SALAMA INSURANCE - FACTURE IA      \n");
-    sb.append("===========================================\n");
-    sb.append("Analyse Sentiment : ").append(sentiment).append("\n");
-    sb.append("Décision IA       : ").append(estNegatif ? "REMISE FIDÉLITÉ ACCORDÉE (20%)" : "AUCUNE REMISE").append("\n");
-    sb.append("-------------------------------------------\n");
-    sb.append(String.format("Montant brut des dommages  : %10.2f DT\n", montantDommage));
-    sb.append(String.format("Franchise contractuelle    : %10.2f DT\n", franchiseBase));
-
-    if (estNegatif) {
-      sb.append(String.format("Remise geste commercial    : -%10.2f DT\n", remiseIA));
-      sb.append(String.format("Franchise finale appliquée : %10.2f DT\n", franchiseFinale));
-    }
-
-    sb.append("-------------------------------------------\n");
-    sb.append(String.format("MONTANT FINAL À LIBÉRER    : %10.2f DT\n", Math.max(0, montantNetALiberer)));
-    sb.append("===========================================\n");
-    sb.append("Validé par le département Indemnisation IA");
-
-    return sb.toString();
-  }
-
-  @Override
-  public IndemnitySarra saveInitialData(Double gross, Integer resp, Double deductible) {
-    IndemnitySarra indemnity = new IndemnitySarra();
-    indemnity.setGrossAmount(gross);
-    indemnity.setResponsibility(resp);
-    indemnity.setDeductibleValue(deductible);
-    indemnity.setStatus(SettlementStatus.PENDING);
-    return indemnityRepository.save(indemnity);
-  }
+  // --- Méthodes CRUD classiques ---
 
   public List<IndemnitySarra> getAll() {
     return indemnityRepository.findAll();
@@ -136,7 +109,14 @@ public class IndemnitySarraService implements IIndemnitySarraService {
     return indemnityRepository.findById(id);
   }
 
-  @Override
+  /**
+   * Récupère l'indemnité par l'identifiant du sinistre (claimId).
+   * Important : la méthode findByClaimId doit exister dans IndemnityRepository.
+   */
+  public Optional<IndemnitySarra> findByClaimId(Long claimId) {
+    return indemnityRepository.findByClaimId(claimId);
+  }
+
   public void delete(Long id) {
     indemnityRepository.deleteById(id);
   }

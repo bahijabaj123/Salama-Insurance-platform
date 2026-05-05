@@ -1,5 +1,3 @@
-
-
 package org.example.salamainsurance.DTO;
 
 import jakarta.validation.constraints.DecimalMax;

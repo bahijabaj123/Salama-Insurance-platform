@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.example.salamainsurance.DTO.DeviceResponse;
 import org.example.salamainsurance.Entity.Device;
 import org.example.salamainsurance.Entity.User;
-import org.example.salamainsurance.Exception.ResourceNotFoundException;
 import org.example.salamainsurance.Repository.DeviceRepository;
 import org.example.salamainsurance.Repository.UserRepository;
 import org.slf4j.Logger;
@@ -80,16 +79,6 @@ public class DeviceService {
                         .map(this::toResponse)
                         .collect(Collectors.toList()))
                 .orElse(List.of());
-    }
-
-    @Transactional(readOnly = true)
-    public List<DeviceResponse> listDevicesForUserId(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
-        }
-        return deviceRepository.findByUser_IdOrderByLastLoginAtDesc(userId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
     }
 
     private DeviceResponse toResponse(Device d) {

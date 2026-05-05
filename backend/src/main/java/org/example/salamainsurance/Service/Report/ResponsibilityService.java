@@ -8,40 +8,33 @@ import org.springframework.stereotype.Service;
 public class ResponsibilityService {
 
   public ResponsibilityResult calculate(Accident accident) {
-    int scoreA = 0;
-    int scoreB = 0;
+
+    int aTotal = 0;
+    int bTotal = 0;
 
     for (Driver driver : accident.getDrivers()) {
-      int driverScore = driver.getCircumstances() == null ? 0 :
-        driver.getCircumstances()
-          .stream()
-          .mapToInt(Circumstances::getFaultPercentage)
-          .max()
-          .orElse(0);
 
-      if (driver.getDriverType() == DriverType.DRIVER_A) scoreA = driverScore;
-      if (driver.getDriverType() == DriverType.DRIVER_B) scoreB = driverScore;
-    }
+      int sum = driver.getCircumstances()
+        .stream()
+        .mapToInt(Circumstances::getFaultPercentage)
+        .sum();
 
-    int total = scoreA + scoreB;
-    int percentA, percentB;
+      if (driver.getDriverType() == DriverType.DRIVER_A)
+        aTotal = sum;
 
-    if (total == 0) {
-      percentA = 50;
-      percentB = 50;
-    } else {
-      percentA = (scoreA * 100) / total;
-      percentB = 100 - percentA;
+      if (driver.getDriverType() == DriverType.DRIVER_B)
+        bTotal = sum;
     }
 
     String decision;
-    if (percentA > percentB)
-      decision = "DRIVER_A_RESPONSABLE";
-    else if (percentB > percentA)
-      decision = "DRIVER_B_RESPONSABLE";
-    else
-      decision = "RESPONSABILITE_PARTAGEE";
 
-    return new ResponsibilityResult(percentA, percentB, decision);
+    if (aTotal > bTotal)
+      decision = "Responsabilité conducteur A";
+    else if (bTotal > aTotal)
+      decision = "Responsabilité conducteur B";
+    else
+      decision = "Responsabilité partagée";
+
+    return new ResponsibilityResult(aTotal, bTotal, decision);
   }
 }

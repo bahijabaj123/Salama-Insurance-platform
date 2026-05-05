@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClaimRepository extends JpaRepository<Claim, Long> {
@@ -67,6 +68,7 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
   // Pour les sinistres urgents
   List<Claim> findByUrgencyScoreGreaterThan(int score);
 
+
   // Pour les statistiques hebdomadaires
   long countByOpeningDateAfter(LocalDateTime date);
   long countByClosingDateAfter(LocalDateTime date);
@@ -81,4 +83,6 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
   @Query("SELECT c FROM Claim c WHERE c.openingDate > :date")
   List<Claim> findClaimsAfterDate(@Param("date") LocalDateTime date);
 
+  @Query("SELECT c FROM Claim c LEFT JOIN FETCH c.client WHERE c.id = :id")
+  Optional<Claim> findByIdWithClient(@Param("id") Long id);
 }

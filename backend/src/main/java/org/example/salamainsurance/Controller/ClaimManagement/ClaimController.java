@@ -5,6 +5,7 @@ import org.example.salamainsurance.Entity.ClaimManagement.Claim;
 import org.example.salamainsurance.Entity.ClaimManagement.ClaimStatus;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimService;
 import org.example.salamainsurance.Service.ClaimManagement.ClaimServiceImpl;
+import org.example.salamainsurance.Service.ClaimManagement.IntelligentExpertAssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.example.salamainsurance.Entity.Expert.ExpertHassen;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -25,7 +28,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/claims")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class ClaimController {
 
   @Autowired
@@ -33,6 +36,9 @@ public class ClaimController {
 
   @Autowired
   private ClaimServiceImpl claimServices;
+
+  @Autowired
+  private IntelligentExpertAssignmentService intelligentAssignmentService;
 
   // ========== CREATE ==========
 
@@ -66,47 +72,11 @@ public class ClaimController {
   public ResponseEntity<?> getClaimById(@PathVariable Long id) {
     try {
       Claim claim = claimService.getClaimById(id);
-
-      // ⭐ Créer un DTO qui inclut l'expert
-      Map<String, Object> response = new HashMap<>();
-      response.put("id", claim.getId());
-      response.put("reference", claim.getReference());
-      response.put("status", claim.getStatus());
-      response.put("region", claim.getRegion());
-      response.put("openingDate", claim.getOpeningDate());
-      response.put("assignedDate", claim.getAssignedDate());
-      response.put("closingDate", claim.getClosingDate());
-      response.put("lastModifiedDate", claim.getLastModifiedDate());
-      response.put("notes", claim.getNotes());
-      response.put("urgencyScore", claim.getUrgencyScore());
-
-      // ⭐ Inclure l'expert s'il existe
-      if (claim.getExpert() != null) {
-        Map<String, Object> expertMap = new HashMap<>();
-        expertMap.put("idExpert", claim.getExpert().getIdExpert());
-        expertMap.put("firstName", claim.getExpert().getFirstName());
-        expertMap.put("lastName", claim.getExpert().getLastName());
-        expertMap.put("email", claim.getExpert().getEmail());
-        expertMap.put("phone", claim.getExpert().getPhone());
-        expertMap.put("specialty", claim.getExpert().getSpecialty());
-        expertMap.put("interventionZone", claim.getExpert().getInterventionZone());
-        expertMap.put("performanceScore", claim.getExpert().getPerformanceScore());
-        expertMap.put("activeClaims", claim.getExpert().getActiveClaims());
-        expertMap.put("yearsOfExperience", claim.getExpert().getYearsOfExperience());
-        response.put("expert", expertMap);
-      }
-
-      // Inclure l'accident si besoin
-      if (claim.getAccident() != null) {
-        response.put("accident", claim.getAccident());
-      }
-
-      return ResponseEntity.ok(response);
+      return ResponseEntity.ok(claim);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
   }
-
 
   @GetMapping("/reference/{reference}")
   public ResponseEntity<?> getClaimByReference(@PathVariable String reference) {
@@ -143,22 +113,6 @@ public class ClaimController {
     try {
       Claim updatedClaim = claimService.updateClaim(id, claimDetails);
       return ResponseEntity.ok(updatedClaim);
-    } catch (Exception e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  /** Corps minimal pour éviter les erreurs de désérialisation sur un {@link Claim} incomplet. */
-  public record ClaimNotesPatch(String notes) {}
-
-  @PatchMapping("/{id}/notes")
-  public ResponseEntity<?> patchClaimNotes(@PathVariable Long id, @RequestBody ClaimNotesPatch body) {
-    try {
-      if (body == null || body.notes() == null) {
-        return new ResponseEntity<>("notes is required", HttpStatus.BAD_REQUEST);
-      }
-      Claim updated = claimService.updateClaimNotes(id, body.notes());
-      return ResponseEntity.ok(updated);
     } catch (Exception e) {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -393,4 +347,17 @@ public class ClaimController {
       return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
+
+  @PostMapping("/{claimId}/upload-final-invoice")
+  public ResponseEntity<?> uploadFinalInvoice(
+    @PathVariable Long claimId,
+    @RequestParam("file") MultipartFile file) {
+    try {
+      Claim claim = claimService.uploadFinalInvoice(claimId, file);
+      return ResponseEntity.ok(claim);
+    } catch (Exception e) {
+      return ResponseEntity.status(500).body("Erreur: " + e.getMessage());
+    }
+  }
+
 }
