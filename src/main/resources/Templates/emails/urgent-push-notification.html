@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>URGENT - Salama Insurance</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff3e0; }
+    .header { background: #A32D2D; color: white; padding: 30px; text-align: center; }
+    .content { padding: 30px; background: white; }
+    .urgent-box { background: #fff3e0; border-left: 4px solid #A32D2D; padding: 20px; margin: 20px 0; }
+    .score { font-size: 48px; font-weight: bold; color: #A32D2D; text-align: center; }
+    .button { background: #A32D2D; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; }
+    .contact { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>⚠️ ALERTE URGENTE</h1>
+  </div>
+  <div class="content">
+    <h2>Bonjour <span th:text="${clientName}">Client</span>,</h2>
+
+    <div class="urgent-box">
+      <p><strong>Votre sinistre <span th:text="${claimReference}">REF</span> est considéré comme URGENT.</strong></p>
+      <div class="score">
+        <span th:text="${urgencyScore}">0</span>%
+      </div>
+      <p style="text-align: center;">Score d'urgence</p>
+    </div>
+
+    <p><strong>Région :</strong> <span th:text="${region}">Région</span></p>
+    <p>Veuillez nous contacter dans les plus brefs délais pour accélérer le traitement de votre dossier.</p>
+
+    <div class="contact">
+      <p><strong>📞 Téléphone :</strong> <span th:text="${contactPhone}">+216 70 123 456</span></p>
+      <p><strong>✉️ Email :</strong> <span th:text="${contactEmail}">support@salama.tn</span></p>
+    </div>
+
+    <p style="margin-top: 30px; text-align: center;">
+      <a class="button" th:href="${dashboardLink}" target="_blank">Voir les détails</a>
+    </p>
+  </div>
+  <div class="footer">
+    <p>Salama Insurance - Assistance 24/7</p>
+    <p>&copy; <span th:text="${currentYear}">2026</span> Salama Insurance</p>
+  </div>
+</div>
+</body>
+</html>

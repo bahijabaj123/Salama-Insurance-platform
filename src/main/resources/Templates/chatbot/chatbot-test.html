@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Salama Assistant - Chatbot Intelligent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .test-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+    }
+
+    .test-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .test-header h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .test-header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .test-content {
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    .info-box h3 {
+      color: #1976d2;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .info-box p {
+      color: #555;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .test-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e9ecef;
+      color: #495057;
+    }
+
+    .btn-secondary:hover {
+      background: #dee2e6;
+    }
+
+    .status {
+      text-align: center;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #4caf50;
+      margin-right: 8px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .footer {
+      text-align: center;
+      padding: 15px;
+      background: white;
+      border-top: 1px solid #e9ecef;
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* ========== STYLES CHATBOT ========== */
+    .chatbot-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+
+    .chatbot-button {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .chatbot-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+
+    .chatbot-button i {
+      font-size: 28px;
+      color: white;
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 12px;
+      height: 12px;
+      background: #ff4757;
+      border-radius: 50%;
+      border: 2px solid white;
+      animation: pulse 1.5s infinite;
+    }
+
+    .chatbot-window {
+      position: absolute;
+      bottom: 80px;
+      right: 0;
+      width: 400px;
+      height: 600px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chatbot-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-info i {
+      font-size: 24px;
+    }
+
+    .header-info h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-info p {
+      margin: 0;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .close-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: rotate(90deg);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .user-message {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .user-message .message-avatar {
+      background: #e9ecef;
+      color: #667eea;
+    }
+
+    .message-avatar i {
+      font-size: 14px;
+      color: white;
+    }
+
+    .user-message .message-avatar i {
+      color: #667eea;
+    }
+
+    .message-content {
+      max-width: 75%;
+      flex: 1;
+    }
+
+    .message-text {
+      background: white;
+      padding: 12px 15px;
+      border-radius: 15px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .user-message .message-text {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: #999;
+      margin-top: 5px;
+      margin-left: 5px;
+    }
+
+    .user-message .message-time {
+      text-align: right;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 12px 15px;
+      background: white;
+      border-radius: 15px;
+      width: fit-content;
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #999;
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
+    }
+
+    /* ========== ZONE DES BOUTONS PRÉDÉFINIS ========== */
+    .quick-suggestions {
+      padding: 12px 15px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-top: 1px solid #e9ecef;
+      background: white;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .suggestion-btn {
+      background: #f0f2f5;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #495057;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .suggestion-btn i {
+      font-size: 12px;
+    }
+
+    .suggestion-btn:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    /* ========== ZONE DE SAISIE ========== */
+    .chat-input {
+      display: flex;
+      padding: 15px;
+      background: white;
+      border-top: 1px solid #e9ecef;
+      gap: 10px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #e9ecef;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .chat-input input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .chat-input button {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-input button:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+
+    .chat-input button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #cbd5e0;
+      border-radius: 3px;
+    }
+
+    /* Badge pour les infos */
+    .claim-badge {
+      background: #e9ecef;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 11px;
+      display: inline-block;
+      margin: 2px 0;
+    }
+
+    hr {
+      margin: 10px 0;
+      border: none;
+      border-top: 1px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+
+<div class="test-container">
+  <div class="test-header">
+    <h1>🤖 Assistant Salama</h1>
+    <p>Intelligent • Réactif • Personnalisé</p>
+  </div>
+
+  <div class="test-content">
+    <div class="info-box">
+      <h3>📌 Fonctionnalités du chatbot</h3>
+      <p>
+        ✅ <strong>Questions générales</strong> : déclaration, documents, délais, indemnisation<br>
+        ✅ <strong>Suivi personnalisé</strong> : interrogez un sinistre par référence (ex: CLM-20260330-2763)<br>
+        ✅ <strong>Statistiques</strong> : "mes sinistres", "statistiques", "sinistres par région"<br>
+        ✅ <strong>Informations expert</strong> : contactez votre expert assigné<br>
+        ✅ <strong>Boutons prédéfinis</strong> : accès rapide aux questions fréquentes
+      </p>
+    </div>
+
+    <div class="status">
+      <span class="status-dot"></span>
+      <strong>Chatbot actif</strong> - Connecté à l'API backend
+    </div>
+
+    <div class="test-actions">
+      <button class="btn btn-primary" onclick="resetChat()">
+        <i class="fas fa-trash-alt"></i> Effacer l'historique
+      </button>
+      <button class="btn btn-secondary" onclick="window.location.reload()">
+        <i class="fas fa-sync-alt"></i> Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    ⚡ Version améliorée - Boutons prédéfinis + IA contextuelle
+  </div>
+</div>
+
+<!-- Composant Chatbot -->
+<div class="chatbot-container">
+  <div class="chatbot-button" id="chatbotToggle">
+    <i class="fas fa-comments"></i>
+    <span class="notification-dot" id="notificationDot" style="display: none;"></span>
+  </div>
+
+  <div class="chatbot-window" id="chatbotWindow" style="display: none;">
+    <div class="chatbot-header">
+      <div class="header-info">
+        <i class="fas fa-robot"></i>
+        <div>
+          <h3>Assistant Salama</h3>
+          <p>En ligne • Réponse instantanée</p>
+        </div>
+      </div>
+      <button class="close-btn" id="chatbotClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot-message">
+        <div class="message-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+          <div class="message-text">
+            🤖 Bonjour ! Je suis votre assistant intelligent Salama.<br><br>
+            <strong>Je peux vous aider avec :</strong><br>
+            📝 Déclarer un sinistre<br>
+            📊 Suivre votre dossier (par référence)<br>
+            📄 Documents nécessaires<br>
+            👨‍🔧 Contacter votre expert<br>
+            ⏱️ Délais d'indemnisation<br>
+            💰 Calcul de l'indemnisation<br><br>
+            <strong>💡 Exemples :</strong><br>
+            • "Statut du sinistre CLM-20260330-2763"<br>
+            • "Mes sinistres"<br>
+            • "Quels documents pour mon sinistre ?"<br>
+            • "Comment contacter mon expert ?"<br><br>
+            Comment puis-je vous aider aujourd'hui ?
+          </div>
+          <div class="message-time"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-suggestions">
+      <button class="suggestion-btn" data-question="Comment déclarer un sinistre ?">
+        <i class="fas fa-plus-circle"></i> Déclarer
+      </button>
+      <button class="suggestion-btn" data-question="Mes sinistres">
+        <i class="fas fa-folder-open"></i> Mes sinistres
+      </button>
+      <button class="suggestion-btn" data-question="Statistiques de mes sinistres">
+        <i class="fas fa-chart-bar"></i> Statistiques
+      </button>
+      <button class="suggestion-btn" data-question="Quels documents dois-je fournir ?">
+        <i class="fas fa-file-alt"></i> Documents
+      </button>
+      <button class="suggestion-btn" data-question="Comment contacter mon expert ?">
+        <i class="fas fa-user-md"></i> Contacter expert
+      </button>
+      <button class="suggestion-btn" data-question="Quels sont les délais de traitement ?">
+        <i class="fas fa-hourglass-half"></i> Délais
+      </button>
+      <button class="suggestion-btn" data-question="Comment est calculée mon indemnisation ?">
+        <i class="fas fa-euro-sign"></i> Indemnisation
+      </button>
+    </div>
+
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Écrivez votre message ou une référence de sinistre..." autocomplete="off">
+      <button id="chatSend">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Configuration
+  const API_URL = '/api/chatbot/message';
+
+  // Pour les tests, vous pouvez changer l'email de l'utilisateur ici
+  // Les rôles possibles : client@salama.tn, expert@salama.tn, assureur@salama.tn, admin@salama.tn
+  const USER_EMAIL = 'client@salama.tn';  // ← MODIFIEZ ICI POUR TESTER DIFFÉRENTS RÔLES
+
+  // État du chatbot
+  let isWaitingForResponse = false;
+
+  // Fonction pour formater l'heure
+  function getCurrentTime() {
+    const now = new Date();
+    return now.getHours().toString().padStart(2, '0') + ':' +
+      now.getMinutes().toString().padStart(2, '0');
+  }
+
+  // Fonction pour ajouter un message
+  function addMessage(message, isUser) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
+
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'message-text';
+    // Formater le texte (remplacer les retours à la ligne par <br>)
+    textDiv.innerHTML = message.replace(/\n/g, '<br>');
+
+    const timeSpan = document.createElement('div');
+    timeSpan.className = 'message-time';
+    timeSpan.textContent = getCurrentTime();
+
+    contentDiv.appendChild(textDiv);
+    contentDiv.appendChild(timeSpan);
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(contentDiv);
+
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  // Fonction pour afficher l'indicateur de saisie
+  function showTypingIndicator() {
+    const messagesDiv = document.getElementById('chatMessages');
+    // Supprimer l'indicateur existant si présent
+    hideTypingIndicator();
+
+    const indicatorDiv = document.createElement('div');
+    indicatorDiv.className = 'message bot-message';
+    indicatorDiv.id = 'typingIndicator';
+    indicatorDiv.innerHTML = `
+      <div class="message-avatar">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div class="message-content">
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    `;
+    messagesDiv.appendChild(indicatorDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  // Fonction pour cacher l'indicateur de saisie
+  function hideTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+      indicator.remove();
+    }
+  }
+
+  // Envoyer un message au backend
+  async function sendMessageToBackend(message) {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Email': USER_EMAIL
+        },
+        body: JSON.stringify({
+          message: message,
+          userType: 'CLIENT'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.message;
+    } catch (error) {
+      console.error('Erreur API:', error);
+      throw error;
+    }
+  }
+
+  // Envoyer un message (point d'entrée principal)
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (!message || isWaitingForResponse) return;
+
+    // Ajouter le message de l'utilisateur
+    addMessage(message, true);
+    input.value = '';
+
+    // Désactiver l'envoi pendant le traitement
+    isWaitingForResponse = true;
+    const sendButton = document.getElementById('chatSend');
+    sendButton.disabled = true;
+
+    // Afficher l'indicateur de saisie
+    showTypingIndicator();
+
+    try {
+      // Appeler le backend
+      const botResponse = await sendMessageToBackend(message);
+      hideTypingIndicator();
+      addMessage(botResponse, false);
+    } catch (error) {
+      hideTypingIndicator();
+      addMessage('❌ Désolé, une erreur technique est survenue. Veuillez réessayer plus tard.', false);
+    } finally {
+      isWaitingForResponse = false;
+      sendButton.disabled = false;
+      input.focus();
+    }
+  }
+
+  // Réinitialiser l'historique des messages
+  function resetChat() {
+    const messagesDiv = document.getElementById('chatMessages');
+    messagesDiv.innerHTML = `
+      <div class="message bot-message">
+        <div class="message-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="message-content">
+          <div class="message-text">
+            🤖 Bonjour ! Je suis votre assistant intelligent Salama.<br><br>
+            <strong>Je peux vous aider avec :</strong><br>
+            📝 Déclarer un sinistre<br>
+            📊 Suivre votre dossier (par référence)<br>
+            📄 Documents nécessaires<br>
+            👨‍🔧 Contacter votre expert<br>
+            ⏱️ Délais d'indemnisation<br>
+            💰 Calcul de l'indemnisation<br><br>
+            <strong>💡 Exemples :</strong><br>
+            • "Statut du sinistre CLM-20260330-2763"<br>
+            • "Mes sinistres"<br>
+            • "Quels documents pour mon sinistre ?"<br>
+            • "Comment contacter mon expert ?"<br><br>
+            Comment puis-je vous aider aujourd'hui ?
+          </div>
+          <div class="message-time"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Initialisation du chatbot
+  function initChatbot() {
+    const toggle = document.getElementById('chatbotToggle');
+    const window = document.getElementById('chatbotWindow');
+    const close = document.getElementById('chatbotClose');
+    const send = document.getElementById('chatSend');
+    const input = document.getElementById('chatInput');
+    const suggestions = document.querySelectorAll('.suggestion-btn');
+    const notificationDot = document.getElementById('notificationDot');
+
+    // Ouvrir/Fermer le chat
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const isVisible = window.style.display === 'flex';
+        window.style.display = isVisible ? 'none' : 'flex';
+        if (!isVisible) {
+          input.focus();
+          notificationDot.style.display = 'none';
+        }
+      });
+    }
+
+    if (close) {
+      close.addEventListener('click', () => {
+        window.style.display = 'none';
+      });
+    }
+
+    // Envoi du message
+    if (send) {
+      send.addEventListener('click', sendMessage);
+    }
+
+    if (input) {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isWaitingForResponse) {
+          sendMessage();
+        }
+      });
+    }
+
+    // Gestion des boutons prédéfinis
+    if (suggestions) {
+      suggestions.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const question = btn.getAttribute('data-question');
+          input.value = question;
+          sendMessage();
+        });
+      });
+    }
+
+    // Afficher une notification si le chat est fermé (optionnel)
+    let hasUnread = false;
+    if (toggle && !window) {
+      setInterval(() => {
+        if (window.style.display !== 'flex' && hasUnread) {
+          notificationDot.style.display = 'block';
+        }
+      }, 1000);
+    }
+  }
+
+  // Démarrer au chargement de la page
+  document.addEventListener('DOMContentLoaded', initChatbot);
+</script>
+
+</body>
+</html>
